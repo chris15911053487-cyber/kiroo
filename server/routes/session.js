@@ -232,7 +232,8 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
     let reportContent = null;
     let comprehensiveScore = 75; // 默认值
 
-    if (apiKey) {
+    // 仅当API key有效时才调用（跳过占位符key）
+    if (apiKey && apiKey.startsWith('sk-') && apiKey.length > 30) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 120000);
