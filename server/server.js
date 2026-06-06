@@ -238,13 +238,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// 托管前端静态文件
-app.use(express.static(path.join(__dirname, '..', 'dist')));
+// 托管前端静态文件（兼容本地开发 server/ 目录 和 Docker /app 目录）
+const fs = require('fs');
+const distPath = fs.existsSync(path.join(__dirname, 'dist'))
+  ? path.join(__dirname, 'dist')
+  : path.join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
 
 // SPA 路由兜底 — 所有非 /api 路径返回 index.html
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    res.sendFile(path.join(distPath, 'index.html'));
   }
 });
 
