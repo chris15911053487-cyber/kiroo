@@ -1,0 +1,177 @@
+{
+  "id": "holland",
+  "name": "霍兰德职业兴趣测试",
+  "category": "holland",
+  "description": "基于霍兰德职业兴趣理论，评估您在六种职业类型上的倾向，助力职业规划。",
+  "enabled": true,
+  "createdAt": "2024-05-01T00:00:00Z",
+  "questions": [
+    {
+      "id": "c1",
+      "sequence": 1,
+      "text": "以下哪项活动最能吸引你？",
+      "options": [
+        { "id": "c1-a", "text": "修理机械设备或户外体力劳动", "category": "realistic" },
+        { "id": "c1-b", "text": "进行科学实验或数据分析", "category": "investigative" },
+        { "id": "c1-c", "text": "创作音乐、绘画或写作", "category": "artistic" },
+        { "id": "c1-d", "text": "帮助他人解决问题或培训他人", "category": "social" },
+        { "id": "c1-e", "text": "领导团队或开展商业谈判", "category": "enterprising" },
+        { "id": "c1-f", "text": "整理文件、处理数据或执行规程", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c2",
+      "sequence": 2,
+      "text": "你认为自己最擅长的是：",
+      "options": [
+        { "id": "c2-a", "text": "动手操作和使用工具", "category": "realistic" },
+        { "id": "c2-b", "text": "逻辑推理和发现规律", "category": "investigative" },
+        { "id": "c2-c", "text": "艺术表现和创意设计", "category": "artistic" },
+        { "id": "c2-d", "text": "沟通交流和团队合作", "category": "social" },
+        { "id": "c2-e", "text": "说服他人和制定策略", "category": "enterprising" },
+        { "id": "c2-f", "text": "精确执行和细节把控", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c3",
+      "sequence": 3,
+      "text": "你最向往的工作环境是：",
+      "options": [
+        { "id": "c3-a", "text": "户外或工厂，直接与设备打交道", "category": "realistic" },
+        { "id": "c3-b", "text": "实验室或研究机构，专注于探索", "category": "investigative" },
+        { "id": "c3-c", "text": "工作室或创意空间，自由创作", "category": "artistic" },
+        { "id": "c3-d", "text": "学校、医院或社会服务机构", "category": "social" },
+        { "id": "c3-e", "text": "公司管理层或创业环境", "category": "enterprising" },
+        { "id": "c3-f", "text": "有序的办公室，工作流程清晰", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c4",
+      "sequence": 4,
+      "text": "你在工作中最重视的价值是：",
+      "options": [
+        { "id": "c4-a", "text": "实用性和可见的成果", "category": "realistic" },
+        { "id": "c4-b", "text": "知识积累和探索真理", "category": "investigative" },
+        { "id": "c4-c", "text": "创新性和自我表达", "category": "artistic" },
+        { "id": "c4-d", "text": "帮助他人和社会贡献", "category": "social" },
+        { "id": "c4-e", "text": "影响力和领导地位", "category": "enterprising" },
+        { "id": "c4-f", "text": "稳定性和规范秩序", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c5",
+      "sequence": 5,
+      "text": "你最喜欢哪类课程或学习内容？",
+      "options": [
+        { "id": "c5-a", "text": "工程、技术或农业", "category": "realistic" },
+        { "id": "c5-b", "text": "数学、物理或生物", "category": "investigative" },
+        { "id": "c5-c", "text": "艺术、文学或设计", "category": "artistic" },
+        { "id": "c5-d", "text": "心理学、教育学或社会学", "category": "social" },
+        { "id": "c5-e", "text": "商学、管理学或市场营销", "category": "enterprising" },
+        { "id": "c5-f", "text": "会计、统计或行政管理", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c6",
+      "sequence": 6,
+      "text": "在团队项目中，你最愿意承担的角色是：",
+      "options": [
+        { "id": "c6-a", "text": "具体实施和技术操作", "category": "realistic" },
+        { "id": "c6-b", "text": "研究调查和方案分析", "category": "investigative" },
+        { "id": "c6-c", "text": "设计展示和内容创作", "category": "artistic" },
+        { "id": "c6-d", "text": "协调沟通和关系维护", "category": "social" },
+        { "id": "c6-e", "text": "制定策略和推动落地", "category": "enterprising" },
+        { "id": "c6-f", "text": "记录管理和规范流程", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c7",
+      "sequence": 7,
+      "text": "你更愿意用哪种方式解决问题？",
+      "options": [
+        { "id": "c7-a", "text": "动手尝试，边做边调整", "category": "realistic" },
+        { "id": "c7-b", "text": "系统研究，找到根本原因", "category": "investigative" },
+        { "id": "c7-c", "text": "发挥创意，提出新颖思路", "category": "artistic" },
+        { "id": "c7-d", "text": "与他人合作，集思广益", "category": "social" },
+        { "id": "c7-e", "text": "抓住机遇，果断推进", "category": "enterprising" },
+        { "id": "c7-f", "text": "遵循规则，按程序处理", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c8",
+      "sequence": 8,
+      "text": "你最容易从哪种工作中获得满足感？",
+      "options": [
+        { "id": "c8-a", "text": "建造或修复了具体的东西", "category": "realistic" },
+        { "id": "c8-b", "text": "解开了复杂的谜题或发现了新规律", "category": "investigative" },
+        { "id": "c8-c", "text": "创作出受到赞赏的作品", "category": "artistic" },
+        { "id": "c8-d", "text": "帮助他人解决了困难", "category": "social" },
+        { "id": "c8-e", "text": "说服他人接受了自己的方案", "category": "enterprising" },
+        { "id": "c8-f", "text": "将复杂数据整理得井井有条", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c9",
+      "sequence": 9,
+      "text": "你认为自己的主要性格特征是：",
+      "options": [
+        { "id": "c9-a", "text": "务实、踏实、独立", "category": "realistic" },
+        { "id": "c9-b", "text": "好奇、分析、理性", "category": "investigative" },
+        { "id": "c9-c", "text": "富有想象力、表现欲强", "category": "artistic" },
+        { "id": "c9-d", "text": "热情、耐心、善解人意", "category": "social" },
+        { "id": "c9-e", "text": "有野心、外向、有说服力", "category": "enterprising" },
+        { "id": "c9-f", "text": "谨慎、有条理、忠实可靠", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c10",
+      "sequence": 10,
+      "text": "在未来5年，你最希望自己达到的状态是：",
+      "options": [
+        { "id": "c10-a", "text": "在技术领域成为专家", "category": "realistic" },
+        { "id": "c10-b", "text": "在专业研究方向有所突破", "category": "investigative" },
+        { "id": "c10-c", "text": "完成一部代表作或个人品牌建立", "category": "artistic" },
+        { "id": "c10-d", "text": "帮助更多人并获得广泛认可", "category": "social" },
+        { "id": "c10-e", "text": "独立创业或担任管理要职", "category": "enterprising" },
+        { "id": "c10-f", "text": "在稳定单位升职，生活规律安稳", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c11",
+      "sequence": 11,
+      "text": "你更喜欢哪种工作节奏？",
+      "options": [
+        { "id": "c11-a", "text": "规律的体力劳动，有节奏感", "category": "realistic" },
+        { "id": "c11-b", "text": "自由探索，不受时间限制", "category": "investigative" },
+        { "id": "c11-c", "text": "灵活弹性，以创作灵感为主", "category": "artistic" },
+        { "id": "c11-d", "text": "以服务对象的需求为节奏", "category": "social" },
+        { "id": "c11-e", "text": "高强度冲刺，有目标有压力", "category": "enterprising" },
+        { "id": "c11-f", "text": "规范有序，按时完成固定任务", "category": "conventional" }
+      ]
+    },
+    {
+      "id": "c12",
+      "sequence": 12,
+      "text": "以下哪个职业最符合你的理想？",
+      "options": [
+        { "id": "c12-a", "text": "工程师、建筑师或农业专家", "category": "realistic" },
+        { "id": "c12-b", "text": "科学家、程序员或分析师", "category": "investigative" },
+        { "id": "c12-c", "text": "设计师、作家或音乐家", "category": "artistic" },
+        { "id": "c12-d", "text": "教师、心理咨询师或社工", "category": "social" },
+        { "id": "c12-e", "text": "企业家、销售总监或律师", "category": "enterprising" },
+        { "id": "c12-f", "text": "会计师、行政管理或图书管理员", "category": "conventional" }
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "categorical",
+    "categories": [
+      { "key": "realistic",     "name": "现实型", "description": "偏好实际动手操作，喜欢与工具、机械或自然打交道" },
+      { "key": "investigative", "name": "研究型", "description": "喜欢探索研究，具有较强的分析和逻辑思维能力" },
+      { "key": "artistic",      "name": "艺术型", "description": "富有创造力和想象力，追求自我表达和美的创造" },
+      { "key": "social",        "name": "社会型", "description": "热衷于与人互动，喜欢帮助他人或从事教育服务" },
+      { "key": "enterprising",  "name": "企业型", "description": "具有领导力和说服力，善于组织管理和商业运营" },
+      { "key": "conventional",  "name": "常规型", "description": "喜欢有序规范的工作，擅长处理数据和遵循程序" }
+    ]
+  }
+}

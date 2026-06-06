@@ -1,0 +1,585 @@
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const pool = require('../db');
+const adminAuthMiddleware = require('../middleware/adminAuth');
+
+const router = express.Router();
+
+// POST /api/admin/login
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: '请输入用户名和密码' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, username, password_hash, role FROM admins WHERE username = ?',
+      [username]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: '用户名或密码错误' });
+    }
+
+    const admin = rows[0];
+    const valid = await bcrypt.compare(password, admin.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: '用户名或密码错误' });
+    }
+
+    const token = jwt.sign(
+      { id: admin.id, username: admin.username, role: admin.role },
+      process.env.ADMIN_JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({ token, admin: { id: admin.id, username: admin.username, role: admin.role } });
+  } catch (err) {
+    console.error('Admin login error:', err);
+    res.status(500).json({ error: '登录失败' });
+  }
+});
+
+// GET /api/admin/stats
+router.get('/stats', adminAuthMiddleware, async (req, res) => {
+  try {
+    const [[{ totalUsers }]] = await pool.query('SELECT COUNT(*) as totalUsers FROM users');
+    const [[{ totalAssessments }]] = await pool.query('SELECT COUNT(*) as totalAssessments FROM assessment_records');
+    const [[{ todayAssessments }]] = await pool.query(
+      'SELECT COUNT(*) as todayAssessments FROM assessment_records WHERE DATE(created_at) = CURDATE()'
+    );
+    const [[{ totalReports }]] = await pool.query('SELECT COUNT(*) as totalReports FROM comprehensive_reports');
+    const [[{ pendingReports }]] = await pool.query(
+      "SELECT COUNT(*) as pendingReports FROM comprehensive_reports WHERE review_status = 'pending'"
+    );
+
+    const [distribution] = await pool.query(
+      `SELECT questionnaire_id AS id, questionnaire_name AS name, COUNT(*) as count
+       FROM assessment_records
+       GROUP BY questionnaire_id, questionnaire_name
+       ORDER BY count DESC`
+    );
+
+    res.json({
+      totalUsers,
+      totalAssessments,
+      todayAssessments,
+      totalReports,
+      pendingReports,
+      questionnaireDistribution: distribution,
+    });
+  } catch (err) {
+    console.error('Admin stats error:', err);
+    res.status(500).json({ error: '获取统计数据失败' });
+  }
+});
+
+// GET /api/admin/users
+router.get('/users', adminAuthMiddleware, async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 20;
+  const offset = (page - 1) * pageSize;
+  const keyword = req.query.keyword || '';
+
+  try {
+    let query = 'SELECT id, nickname, phone, created_at FROM users';
+    let countQuery = 'SELECT COUNT(*) as total FROM users';
+    const params = [];
+
+    if (keyword) {
+      const where = ' WHERE nickname LIKE ? OR phone LIKE ?';
+      query += where;
+      countQuery += where;
+      params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(pageSize, offset);
+
+    const [[{ total }]] = await pool.query(countQuery, params.slice(0, keyword ? 2 : 0));
+    const [rows] = await pool.query(query, params);
+
+    res.json({ users: rows, total, page, pageSize });
+  } catch (err) {
+    console.error('Admin users error:', err);
+    res.status(500).json({ error: '获取用户列表失败' });
+  }
+});
+
+// ==================== 旧版测评记录管理（保留） ====================
+
+// GET /api/admin/assessments
+router.get('/assessments', adminAuthMiddleware, async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 20;
+  const offset = (page - 1) * pageSize;
+  const { questionnaire_id, date_from, date_to, keyword, review_status } = req.query;
+
+  try {
+    let where = [];
+    let params = [];
+
+    if (questionnaire_id) {
+      where.push('ar.questionnaire_id = ?');
+      params.push(questionnaire_id);
+    }
+    if (date_from) {
+      where.push('ar.created_at >= ?');
+      params.push(date_from);
+    }
+    if (date_to) {
+      where.push('ar.created_at <= ?');
+      params.push(date_to + ' 23:59:59');
+    }
+    if (keyword) {
+      where.push('(u.nickname LIKE ? OR u.phone LIKE ?)');
+      params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+    if (review_status) {
+      where.push('ar.review_status = ?');
+      params.push(review_status);
+    }
+
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+
+    const [[{ total }]] = await pool.query(
+      `SELECT COUNT(*) as total FROM assessment_records ar JOIN users u ON u.id = ar.user_id ${whereClause}`,
+      params
+    );
+
+    const [rows] = await pool.query(
+      `SELECT ar.id, ar.questionnaire_name AS questionnaireName,
+              ar.score_result AS scoreResult, ar.review_status AS reviewStatus, ar.created_at AS createdAt,
+              u.nickname, u.phone
+       FROM assessment_records ar
+       JOIN users u ON u.id = ar.user_id
+       ${whereClause}
+       ORDER BY ar.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, pageSize, offset]
+    );
+
+    const records = rows.map(r => ({
+      ...r,
+      scoreResult: typeof r.scoreResult === 'string' ? JSON.parse(r.scoreResult) : r.scoreResult,
+    }));
+
+    res.json({ records, total, page, pageSize });
+  } catch (err) {
+    console.error('Admin assessments error:', err);
+    res.status(500).json({ error: '获取测评记录失败' });
+  }
+});
+
+// GET /api/admin/assessments/export
+router.get('/assessments/export', adminAuthMiddleware, async (req, res) => {
+  const { questionnaire_id, date_from, date_to, keyword } = req.query;
+
+  try {
+    let where = [];
+    let params = [];
+
+    if (questionnaire_id) {
+      where.push('ar.questionnaire_id = ?');
+      params.push(questionnaire_id);
+    }
+    if (date_from) {
+      where.push('ar.created_at >= ?');
+      params.push(date_from);
+    }
+    if (date_to) {
+      where.push('ar.created_at <= ?');
+      params.push(date_to + ' 23:59:59');
+    }
+    if (keyword) {
+      where.push('(u.nickname LIKE ? OR u.phone LIKE ?)');
+      params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+
+    const [rows] = await pool.query(
+      `SELECT ar.id, u.nickname, u.phone, ar.questionnaire_name AS questionnaireName,
+              ar.score_result AS scoreResult, ar.ai_report AS aiReport, ar.created_at AS createdAt
+       FROM assessment_records ar
+       JOIN users u ON u.id = ar.user_id
+       ${whereClause}
+       ORDER BY ar.created_at DESC`,
+      params
+    );
+
+    const headers = ['ID', '昵称', '手机号', '测评名称', '测评结果', 'AI报告摘要', '测评时间'];
+    const csvRows = [headers.map(h => `"${h}"`).join(',')];
+
+    for (const r of rows) {
+      const scoreResult = typeof r.scoreResult === 'string' ? JSON.parse(r.scoreResult) : r.scoreResult;
+      let resultStr = '';
+      if (scoreResult.type === 'categorical') {
+        resultStr = scoreResult.categoryResult || '';
+      } else if (scoreResult.type === 'additive' && scoreResult.dimensionScores) {
+        resultStr = Object.entries(scoreResult.dimensionScores)
+          .map(([k, v]) => `${k}:${v}`)
+          .join('; ');
+      }
+      const reportSummary = (r.aiReport || '').substring(0, 100).replace(/"/g, '""');
+
+      csvRows.push([
+        r.id,
+        `"${r.nickname}"`,
+        `"${r.phone || ''}"`,
+        `"${r.questionnaireName}"`,
+        `"${resultStr}"`,
+        `"${reportSummary}"`,
+        `"${r.createdAt}"`,
+      ].join(','));
+    }
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=assessments.csv');
+    res.send('﻿' + csvRows.join('\n'));
+  } catch (err) {
+    console.error('Admin export error:', err);
+    res.status(500).json({ error: '导出失败' });
+  }
+});
+
+// ==================== 综合报告审核（新版核心） ====================
+
+// GET /api/admin/reports - 管理员：获取待审核综合报告列表
+router.get('/reports', adminAuthMiddleware, async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 20;
+  const offset = (page - 1) * pageSize;
+  const { review_status, keyword } = req.query;
+
+  try {
+    let where = [];
+    let params = [];
+
+    if (review_status) {
+      where.push('cr.review_status = ?');
+      params.push(review_status);
+    }
+    if (keyword) {
+      where.push('(u.nickname LIKE ? OR u.phone LIKE ?)');
+      params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+
+    const [[{ total }]] = await pool.query(
+      `SELECT COUNT(*) as total FROM comprehensive_reports cr
+       JOIN users u ON u.id = cr.user_id
+       JOIN assessment_sessions s ON s.id = cr.session_id
+       ${whereClause}`,
+      params
+    );
+
+    const [rows] = await pool.query(
+      `SELECT cr.id, cr.session_id AS sessionId, cr.comprehensive_score AS comprehensiveScore,
+              cr.review_status AS reviewStatus, cr.review_comment AS reviewComment,
+              cr.reviewed_at AS reviewedAt, cr.created_at AS createdAt,
+              u.nickname, u.phone,
+              s.ordered_questionnaires AS orderedQuestionnaires
+       FROM comprehensive_reports cr
+       JOIN users u ON u.id = cr.user_id
+       JOIN assessment_sessions s ON s.id = cr.session_id
+       ${whereClause}
+       ORDER BY cr.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, pageSize, offset]
+    );
+
+    const reports = rows.map(r => ({
+      ...r,
+      orderedQuestionnaires: typeof r.orderedQuestionnaires === 'string'
+        ? JSON.parse(r.orderedQuestionnaires) : r.orderedQuestionnaires,
+    }));
+
+    res.json({ reports, total, page, pageSize });
+  } catch (err) {
+    console.error('Admin reports list error:', err);
+    res.status(500).json({ error: '获取报告列表失败' });
+  }
+});
+
+// GET /api/admin/reports/:id - 管理员：获取综合报告详情
+router.get('/reports/:id', adminAuthMiddleware, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT cr.id, cr.session_id AS sessionId, cr.user_id AS userId,
+              cr.questionnaires_completed AS questionnairesCompleted,
+              cr.score_summary AS scoreSummary,
+              cr.report_content AS reportContent,
+              cr.comprehensive_score AS comprehensiveScore,
+              cr.review_status AS reviewStatus,
+              cr.review_comment AS reviewComment,
+              cr.reviewed_at AS reviewedAt,
+              cr.created_at AS createdAt,
+              u.nickname, u.phone,
+              s.ordered_questionnaires AS orderedQuestionnaires,
+              s.selected_questionnaires AS selectedQuestionnaires
+       FROM comprehensive_reports cr
+       JOIN users u ON u.id = cr.user_id
+       JOIN assessment_sessions s ON s.id = cr.session_id
+       WHERE cr.id = ?`,
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '报告不存在' });
+    }
+
+    const report = rows[0];
+    // Parse JSON fields
+    ['questionnairesCompleted', 'scoreSummary', 'orderedQuestionnaires', 'selectedQuestionnaires'].forEach(field => {
+      if (report[field] && typeof report[field] === 'string') {
+        report[field] = JSON.parse(report[field]);
+      }
+    });
+
+    // 获取该session下所有测评记录
+    const [records] = await pool.query(
+      `SELECT id, questionnaire_id AS questionnaireId, questionnaire_name AS questionnaireName,
+              score_result AS scoreResult, created_at AS createdAt
+       FROM assessment_records
+       WHERE session_id = ? AND user_id = ?
+       ORDER BY id ASC`,
+      [report.sessionId, report.userId]
+    );
+
+    report.assessmentRecords = records.map(r => ({
+      ...r,
+      scoreResult: typeof r.scoreResult === 'string' ? JSON.parse(r.scoreResult) : r.scoreResult,
+    }));
+
+    res.json({ report });
+  } catch (err) {
+    console.error('Admin report detail error:', err);
+    res.status(500).json({ error: '获取报告详情失败' });
+  }
+});
+
+// PUT /api/admin/reports/:id - 管理员：编辑报告内容
+router.put('/reports/:id', adminAuthMiddleware, async (req, res) => {
+  const { reportContent, comprehensiveScore } = req.body;
+
+  if (reportContent === undefined && comprehensiveScore === undefined) {
+    return res.status(400).json({ error: '缺少要更新的内容' });
+  }
+
+  try {
+    const updates = [];
+    const params = [];
+
+    if (reportContent !== undefined) {
+      updates.push('report_content = ?');
+      params.push(reportContent);
+    }
+    if (comprehensiveScore !== undefined) {
+      updates.push('comprehensive_score = ?');
+      params.push(comprehensiveScore);
+    }
+
+    params.push(req.params.id);
+
+    const [result] = await pool.query(
+      `UPDATE comprehensive_reports SET ${updates.join(', ')} WHERE id = ?`,
+      params
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: '报告不存在' });
+    }
+
+    res.json({ message: '报告已更新' });
+  } catch (err) {
+    console.error('Update report error:', err);
+    res.status(500).json({ error: '更新报告失败' });
+  }
+});
+
+// POST /api/admin/reports/:id/approve - 管理员：审核通过
+router.post('/reports/:id/approve', adminAuthMiddleware, async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 更新报告审核状态
+    const [result] = await conn.query(
+      `UPDATE comprehensive_reports
+       SET review_status = 'approved', reviewed_at = NOW(), reviewed_by = ?
+       WHERE id = ?`,
+      [req.admin.id, req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      await conn.rollback();
+      return res.status(404).json({ error: '报告不存在' });
+    }
+
+    // 同时更新session状态
+    const [reportRows] = await conn.query(
+      'SELECT session_id FROM comprehensive_reports WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (reportRows.length > 0) {
+      await conn.query(
+        "UPDATE assessment_sessions SET status = 'approved' WHERE id = ?",
+        [reportRows[0].session_id]
+      );
+    }
+
+    await conn.commit();
+    res.json({ message: '审核已通过' });
+  } catch (err) {
+    await conn.rollback();
+    console.error('Approve report error:', err);
+    res.status(500).json({ error: '审核操作失败' });
+  } finally {
+    conn.release();
+  }
+});
+
+// POST /api/admin/reports/:id/reject - 管理员：退回
+router.post('/reports/:id/reject', adminAuthMiddleware, async (req, res) => {
+  const { comment } = req.body;
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [result] = await conn.query(
+      `UPDATE comprehensive_reports
+       SET review_status = 'rejected', review_comment = ?, reviewed_at = NOW(), reviewed_by = ?
+       WHERE id = ?`,
+      [comment || null, req.admin.id, req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      await conn.rollback();
+      return res.status(404).json({ error: '报告不存在' });
+    }
+
+    // 同时更新session状态
+    const [reportRows] = await conn.query(
+      'SELECT session_id FROM comprehensive_reports WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (reportRows.length > 0) {
+      await conn.query(
+        "UPDATE assessment_sessions SET status = 'rejected' WHERE id = ?",
+        [reportRows[0].session_id]
+      );
+    }
+
+    await conn.commit();
+    res.json({ message: '报告已退回' });
+  } catch (err) {
+    await conn.rollback();
+    console.error('Reject report error:', err);
+    res.status(500).json({ error: '退回操作失败' });
+  } finally {
+    conn.release();
+  }
+});
+
+// ==================== 旧版单条审核（保留兼容） ====================
+
+// PUT /api/admin/assessments/:id/review - 审核（通过/拒绝）
+router.put('/assessments/:id/review', adminAuthMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { status, comment } = req.body;
+
+  if (!status || !['approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ error: '无效的审核状态，必须为 approved 或 rejected' });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE assessment_records
+       SET review_status = ?, review_comment = ?, reviewed_at = NOW()
+       WHERE id = ?`,
+      [status, comment || null, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: '记录不存在' });
+    }
+
+    res.json({ message: '审核操作成功', reviewStatus: status });
+  } catch (err) {
+    console.error('Review error:', err);
+    res.status(500).json({ error: '审核操作失败' });
+  }
+});
+
+// PUT /api/admin/assessments/:id/report - 编辑 AI 报告
+router.put('/assessments/:id/report', adminAuthMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { aiReport } = req.body;
+
+  if (aiReport === undefined || aiReport === null) {
+    return res.status(400).json({ error: '缺少报告内容' });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE assessment_records SET ai_report = ? WHERE id = ?`,
+      [aiReport, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: '记录不存在' });
+    }
+
+    res.json({ message: '报告已更新' });
+  } catch (err) {
+    console.error('Update report error:', err);
+    res.status(500).json({ error: '更新报告失败' });
+  }
+});
+
+// GET /api/admin/assessments/:id - 获取单条测评详情
+router.get('/assessments/:id', adminAuthMiddleware, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT ar.id, ar.questionnaire_id AS questionnaireId,
+              ar.questionnaire_name AS questionnaireName,
+              ar.answers, ar.score_result AS scoreResult,
+              ar.ai_report AS aiReport, ar.review_status AS reviewStatus,
+              ar.review_comment AS reviewComment, ar.reviewed_at AS reviewedAt,
+              ar.created_at AS createdAt,
+              u.nickname, u.phone
+       FROM assessment_records ar
+       JOIN users u ON u.id = ar.user_id
+       WHERE ar.id = ?`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '记录不存在' });
+    }
+
+    const record = rows[0];
+    record.scoreResult = typeof record.scoreResult === 'string'
+      ? JSON.parse(record.scoreResult)
+      : record.scoreResult;
+    record.answers = typeof record.answers === 'string'
+      ? JSON.parse(record.answers)
+      : record.answers;
+
+    res.json(record);
+  } catch (err) {
+    console.error('Admin assessment detail error:', err);
+    res.status(500).json({ error: '获取测评详情失败' });
+  }
+});
+
+module.exports = router;

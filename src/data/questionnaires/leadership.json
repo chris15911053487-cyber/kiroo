@@ -1,0 +1,163 @@
+{
+  "id": "leadership",
+  "name": "领导风格测评",
+  "category": "leadership",
+  "description": "基于情境领导理论（Hersey & Blanchard）和管理方格模型（Blake & Mouton），通过10个管理情境评估您在指令型、教练型、支持型和授权型四种领导风格上的倾向。",
+  "enabled": true,
+  "createdAt": "2024-04-01T00:00:00Z",
+  "questions": [
+    {
+      "id": "l1",
+      "sequence": 1,
+      "text": "你的团队中有一位新员工刚接手重要任务，他缺乏经验但很有热情。你会：",
+      "options": [
+        { "id": "l1-a", "text": "详细说明任务步骤和标准，密切监督执行过程", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l1-b", "text": "解释任务目标和方法，边示范边指导他完成", "scores": { "directive": 1, "coaching": 5, "supporting": 1, "delegating": 1 } },
+        { "id": "l1-c", "text": "鼓励他大胆尝试，告诉他有困难随时来找你", "scores": { "directive": 1, "coaching": 1, "supporting": 5, "delegating": 1 } },
+        { "id": "l1-d", "text": "把任务交给他，让他自己摸索解决方案", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l1-e", "text": "评估他的具体情况后再决定采用哪种方式", "scores": { "directive": 3, "coaching": 3, "supporting": 3, "delegating": 3 } }
+      ]
+    },
+    {
+      "id": "l2",
+      "sequence": 2,
+      "text": "团队需要制定下季度工作目标时，你通常会：",
+      "options": [
+        { "id": "l2-a", "text": "自己设定明确的目标和关键指标，向团队传达", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l2-b", "text": "与团队讨论后共同确定目标，并提供实现路径", "scores": { "directive": 1, "coaching": 5, "supporting": 2, "delegating": 1 } },
+        { "id": "l2-c", "text": "征询成员意见，支持他们制定各自的目标", "scores": { "directive": 1, "coaching": 2, "supporting": 5, "delegating": 1 } },
+        { "id": "l2-d", "text": "给成员充分自主权，让他们设定自己的目标", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l2-e", "text": "根据不同成员的能力水平采用不同方式", "scores": { "directive": 2, "coaching": 3, "supporting": 3, "delegating": 2 } }
+      ]
+    },
+    {
+      "id": "l3",
+      "sequence": 3,
+      "text": "当一位经验丰富的下属近期工作表现明显下滑时，你会：",
+      "options": [
+        { "id": "l3-a", "text": "明确指出问题，要求立即恢复之前的工作标准", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l3-b", "text": "与他深入交流，分析原因并共同制定改进方案", "scores": { "directive": 1, "coaching": 5, "supporting": 1, "delegating": 1 } },
+        { "id": "l3-c", "text": "主动了解他是否遇到困难，给予关怀和支持", "scores": { "directive": 1, "coaching": 1, "supporting": 5, "delegating": 1 } },
+        { "id": "l3-d", "text": "相信他能自我调整，给予时间和空间", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l3-e", "text": "先了解原因再决定是指导、支持还是给空间", "scores": { "directive": 2, "coaching": 3, "supporting": 3, "delegating": 2 } }
+      ]
+    },
+    {
+      "id": "l4",
+      "sequence": 4,
+      "text": "面对一个时间紧迫的紧急项目，你的第一反应是：",
+      "options": [
+        { "id": "l4-a", "text": "立即接管指挥，详细分配任务和时间节点", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l4-b", "text": "快速召集团队，说明情况后引导大家分工协作", "scores": { "directive": 2, "coaching": 5, "supporting": 1, "delegating": 1 } },
+        { "id": "l4-c", "text": "激励团队士气，确保每个人都有所需的资源", "scores": { "directive": 1, "coaching": 1, "supporting": 5, "delegating": 2 } },
+        { "id": "l4-d", "text": "信任团队的判断力，让他们自行组织应对", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l4-e", "text": "评估紧急程度和团队能力后灵活决定", "scores": { "directive": 3, "coaching": 3, "supporting": 2, "delegating": 2 } }
+      ]
+    },
+    {
+      "id": "l5",
+      "sequence": 5,
+      "text": "在团队会议中，你更倾向于：",
+      "options": [
+        { "id": "l5-a", "text": "主导议程，高效传达决策和工作安排", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l5-b", "text": "引导讨论方向，培养成员的分析和决策能力", "scores": { "directive": 1, "coaching": 5, "supporting": 2, "delegating": 1 } },
+        { "id": "l5-c", "text": "营造轻松氛围，鼓励每个人积极表达想法", "scores": { "directive": 1, "coaching": 2, "supporting": 5, "delegating": 1 } },
+        { "id": "l5-d", "text": "让成员轮流主持，自己主要旁听和观察", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l5-e", "text": "根据会议议题和参会人员调整自己的角色", "scores": { "directive": 2, "coaching": 3, "supporting": 3, "delegating": 2 } }
+      ]
+    },
+    {
+      "id": "l6",
+      "sequence": 6,
+      "text": "当团队成员之间发生分歧和冲突时，你会：",
+      "options": [
+        { "id": "l6-a", "text": "直接做出裁决，明确告诉大家应该怎么做", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l6-b", "text": "引导双方陈述观点，帮助他们找到共识", "scores": { "directive": 1, "coaching": 5, "supporting": 2, "delegating": 1 } },
+        { "id": "l6-c", "text": "分别倾听双方感受，维护团队情感关系", "scores": { "directive": 1, "coaching": 1, "supporting": 5, "delegating": 1 } },
+        { "id": "l6-d", "text": "让他们自己协商解决，除非影响到整体工作", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l6-e", "text": "判断冲突性质和双方情绪后选择介入方式", "scores": { "directive": 2, "coaching": 3, "supporting": 3, "delegating": 2 } }
+      ]
+    },
+    {
+      "id": "l7",
+      "sequence": 7,
+      "text": "对于一位能力很强但工作积极性不高的成员，你会：",
+      "options": [
+        { "id": "l7-a", "text": "加强任务布置和考核监督，给予明确压力", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l7-b", "text": "与其深入沟通职业发展，帮助找到动力源", "scores": { "directive": 1, "coaching": 5, "supporting": 2, "delegating": 1 } },
+        { "id": "l7-c", "text": "关心他的状态和需求，给予认可和鼓励", "scores": { "directive": 1, "coaching": 2, "supporting": 5, "delegating": 1 } },
+        { "id": "l7-d", "text": "给予更大的自主空间和挑战性任务", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l7-e", "text": "综合考虑其能力和心态后制定个性化策略", "scores": { "directive": 2, "coaching": 2, "supporting": 3, "delegating": 3 } }
+      ]
+    },
+    {
+      "id": "l8",
+      "sequence": 8,
+      "text": "当你需要向团队传达一项重大变革时，你倾向于：",
+      "options": [
+        { "id": "l8-a", "text": "直接宣布决定，清晰说明要求和执行时间表", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l8-b", "text": "解释变革原因和愿景，引导团队理解并参与", "scores": { "directive": 1, "coaching": 5, "supporting": 1, "delegating": 1 } },
+        { "id": "l8-c", "text": "倾听大家的顾虑和感受，提供情感支持", "scores": { "directive": 1, "coaching": 1, "supporting": 5, "delegating": 1 } },
+        { "id": "l8-d", "text": "给出大方向，让团队自行决定如何落实", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l8-e", "text": "根据变革紧迫度和团队接受度调整沟通方式", "scores": { "directive": 3, "coaching": 3, "supporting": 2, "delegating": 2 } }
+      ]
+    },
+    {
+      "id": "l9",
+      "sequence": 9,
+      "text": "在评估团队成员的工作表现时，你习惯：",
+      "options": [
+        { "id": "l9-a", "text": "严格按照预设标准打分，客观指出差距", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l9-b", "text": "结合数据和观察，给予详细的发展性反馈", "scores": { "directive": 1, "coaching": 5, "supporting": 2, "delegating": 1 } },
+        { "id": "l9-c", "text": "先肯定优点和进步，再温和地提出改进方向", "scores": { "directive": 1, "coaching": 1, "supporting": 5, "delegating": 1 } },
+        { "id": "l9-d", "text": "让成员先自评，再补充你的观察和建议", "scores": { "directive": 1, "coaching": 1, "supporting": 2, "delegating": 5 } },
+        { "id": "l9-e", "text": "根据对象的性格和发展阶段调整反馈方式", "scores": { "directive": 2, "coaching": 3, "supporting": 3, "delegating": 2 } }
+      ]
+    },
+    {
+      "id": "l10",
+      "sequence": 10,
+      "text": "关于「好的领导」，你最认同的观点是：",
+      "options": [
+        { "id": "l10-a", "text": "能带领团队高效完成目标，纪律严明", "scores": { "directive": 5, "coaching": 1, "supporting": 1, "delegating": 1 } },
+        { "id": "l10-b", "text": "既能指明方向又能帮助成员成长", "scores": { "directive": 1, "coaching": 5, "supporting": 1, "delegating": 1 } },
+        { "id": "l10-c", "text": "关心每个人的感受和需求，凝聚团队力量", "scores": { "directive": 1, "coaching": 1, "supporting": 5, "delegating": 1 } },
+        { "id": "l10-d", "text": "知道何时放手，让团队自主运转", "scores": { "directive": 1, "coaching": 1, "supporting": 1, "delegating": 5 } },
+        { "id": "l10-e", "text": "能根据不同情况灵活切换管理方式", "scores": { "directive": 3, "coaching": 3, "supporting": 3, "delegating": 3 } }
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "additive",
+    "dimensions": [
+      {
+        "key": "directive",
+        "name": "指令型",
+        "min": 10,
+        "max": 50,
+        "description": "高任务、低关系。明确告知下属做什么、怎么做、何时完成。适用于下属能力低但意愿高的情境。"
+      },
+      {
+        "key": "coaching",
+        "name": "教练型",
+        "min": 10,
+        "max": 50,
+        "description": "高任务、高关系。既给予方向指导，又解释原因、倾听意见、鼓励参与。适用于下属有一定能力但信心不足的情境。"
+      },
+      {
+        "key": "supporting",
+        "name": "支持型",
+        "min": 10,
+        "max": 50,
+        "description": "低任务、高关系。减少指令，更多倾听、鼓励、提供资源支持。适用于下属能力较强但动力或信心波动的情境。"
+      },
+      {
+        "key": "delegating",
+        "name": "授权型",
+        "min": 10,
+        "max": 50,
+        "description": "低任务、低关系。充分放权，让下属自主决策和执行。适用于下属能力强且意愿高的情境。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "id": "mbti",
+  "name": "十六人格测试（MBTI类）",
+  "category": "mbti",
+  "description": "基于MBTI理论框架，通过四个维度评估您的人格类型，揭示思维与行为偏好。",
+  "enabled": true,
+  "createdAt": "2024-03-01T00:00:00Z",
+  "questions": [
+    {
+      "id": "m1",
+      "sequence": 1,
+      "text": "在社交聚会后，你通常感觉：",
+      "options": [
+        { "id": "m1-a", "text": "精力充沛，意犹未尽", "category": "E" },
+        { "id": "m1-b", "text": "疲惫，需要独处来恢复精力", "category": "I" }
+      ]
+    },
+    {
+      "id": "m2",
+      "sequence": 2,
+      "text": "解决问题时，你更倾向于：",
+      "options": [
+        { "id": "m2-a", "text": "依靠具体事实和已有经验", "category": "S" },
+        { "id": "m2-b", "text": "探索创新思路和未来可能性", "category": "N" }
+      ]
+    },
+    {
+      "id": "m3",
+      "sequence": 3,
+      "text": "做决定时，你更看重：",
+      "options": [
+        { "id": "m3-a", "text": "逻辑分析和客观原则", "category": "T" },
+        { "id": "m3-b", "text": "他人感受和团队和谐", "category": "F" }
+      ]
+    },
+    {
+      "id": "m4",
+      "sequence": 4,
+      "text": "你的生活方式更偏向于：",
+      "options": [
+        { "id": "m4-a", "text": "有计划、有结构，喜欢提前安排", "category": "J" },
+        { "id": "m4-b", "text": "灵活开放，随机应变", "category": "P" }
+      ]
+    },
+    {
+      "id": "m5",
+      "sequence": 5,
+      "text": "认识新朋友时，你更倾向于：",
+      "options": [
+        { "id": "m5-a", "text": "主动开口，快速建立联系", "category": "E" },
+        { "id": "m5-b", "text": "等待对方先开口，观察了解", "category": "I" }
+      ]
+    },
+    {
+      "id": "m6",
+      "sequence": 6,
+      "text": "学习新知识时，你更喜欢：",
+      "options": [
+        { "id": "m6-a", "text": "一步步地学习实际操作技能", "category": "S" },
+        { "id": "m6-b", "text": "理解宏观概念和底层规律", "category": "N" }
+      ]
+    },
+    {
+      "id": "m7",
+      "sequence": 7,
+      "text": "与人发生冲突时，你通常：",
+      "options": [
+        { "id": "m7-a", "text": "直接指出问题，追求合理解决", "category": "T" },
+        { "id": "m7-b", "text": "优先维护关系，寻求妥协方案", "category": "F" }
+      ]
+    },
+    {
+      "id": "m8",
+      "sequence": 8,
+      "text": "面对截止日期，你通常：",
+      "options": [
+        { "id": "m8-a", "text": "提前完成，避免最后时刻的压力", "category": "J" },
+        { "id": "m8-b", "text": "在最后关头才爆发出高效率", "category": "P" }
+      ]
+    },
+    {
+      "id": "m9",
+      "sequence": 9,
+      "text": "当你需要充电恢复时，你偏好：",
+      "options": [
+        { "id": "m9-a", "text": "与朋友聊天或参加活动", "category": "E" },
+        { "id": "m9-b", "text": "独处、阅读或冥想", "category": "I" }
+      ]
+    },
+    {
+      "id": "m10",
+      "sequence": 10,
+      "text": "描述事情时，你更多使用：",
+      "options": [
+        { "id": "m10-a", "text": "具体细节和精确数据", "category": "S" },
+        { "id": "m10-b", "text": "隐喻、类比和宏观印象", "category": "N" }
+      ]
+    },
+    {
+      "id": "m11",
+      "sequence": 11,
+      "text": "评价他人时，你优先关注：",
+      "options": [
+        { "id": "m11-a", "text": "其能力和工作表现", "category": "T" },
+        { "id": "m11-b", "text": "其态度、情感和为人", "category": "F" }
+      ]
+    },
+    {
+      "id": "m12",
+      "sequence": 12,
+      "text": "旅行时，你倾向于：",
+      "options": [
+        { "id": "m12-a", "text": "提前做好详细行程计划", "category": "J" },
+        { "id": "m12-b", "text": "随心出发，边走边看", "category": "P" }
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "categorical",
+    "categories": [
+      { "key": "E", "name": "外向（Extraversion）",  "description": "从外界环境和人际互动中获取能量" },
+      { "key": "I", "name": "内向（Introversion）",  "description": "从独处和内心世界中获取能量" },
+      { "key": "S", "name": "感觉（Sensing）",       "description": "关注当下具体事实和实际信息" },
+      { "key": "N", "name": "直觉（Intuition）",     "description": "关注未来可能性和抽象概念" },
+      { "key": "T", "name": "思考（Thinking）",      "description": "基于逻辑和客观原则做决策" },
+      { "key": "F", "name": "情感（Feeling）",       "description": "基于价值观和人际和谐做决策" },
+      { "key": "J", "name": "判断（Judging）",       "description": "喜欢有计划、有组织的生活方式" },
+      { "key": "P", "name": "知觉（Perceiving）",    "description": "喜欢灵活开放、随机应变的生活方式" }
+    ]
+  }
+}

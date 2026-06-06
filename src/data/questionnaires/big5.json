@@ -1,0 +1,140 @@
+{
+  "id": "big5",
+  "name": "大五人格测试",
+  "category": "big5",
+  "description": "基于大五人格模型，测量开放性、责任心、外向性、宜人性和神经质五个核心维度。",
+  "enabled": true,
+  "createdAt": "2024-01-01T00:00:00Z",
+  "questions": [
+    {
+      "id": "p1",
+      "sequence": 1,
+      "text": "我喜欢尝试新鲜事物，对未知的领域充满好奇心。",
+      "options": [
+        { "id": "p1-a", "text": "非常同意", "scores": { "openness": 5, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p1-b", "text": "比较同意", "scores": { "openness": 4, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p1-c", "text": "不确定",   "scores": { "openness": 3, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p1-d", "text": "比较不同意","scores": { "openness": 2, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p1-e", "text": "非常不同意","scores": { "openness": 1, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p2",
+      "sequence": 2,
+      "text": "我总是提前规划好任务，并按时完成。",
+      "options": [
+        { "id": "p2-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 5, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p2-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 4, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p2-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 3, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p2-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 2, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p2-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 1, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p3",
+      "sequence": 3,
+      "text": "在社交场合中，我总是充满活力，喜欢与人交流。",
+      "options": [
+        { "id": "p3-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 5, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p3-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 4, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p3-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 3, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p3-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 2, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p3-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 1, "agreeableness": 0, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p4",
+      "sequence": 4,
+      "text": "我总是关心他人的感受，愿意给予帮助。",
+      "options": [
+        { "id": "p4-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 5, "neuroticism": 0 } },
+        { "id": "p4-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 4, "neuroticism": 0 } },
+        { "id": "p4-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 3, "neuroticism": 0 } },
+        { "id": "p4-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 2, "neuroticism": 0 } },
+        { "id": "p4-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 1, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p5",
+      "sequence": 5,
+      "text": "我经常感到焦虑，容易因小事而烦恼。",
+      "options": [
+        { "id": "p5-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 5 } },
+        { "id": "p5-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 4 } },
+        { "id": "p5-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 3 } },
+        { "id": "p5-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 2 } },
+        { "id": "p5-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 1 } }
+      ]
+    },
+    {
+      "id": "p6",
+      "sequence": 6,
+      "text": "我对艺术、音乐或文学有浓厚的兴趣和欣赏能力。",
+      "options": [
+        { "id": "p6-a", "text": "非常同意", "scores": { "openness": 5, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p6-b", "text": "比较同意", "scores": { "openness": 4, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p6-c", "text": "不确定",   "scores": { "openness": 3, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p6-d", "text": "比较不同意","scores": { "openness": 2, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p6-e", "text": "非常不同意","scores": { "openness": 1, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p7",
+      "sequence": 7,
+      "text": "在开始一项任务之前，我会仔细思考并做好充分准备。",
+      "options": [
+        { "id": "p7-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 5, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p7-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 4, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p7-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 3, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p7-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 2, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p7-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 1, "extraversion": 0, "agreeableness": 0, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p8",
+      "sequence": 8,
+      "text": "我喜欢成为聚会的中心，主动带动气氛。",
+      "options": [
+        { "id": "p8-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 5, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p8-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 4, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p8-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 3, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p8-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 2, "agreeableness": 0, "neuroticism": 0 } },
+        { "id": "p8-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 1, "agreeableness": 0, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p9",
+      "sequence": 9,
+      "text": "即使和我有分歧，我也能理解并尊重对方的观点。",
+      "options": [
+        { "id": "p9-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 5, "neuroticism": 0 } },
+        { "id": "p9-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 4, "neuroticism": 0 } },
+        { "id": "p9-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 3, "neuroticism": 0 } },
+        { "id": "p9-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 2, "neuroticism": 0 } },
+        { "id": "p9-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 1, "neuroticism": 0 } }
+      ]
+    },
+    {
+      "id": "p10",
+      "sequence": 10,
+      "text": "我的情绪容易受到环境和他人的影响，有时难以控制。",
+      "options": [
+        { "id": "p10-a", "text": "非常同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 5 } },
+        { "id": "p10-b", "text": "比较同意", "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 4 } },
+        { "id": "p10-c", "text": "不确定",   "scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 3 } },
+        { "id": "p10-d", "text": "比较不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 2 } },
+        { "id": "p10-e", "text": "非常不同意","scores": { "openness": 0, "conscientiousness": 0, "extraversion": 0, "agreeableness": 0, "neuroticism": 1 } }
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "additive",
+    "dimensions": [
+      { "key": "openness",          "name": "开放性",  "min": 2, "max": 10 },
+      { "key": "conscientiousness", "name": "责任心",  "min": 2, "max": 10 },
+      { "key": "extraversion",      "name": "外向性",  "min": 2, "max": 10 },
+      { "key": "agreeableness",     "name": "宜人性",  "min": 2, "max": 10 },
+      { "key": "neuroticism",       "name": "神经质",  "min": 2, "max": 10 }
+    ]
+  }
+}

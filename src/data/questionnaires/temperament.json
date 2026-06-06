@@ -1,0 +1,129 @@
+{
+  "id": "temperament",
+  "name": "气质类型测试",
+  "category": "temperament",
+  "description": "基于希波克拉底气质理论，测定多血质、胆汁质、抑郁质、粘液质四种气质类型。",
+  "enabled": true,
+  "createdAt": "2024-02-01T00:00:00Z",
+  "questions": [
+    {
+      "id": "t1",
+      "sequence": 1,
+      "text": "面对突发情况时，你通常会：",
+      "options": [
+        { "id": "t1-a", "text": "迅速采取行动，毫不犹豫", "category": "choleric" },
+        { "id": "t1-b", "text": "冷静分析，寻找最佳方案", "category": "phlegmatic" },
+        { "id": "t1-c", "text": "灵活应对，随机应变", "category": "sanguine" },
+        { "id": "t1-d", "text": "先想清楚后果，再谨慎行动", "category": "melancholic" }
+      ]
+    },
+    {
+      "id": "t2",
+      "sequence": 2,
+      "text": "在团队合作中，你最常扮演的角色是：",
+      "options": [
+        { "id": "t2-a", "text": "活跃气氛、协调关系的润滑剂", "category": "sanguine" },
+        { "id": "t2-b", "text": "果断决策、推动进展的领导者", "category": "choleric" },
+        { "id": "t2-c", "text": "深思熟虑、确保质量的把关者", "category": "melancholic" },
+        { "id": "t2-d", "text": "踏实执行、稳步推进的执行者", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t3",
+      "sequence": 3,
+      "text": "当你遇到挫折时，通常会：",
+      "options": [
+        { "id": "t3-a", "text": "很快调整状态，继续向前", "category": "sanguine" },
+        { "id": "t3-b", "text": "强烈不满，立刻寻找解决方法", "category": "choleric" },
+        { "id": "t3-c", "text": "内心沉重，反复思考原因", "category": "melancholic" },
+        { "id": "t3-d", "text": "平静接受，耐心等待时机", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t4",
+      "sequence": 4,
+      "text": "你对待人际关系的态度是：",
+      "options": [
+        { "id": "t4-a", "text": "喜欢广交朋友，社交圈很广", "category": "sanguine" },
+        { "id": "t4-b", "text": "重视效率，希望关系直接坦诚", "category": "choleric" },
+        { "id": "t4-c", "text": "喜欢深度交流，朋友不多但很深", "category": "melancholic" },
+        { "id": "t4-d", "text": "维持稳定关系，不轻易改变", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t5",
+      "sequence": 5,
+      "text": "你做决策时的风格是：",
+      "options": [
+        { "id": "t5-a", "text": "凭直觉快速决定", "category": "sanguine" },
+        { "id": "t5-b", "text": "快速分析利弊，果断选择", "category": "choleric" },
+        { "id": "t5-c", "text": "反复权衡，追求完美方案", "category": "melancholic" },
+        { "id": "t5-d", "text": "慎重考虑，倾向保守稳妥", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t6",
+      "sequence": 6,
+      "text": "在新环境中，你通常：",
+      "options": [
+        { "id": "t6-a", "text": "很快适应并融入其中", "category": "sanguine" },
+        { "id": "t6-b", "text": "主动出击，迅速建立影响力", "category": "choleric" },
+        { "id": "t6-c", "text": "需要时间观察和适应", "category": "melancholic" },
+        { "id": "t6-d", "text": "不慌不忙，按自己节奏融入", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t7",
+      "sequence": 7,
+      "text": "别人描述你时，最可能用到的词是：",
+      "options": [
+        { "id": "t7-a", "text": "开朗、热情、活泼", "category": "sanguine" },
+        { "id": "t7-b", "text": "强势、自信、有魄力", "category": "choleric" },
+        { "id": "t7-c", "text": "敏感、认真、有深度", "category": "melancholic" },
+        { "id": "t7-d", "text": "沉稳、可靠、脚踏实地", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t8",
+      "sequence": 8,
+      "text": "闲暇时间你最喜欢：",
+      "options": [
+        { "id": "t8-a", "text": "参加各种社交活动或聚会", "category": "sanguine" },
+        { "id": "t8-b", "text": "挑战竞技类活动或学习新技能", "category": "choleric" },
+        { "id": "t8-c", "text": "独自沉浸在艺术或思考中", "category": "melancholic" },
+        { "id": "t8-d", "text": "放松休息或做些有规律的事", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t9",
+      "sequence": 9,
+      "text": "你对批评的反应通常是：",
+      "options": [
+        { "id": "t9-a", "text": "一笑而过，很快忘记", "category": "sanguine" },
+        { "id": "t9-b", "text": "立即反驳，坚持自己的立场", "category": "choleric" },
+        { "id": "t9-c", "text": "认真对待，内心久久难以释怀", "category": "melancholic" },
+        { "id": "t9-d", "text": "平静接受，私下慢慢消化", "category": "phlegmatic" }
+      ]
+    },
+    {
+      "id": "t10",
+      "sequence": 10,
+      "text": "工作或学习时，你的状态是：",
+      "options": [
+        { "id": "t10-a", "text": "思维跳跃，充满创意但难以持久", "category": "sanguine" },
+        { "id": "t10-b", "text": "目标明确，专注于结果", "category": "choleric" },
+        { "id": "t10-c", "text": "追求完美，注重细节和质量", "category": "melancholic" },
+        { "id": "t10-d", "text": "有条不紊，按计划稳步推进", "category": "phlegmatic" }
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "categorical",
+    "categories": [
+      { "key": "sanguine",    "name": "多血质", "description": "活泼开朗、适应力强、情绪丰富但易变" },
+      { "key": "choleric",    "name": "胆汁质", "description": "精力充沛、果断坚定、容易冲动" },
+      { "key": "melancholic", "name": "抑郁质", "description": "敏感细腻、思维深刻、情绪持久" },
+      { "key": "phlegmatic",  "name": "粘液质", "description": "沉稳踏实、耐心持久、不善于变通" }
+    ]
+  }
+}
