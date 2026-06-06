@@ -1,9 +1,12 @@
 # ============================================
-# 潜能星图 - 多阶段 Docker 构建
+# 潜能星图 - 多阶段 Docker 构建（国内镜像加速）
 # ============================================
 
 # ---------- 阶段1: 构建前端 ----------
 FROM node:18-alpine AS frontend-builder
+
+# npm 国内镜像
+RUN npm config set registry https://registry.npmmirror.com
 
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -14,6 +17,9 @@ RUN npm run build
 
 # ---------- 阶段2: 生产镜像 ----------
 FROM node:18-alpine
+
+# 替换为阿里云 Alpine 镜像（加速 apk 下载）
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 # Puppeteer 需要的系统依赖
 RUN apk add --no-cache \
@@ -29,6 +35,9 @@ RUN apk add --no-cache \
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
+# npm 国内镜像
+RUN npm config set registry https://registry.npmmirror.com
+
 WORKDIR /app
 
 # 复制后端依赖
@@ -38,7 +47,8 @@ RUN npm ci --omit=dev
 # 复制后端源代码
 COPY server/ ./
 
-# 安装 puppeteer（使用系统 Chromium）
+# 安装 puppeteer（使用系统 Chromium，跳过下载）
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN npm install puppeteer --omit=dev 2>/dev/null || true
 
 # 复制前端构建产物
