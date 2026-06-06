@@ -23,7 +23,7 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    fonts-noto-cjk
+    font-noto-cjk
 
 # 设置 Chromium 路径供 puppeteer 使用
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
