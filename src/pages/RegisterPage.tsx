@@ -36,7 +36,7 @@ export default function RegisterPage() {
     try {
       const data = await authService.register(phone, password, nickname || undefined)
       login(data.token, data.user)
-      navigate('/', { replace: true })
+      navigate('/select', { replace: true })
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '注册失败')
     } finally {

@@ -7,7 +7,7 @@ export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const redirect = searchParams.get('redirect') || '/'
+  const redirect = searchParams.get('redirect') || '/select'
 
   const [tab, setTab] = useState<'password' | 'code'>('password')
   const [phone, setPhone] = useState('')
