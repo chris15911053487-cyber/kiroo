@@ -239,7 +239,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // 托管前端静态文件
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // SPA 路由兜底 — 所有非 /api 路径返回 index.html
 app.get('*', (req, res) => {
