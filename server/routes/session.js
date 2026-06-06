@@ -317,11 +317,18 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
       reportContent = JSON.stringify(placeholderJson);
     }
 
-    // 存入comprehensive_reports表
+    // 存入comprehensive_reports表（重复提交则更新）
     const [insertResult] = await conn.query(
       `INSERT INTO comprehensive_reports
        (session_id, user_id, questionnaires_completed, score_summary, report_content, comprehensive_score, review_status)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+       VALUES (?, ?, ?, ?, ?, ?, 'pending')
+       ON DUPLICATE KEY UPDATE
+         questionnaires_completed = VALUES(questionnaires_completed),
+         score_summary = VALUES(score_summary),
+         report_content = VALUES(report_content),
+         comprehensive_score = VALUES(comprehensive_score),
+         review_status = 'pending',
+         updated_at = NOW()`,
       [
         session.id,
         req.user.id,
