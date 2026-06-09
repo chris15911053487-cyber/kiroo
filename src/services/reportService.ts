@@ -35,6 +35,8 @@ export interface ReportDetail {
   questionnairesCompleted: string[]
   scoreSummary: Record<string, unknown>
   reportContent: string | null
+  reportHtml: string | null
+  docxPath: string | null
   comprehensiveScore: number
   reviewStatus: 'pending' | 'approved' | 'rejected'
   reviewComment: string | null

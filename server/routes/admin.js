@@ -315,6 +315,8 @@ router.get('/reports/:id', adminAuthMiddleware, async (req, res) => {
               cr.questionnaires_completed AS questionnairesCompleted,
               cr.score_summary AS scoreSummary,
               cr.report_content AS reportContent,
+              cr.report_html AS reportHtml,
+              cr.docx_path AS docxPath,
               cr.comprehensive_score AS comprehensiveScore,
               cr.review_status AS reviewStatus,
               cr.review_comment AS reviewComment,
@@ -447,6 +449,136 @@ router.post('/reports/:id/reject', adminAuthMiddleware, async (req, res) => {
     res.status(500).json({ error: '退回操作失败' });
   } finally {
     conn.release();
+  }
+});
+
+// ==================== 旧版单条审核（保留兼容） ====================
+
+// ==================== 新版报告生成（AI + 固定模版） ====================
+
+const lzuScoring = require('../services/lzuScoringService');
+const { generateReport } = require('../services/lzuReportGenerator');
+
+// POST /api/admin/reports/:id/generate - 触发AI生成标准化报告
+router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
+  try {
+    // 获取报告基本数据
+    const [rows] = await pool.query(
+      `SELECT cr.id, cr.session_id AS sessionId, cr.user_id AS userId,
+              cr.score_summary AS scoreSummary, cr.report_content AS reportContent
+       FROM comprehensive_reports cr
+       WHERE cr.id = ?`,
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '报告不存在' });
+    }
+
+    const report = rows[0];
+    const scoreSummary = typeof report.scoreSummary === 'string'
+      ? JSON.parse(report.scoreSummary) : (report.scoreSummary || {});
+
+    // 获取用户信息
+    const [userRows] = await pool.query(
+      'SELECT nickname FROM users WHERE id = ?', [report.userId]
+    );
+    const userName = userRows.length > 0 ? userRows[0].nickname : '测评用户';
+
+    // 精准计分
+    const scores = lzuScoring.calculateLZUComprehensiveScore(scoreSummary);
+
+    // 调用AI + 组装模版 + 生成DOCX
+    const result = await generateReport({
+      scores,
+      userName,
+      sessionId: report.sessionId,
+    });
+
+    // 更新数据库：存储HTML预览 + DOCX路径
+    await pool.query(
+      `UPDATE comprehensive_reports
+       SET report_html = ?, docx_path = ?, updated_at = datetime('now')
+       WHERE id = ?`,
+      [result.html, result.docxPath, req.params.id]
+    );
+
+    res.json({
+      message: '报告生成成功',
+      reportId: report.id,
+      previewAvailable: true,
+      docxPath: result.docxPath,
+    });
+  } catch (err) {
+    console.error('Generate report error:', err);
+    res.status(500).json({ error: '报告生成失败: ' + err.message });
+  }
+});
+
+// GET /api/admin/reports/:id/preview - 获取HTML预览
+router.get('/reports/:id/preview', adminAuthMiddleware, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, report_html, review_status FROM comprehensive_reports WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '报告不存在' });
+    }
+
+    const report = rows[0];
+
+    if (!report.report_html) {
+      return res.status(400).json({ error: '报告尚未生成，请先生成报告', reportId: Number(req.params.id) });
+    }
+
+    // 返回完整HTML供iframe渲染
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(report.report_html);
+  } catch (err) {
+    console.error('Preview report error:', err);
+    res.status(500).json({ error: '获取预览失败' });
+  }
+});
+
+// GET /api/admin/reports/:id/download - 下载DOCX文件
+router.get('/reports/:id/download', adminAuthMiddleware, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, docx_path, review_status FROM comprehensive_reports WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '报告不存在' });
+    }
+
+    const report = rows[0];
+
+    if (!report.docx_path) {
+      return res.status(400).json({ error: '报告文件尚未生成，请先生成报告' });
+    }
+
+    const fs = require('fs');
+    const path = require('path');
+    const absolutePath = path.resolve(report.docx_path);
+
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).json({ error: '报告文件丢失，请重新生成' });
+    }
+
+    const ext = path.extname(absolutePath).toLowerCase();
+    const filename = `人才测评报告_${req.params.id}${ext}`;
+    const mimeType = ext === '.docx'
+      ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      : 'application/msword';
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+    res.sendFile(absolutePath);
+  } catch (err) {
+    console.error('Download report error:', err);
+    res.status(500).json({ error: '下载失败' });
   }
 });
 

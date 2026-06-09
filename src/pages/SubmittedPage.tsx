@@ -25,14 +25,14 @@ export default function SubmittedPage() {
 
     async function processSubmission() {
       try {
-        // 后端submit接口现在会：汇总得分 → 调用AI生成JSON报告 → 存入数据库
+        // 后端submit接口：精准计分 → AI生成标准化报告 → 存入数据库
         setStatus('submitting')
         const submitResult = await sessionService.submit(sessionId!)
 
-        // AI生成中...
+        // AI正在生成...
         setStatus('generating')
 
-        // 后端已存储reportId
+        // 后端已完成所有处理（含AI生成+模版组装+DOCX）
         if (submitResult.reportId) {
           setReportId(submitResult.reportId)
         }
@@ -66,7 +66,7 @@ export default function SubmittedPage() {
             <h1 className="text-xl font-bold text-[#1a1a2e] mb-3">AI正在生成综合报告</h1>
             <p className="text-gray-400 text-sm">
               DeepSeek正在综合分析你的多维测评数据，
-              <br />这可能需要30-60秒…
+              <br />生成标准化Word格式综合报告…
             </p>
             <div className="mt-6 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
               <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-1.5 rounded-full animate-pulse" style={{ width: '60%' }} />
@@ -83,11 +83,11 @@ export default function SubmittedPage() {
             </p>
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 mb-8">
               <div className="flex items-center justify-center gap-2 text-amber-700">
-                <span className="text-xl">⏳</span>
-                <span className="font-medium text-sm">等待专家审核</span>
+                <span className="text-xl">📋</span>
+                <span className="font-medium text-sm">等待管理员审核</span>
               </div>
               <p className="text-amber-600 text-xs mt-2">
-                审核通过后，你可以在「我的报告」中查看完整报告
+                审核通过后，你可以在「我的报告」中查看和下载Word格式的完整报告
               </p>
             </div>
 

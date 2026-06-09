@@ -42,6 +42,8 @@ interface ReportDetail {
   questionnairesCompleted: string[]
   scoreSummary: Record<string, any>
   reportContent: string
+  reportHtml: string | null
+  docxPath: string | null
   comprehensiveScore: number
   reviewStatus: 'pending' | 'approved' | 'rejected'
   reviewComment: string | null
@@ -87,6 +89,8 @@ export default function AdminDashboard() {
   const [detailReport, setDetailReport] = useState<ReportDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [reviewLoading, setReviewLoading] = useState(false)
+  const [generateLoading, setGenerateLoading] = useState<number | null>(null) // track which report is generating
+  const [previewMode, setPreviewMode] = useState<'json' | 'html'>('html') // prefer HTML preview
 
   // Tab: 'reports' | 'assessments' | 'users'
   const [activeTab, setActiveTab] = useState<'reports' | 'assessments' | 'users'>('reports')
@@ -154,6 +158,44 @@ export default function AdminDashboard() {
 
   function closeDetail() {
     setDetailReport(null)
+  }
+
+  async function handleGenerate(id: number) {
+    if (!confirm('确认生成报告？系统将调用AI分析并组装标准化报告模版。')) return
+    setGenerateLoading(id)
+    try {
+      await apiFetch(`/api/admin/reports/${id}/generate`, { method: 'POST' })
+      alert('报告生成成功！请查看详情预览。')
+      // 重新加载详情
+      await loadDetail(id)
+      loadReports(page)
+    } catch (err: any) {
+      alert('生成失败：' + (err.message || '未知错误'))
+    } finally {
+      setGenerateLoading(null)
+    }
+  }
+
+  function handleDownload(id: number) {
+    const token = localStorage.getItem('admin_token')
+    if (!token) return
+    // 直接打开下载链接
+    const a = document.createElement('a')
+    a.href = `/api/admin/reports/${id}/download`
+    // 使用fetch方式下载（需要带token）
+    fetch(`/api/admin/reports/${id}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(res => {
+      if (!res.ok) throw new Error('下载失败')
+      return res.blob()
+    }).then(blob => {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `人才测评报告_${id}.docx`
+      a.click()
+      URL.revokeObjectURL(url)
+    }).catch(err => alert('下载失败：' + err.message))
   }
 
   async function handleApprove(id: number) {
@@ -427,70 +469,121 @@ export default function AdminDashboard() {
                   <button onClick={closeDetail} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
                 </div>
 
-                {/* Body — 综合报告预览（与用户端完全一致） */}
+                {/* Body — 综合报告预览（优先HTML，降级JSON） */}
                 <div className="overflow-y-auto flex-1 px-6 py-4">
-                    {(() => {
-                      const report = parseReportJSON(detailReport.reportContent)
-                      if (!report) {
+                    {/* 预览模式切换 */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <button
+                        onClick={() => setPreviewMode('html')}
+                        className={`text-xs px-3 py-1 rounded-full ${previewMode === 'html' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'bg-gray-100 text-gray-500'}`}
+                      >
+                        标准化报告
+                      </button>
+                      <button
+                        onClick={() => setPreviewMode('json')}
+                        className={`text-xs px-3 py-1 rounded-full ${previewMode === 'json' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'bg-gray-100 text-gray-500'}`}
+                      >
+                        JSON数据
+                      </button>
+                      {!detailReport.reportHtml && (
+                        <span className="text-[10px] text-amber-500 ml-1">报告尚未生成，请先点击生成</span>
+                      )}
+                    </div>
+
+                    {previewMode === 'html' && detailReport.reportHtml ? (
+                      <iframe
+                        srcDoc={detailReport.reportHtml}
+                        title="报告预览"
+                        className="w-full border border-gray-200 rounded-lg"
+                        style={{ height: '70vh', minHeight: '600px' }}
+                        sandbox="allow-same-origin"
+                      />
+                    ) : previewMode === 'html' && !detailReport.reportHtml ? (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+                        <p className="text-amber-700 text-sm mb-3">⚠️ 报告尚未生成</p>
+                        <p className="text-amber-600 text-xs mb-4">
+                          当前系统已放弃JSON自动生成方案。请点击下方"生成报告"按钮，系统将调用AI分析并组装标准化报告模版。
+                        </p>
+                        <button
+                          onClick={() => handleGenerate(detailReport.id)}
+                          disabled={generateLoading === detailReport.id}
+                          className="px-6 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
+                        >
+                          {generateLoading === detailReport.id ? '生成中…' : '🚀 生成标准化报告'}
+                        </button>
+                      </div>
+                    ) : (
+                      // JSON数据视图
+                      (() => {
+                        const report = parseReportJSON(detailReport.reportContent)
+                        if (!report) {
+                          return (
+                            <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-400">
+                              {detailReport.reportContent
+                                ? <pre className="text-xs overflow-auto max-h-96 whitespace-pre-wrap">{detailReport.reportContent}</pre>
+                                : '暂无报告内容'}
+                            </div>
+                          )
+                        }
                         return (
-                          <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-400">
-                            {detailReport.reportContent
-                              ? '报告格式不支持预览，请查看原始JSON'
-                              : '暂无报告内容'}
+                          <div className="max-w-2xl">
+                            <LZUScoreSection
+                              score={report.comprehensiveScore}
+                              grade={report.grade}
+                              gradeDescription={report.gradeDescription}
+                            />
+                            <LZUReportSummary
+                              evaluation={report.coreEvaluation}
+                              advantages={report.coreAdvantages || []}
+                              summary={report.summary || ''}
+                            />
+                            {report.leadershipAnalysis && (
+                              <LZULeadershipSection data={report.leadershipAnalysis} />
+                            )}
+                            {report.personalityAnalysis && (
+                              <LZUPersonalitySection data={report.personalityAnalysis} />
+                            )}
+                            {report.creativityBarrierAnalysis && (
+                              <LZUCreativityBarrierSection data={report.creativityBarrierAnalysis} />
+                            )}
+                            {report.careerSuggestions && report.careerSuggestions.length > 0 && (
+                              <LZUCareerSection suggestions={report.careerSuggestions} />
+                            )}
+                            {report.improvementPlan && (
+                              <LZUImprovementPlanSection plan={report.improvementPlan} />
+                            )}
                           </div>
                         )
-                      }
-                      return (
-                        <div className="max-w-2xl">
-                          <LZUScoreSection
-                            score={report.comprehensiveScore}
-                            grade={report.grade}
-                            gradeDescription={report.gradeDescription}
-                          />
-                          <LZUReportSummary
-                            evaluation={report.coreEvaluation}
-                            advantages={report.coreAdvantages || []}
-                            summary={report.summary || ''}
-                          />
-                          {report.leadershipAnalysis && (
-                            <LZULeadershipSection data={report.leadershipAnalysis} />
-                          )}
-                          {report.personalityAnalysis && (
-                            <LZUPersonalitySection data={report.personalityAnalysis} />
-                          )}
-                          {report.creativityBarrierAnalysis && (
-                            <LZUCreativityBarrierSection data={report.creativityBarrierAnalysis} />
-                          )}
-                          {report.careerSuggestions && report.careerSuggestions.length > 0 && (
-                            <LZUCareerSection suggestions={report.careerSuggestions} />
-                          )}
-                          {report.improvementPlan && (
-                            <LZUImprovementPlanSection plan={report.improvementPlan} />
-                          )}
-                        </div>
-                      )
-                    })()}
+                      })()
+                    )}
                 </div>
 
-                {/* Footer - 审核操作 */}
-                <div className="px-6 py-3 border-t flex items-center justify-between shrink-0">
+                {/* Footer - 审核操作 + 生成 + 下载 */}
+                <div className="px-6 py-3 border-t flex items-center justify-between shrink-0 flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     {detailReport.reviewStatus === 'pending' && (
                       <>
-                        <span className="text-xs text-gray-400">审核操作：</span>
+                        <span className="text-xs text-gray-400">审核：</span>
                         <button
                           onClick={() => handleApprove(detailReport.id)}
                           disabled={reviewLoading}
-                          className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                          className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700 disabled:opacity-50"
                         >
-                          ✅ 审核通过
+                          ✅ 通过
                         </button>
                         <button
                           onClick={() => handleReject(detailReport.id)}
                           disabled={reviewLoading}
-                          className="px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 disabled:opacity-50"
+                          className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 disabled:opacity-50"
                         >
                           ❌ 退回
+                        </button>
+                        <button
+                          onClick={() => handleGenerate(detailReport.id)}
+                          disabled={generateLoading === detailReport.id}
+                          className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-medium hover:bg-amber-600 disabled:opacity-50"
+                        >
+                          {generateLoading === detailReport.id ? '生成中…' : '🤖 重新生成'}
                         </button>
                       </>
                     )}
@@ -510,15 +603,32 @@ export default function AdminDashboard() {
                         >
                           改为通过
                         </button>
+                        <button
+                          onClick={() => handleGenerate(detailReport.id)}
+                          disabled={generateLoading === detailReport.id}
+                          className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-medium hover:bg-amber-600 disabled:opacity-50"
+                        >
+                          {generateLoading === detailReport.id ? '生成中…' : '🤖 重新生成'}
+                        </button>
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={closeDetail}
-                    className="px-4 py-2 rounded-lg bg-gray-100 text-gray-600 text-sm hover:bg-gray-200"
-                  >
-                    关闭
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {detailReport.reportHtml && (
+                      <button
+                        onClick={() => handleDownload(detailReport.id)}
+                        className="px-3 py-1.5 rounded-lg bg-indigo-500 text-white text-xs font-medium hover:bg-indigo-600"
+                      >
+                        📥 下载DOCX
+                      </button>
+                    )}
+                    <button
+                      onClick={closeDetail}
+                      className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs hover:bg-gray-200"
+                    >
+                      关闭
+                    </button>
+                  </div>
                 </div>
               </>
             )}

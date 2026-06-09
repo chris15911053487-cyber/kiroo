@@ -815,6 +815,56 @@ export default function ReportPage() {
   }
 
   // ============ Approved - Full Report ============
+  // 优先使用标准化HTML报告
+  if (report.reportHtml) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] pb-20">
+        <header className="bg-white border-b border-black/[0.04] sticky top-0 z-40">
+          <div className="flex items-center justify-between px-6 h-14 max-w-4xl mx-auto">
+            <Link to="/history" className="text-gray-400 hover:text-gray-600 text-sm">← 返回</Link>
+            <h1 className="text-sm font-bold text-[#1a1a2e]">综合测评报告</h1>
+            <div className="w-12" />
+          </div>
+        </header>
+        <main className="px-4 sm:px-6 py-6 max-w-4xl mx-auto">
+          <iframe
+            srcDoc={report.reportHtml}
+            title="综合测评报告"
+            className="w-full border-0 bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+            style={{ height: '80vh', minHeight: '800px' }}
+            sandbox="allow-same-origin"
+          />
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <button
+              onClick={() => {
+                const token = localStorage.getItem('token')
+                fetch(`/api/reports/${report.id}/pdf`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                }).then(res => res.blob()).then(blob => {
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `人才测评报告_${report.id}.docx`
+                  a.click()
+                  URL.revokeObjectURL(url)
+                }).catch(() => alert('下载失败'))
+              }}
+              className="px-6 py-3 rounded-xl bg-white border border-black/[0.04] text-[#1a1a2e] font-semibold text-sm hover:border-indigo-200 transition-all text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+            >
+              📥 下载报告
+            </button>
+            <Link
+              to="/history"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-bold text-sm shadow-[0_4px_15px_rgba(99,102,241,0.3)] transition-all text-center"
+            >
+              我的报告列表
+            </Link>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   if (!reportData) {
     // 报告内容解析失败，显示原始文本
     return (

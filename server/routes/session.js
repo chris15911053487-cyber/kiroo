@@ -192,7 +192,7 @@ router.post('/:id/answers', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/sessions/:id/submit - 完成所有问卷，触发AI报告生成并保存
+// POST /api/sessions/:id/submit - 完成所有问卷 → 精准计分 → AI生成 → 固定模版组装 → DOCX
 router.post('/:id/submit', authMiddleware, async (req, res) => {
   const conn = await pool.getConnection();
   try {
@@ -222,8 +222,6 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
     }
 
     // 汇总所有问卷的得分
-    const orderedQuestionnaires = typeof session.ordered_questionnaires === 'string'
-      ? JSON.parse(session.ordered_questionnaires) : session.ordered_questionnaires;
     const questionnairesCompleted = records.map(r => r.questionnaire_id);
     const scoreSummary = {};
 
@@ -235,7 +233,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
 
     const userName = req.user.nickname || '测评用户';
 
-    // ========== 兰大模式：服务端精准计分 ==========
+    // ========== Step 1: 系统精准计分 ==========
     let comprehensiveScore = 75;
     let lzuComprehensive = null;
 
@@ -245,92 +243,63 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
       console.log(`[LZU Score] Total=${comprehensiveScore}, Grade=${lzuComprehensive.grade}, Breakdown:`, lzuComprehensive.breakdown);
     }
 
-    // 构建AI Prompt
-    const prompt = USE_LZU
-      ? buildLZUReportPrompt(userName, scoreSummary, lzuComprehensive)
-      : buildReportPrompt(userName, questionnairesCompleted, scoreSummary);
-
-    // 调用DeepSeek API生成结构化报告
-    const apiKey = process.env.DEEPSEEK_API_KEY;
+    // ========== Step 2: AI生成 + 固定模版组装 + DOCX ==========
+    let reportHtml = null;
+    let docxPath = null;
     let reportContent = null;
 
-    if (apiKey && apiKey.startsWith('sk-') && apiKey.length > 30) {
+    if (USE_LZU && lzuComprehensive) {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
-
-        const aiResponse = await fetch('https://api.deepseek.com/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-          },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model: 'deepseek-chat',
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 4096,
-            response_format: { type: 'json_object' },
-          }),
+        const { generateReport } = require('../services/lzuReportGenerator');
+        const result = await generateReport({
+          scores: lzuComprehensive,
+          userName,
+          sessionId: session.id,
         });
-
-        clearTimeout(timeoutId);
-
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          const content = aiData.choices?.[0]?.message?.content ?? '';
-          if (content) {
-            try {
-              const reportJson = JSON.parse(content);
-
-              // 兰大模式：用精准计算的分数覆盖 AI 返回的分数
-              if (USE_LZU && lzuComprehensive) {
-                reportJson.comprehensiveScore = lzuComprehensive.totalScore;
-                reportJson.grade = lzuComprehensive.grade;
-                reportJson.gradeDescription = lzuComprehensive.gradeDescription;
-                reportJson.breakdown = lzuComprehensive.breakdown;
-                reportJson.adaptabilityIndex = lzuComprehensive.adaptabilityIndex;
-                reportJson.adaptabilityLevel = lzuComprehensive.adaptabilityLevel;
-              }
-
-              comprehensiveScore = reportJson.comprehensiveScore || 75;
-
-              // 补充报告编号和日期
-              const now = new Date();
-              reportJson.reportDate = now.toISOString().split('T')[0];
-              reportJson.reportId = `TAR-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(session.id).padStart(3, '0')}`;
-              reportJson.userName = userName;
-
-              reportContent = JSON.stringify(reportJson);
-            } catch (parseErr) {
-              console.error('Failed to parse AI JSON response:', parseErr.message);
-              reportContent = content;
-            }
-          }
-        } else {
-          console.error(`DeepSeek API error: ${aiResponse.status}`);
-        }
-      } catch (aiErr) {
-        console.error('AI generation error:', aiErr.message);
+        reportHtml = result.html;
+        docxPath = result.docxPath;
+        console.log(`[LZU Gen] Report generated, docx: ${docxPath}`);
+      } catch (genErr) {
+        console.error('[LZU Gen] Generation error:', genErr.message);
+        // 降级：存储分数快照
       }
+    }
+
+    // 降级：如果AI生成失败，存储分数快照
+    if (!reportHtml) {
+      const now = new Date();
+      const scoreSnapshot = {
+        userName,
+        reportDate: now.toISOString().split('T')[0],
+        reportId: `LZU-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(session.id).padStart(3, '0')}`,
+        comprehensiveScore,
+        lzuComprehensive,
+        scoreSummary,
+        questionnairesCompleted,
+        _generated: false,
+        _note: 'AI生成失败，需管理员重新生成',
+      };
+      reportContent = JSON.stringify(scoreSnapshot);
     } else {
-      console.warn('DEEPSEEK_API_KEY not configured, report will need manual editing');
+      reportContent = JSON.stringify({
+        _generated: true,
+        comprehensiveScore,
+        grade: lzuComprehensive.grade,
+        scoreSummary,
+      });
     }
 
-    // 如果没有生成报告内容，创建占位JSON
-    if (!reportContent) {
-      reportContent = JSON.stringify(buildPlaceholderReport(userName, questionnairesCompleted, scoreSummary, comprehensiveScore, session.id));
-    }
-
-    // 存入comprehensive_reports表（重复提交则更新）
+    // ========== Step 3: 存入数据库 ==========
     const [insertResult] = await conn.query(
       `INSERT INTO comprehensive_reports
-       (session_id, user_id, questionnaires_completed, score_summary, report_content, comprehensive_score, review_status)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending')
+       (session_id, user_id, questionnaires_completed, score_summary, report_content, report_html, docx_path, comprehensive_score, review_status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
        ON CONFLICT(session_id) DO UPDATE SET
          questionnaires_completed = excluded.questionnaires_completed,
          score_summary = excluded.score_summary,
          report_content = excluded.report_content,
+         report_html = excluded.report_html,
+         docx_path = excluded.docx_path,
          comprehensive_score = excluded.comprehensive_score,
          review_status = 'pending',
          updated_at = datetime('now')`,
@@ -340,6 +309,8 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
         JSON.stringify(questionnairesCompleted),
         JSON.stringify(scoreSummary),
         reportContent,
+        reportHtml,
+        docxPath,
         comprehensiveScore,
       ]
     );
@@ -358,8 +329,9 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
       questionnairesCompleted,
       scoreSummary,
       comprehensiveScore,
+      reportHtmlGenerated: !!reportHtml,
       status: 'submitted',
-      message: '综合报告已生成，等待审核',
+      message: reportHtml ? '综合报告已生成，等待管理员审核' : '报告生成失败，管理员将手动处理',
     });
   } catch (err) {
     console.error('Submit session error:', err);
@@ -401,115 +373,9 @@ function buildReportPrompt(userName, completedIds, scoreSummary) {
 }
 
 // ================================================================
-//  兰大模式：精准计分引擎（严格按文档规则）
+//  兰大模式：精准计分引擎（使用共享服务）
 // ================================================================
-
-function rawToStandard(raw, maxRaw) {
-  const ratio = raw / maxRaw;
-  if (ratio <= 0.2) return Math.max(1, Math.round(ratio / 0.2 * 2));
-  if (ratio <= 0.4) return 3 + Math.round((ratio - 0.2) / 0.2 * 2);
-  if (ratio <= 0.6) return 5 + Math.round((ratio - 0.4) / 0.2 * 2);
-  if (ratio <= 0.8) return 7 + Math.round((ratio - 0.6) / 0.2 * 2);
-  return 9 + Math.round(Math.min(1, (ratio - 0.8) / 0.2) * 1);
-}
-
-function standardToLevel(standard) {
-  if (standard >= 9) return '优秀';
-  if (standard >= 7) return '良好';
-  if (standard >= 5) return '中等';
-  if (standard >= 3) return '稍低';
-  return '较低';
-}
-
-function barrierLevel(score, lowThreshold, midThreshold) {
-  if (score >= lowThreshold) return '低障碍';
-  if (score >= midThreshold) return '中障碍';
-  return '高障碍';
-}
-
-function calculateLZUComprehensiveScore(scoreSummary) {
-  const result = {
-    totalScore: 0, grade: '待发展型', gradeDescription: '',
-    breakdown: { leadership: 0, personality: 0, creativityBarrier: 0 },
-    adaptabilityIndex: 0, adaptabilityLevel: '',
-    leadership: { s1: 0, s2: 0, s3: 0, s4: 0, dominantStyle: '' },
-    personality: {
-      creativityPotential: { raw: 0, standard: 5, level: '中等' },
-      mentalHealth: { raw: 0, standard: 5, level: '中等' },
-      managementPotential: { raw: 0, standard: 5, level: '中等' },
-    },
-    creativityBarrier: {
-      psychological: { score: 0, max: 16, level: '中障碍' },
-      cognitive: { score: 0, max: 12, level: '中障碍' },
-      environmental: { score: 0, max: 20, level: '中障碍' },
-      primaryBarrierType: '',
-    },
-  };
-
-  const ls = scoreSummary['lzu-leadership'];
-  if (ls?.dimensionScores) {
-    const { S1 = 0, S2 = 0, S3 = 0, S4 = 0 } = ls.dimensionScores;
-    result.leadership = { s1: S1, s2: S2, s3: S3, s4: S4, dominantStyle: '' };
-    const styles = [
-      { name: '指令型（S1）', score: S1 }, { name: '教练型（S2）', score: S2 },
-      { name: '支持型（S3）', score: S3 }, { name: '授权型（S4）', score: S4 },
-    ];
-    styles.sort((a, b) => b.score - a.score);
-    result.leadership.dominantStyle = styles[0].name;
-    if (styles[1].score === styles[0].score) {
-      result.leadership.dominantStyle += ' / ' + styles[1].name;
-    }
-    const values = [S1, S2, S3, S4];
-    const mean = values.reduce((a, b) => a + b, 0) / 4;
-    const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / 4;
-    const std = Math.sqrt(variance);
-    result.adaptabilityIndex = Math.round(std * 100) / 100;
-    const maxStd = 5.2;
-    const adaptabilityScore = Math.max(0, Math.min(100, (1 - std / maxStd) * 100));
-    result.breakdown.leadership = Math.round(adaptabilityScore * 0.30 * 10) / 10;
-    if (std < 1.5) result.adaptabilityLevel = '强';
-    else if (std < 3.0) result.adaptabilityLevel = '一般';
-    else result.adaptabilityLevel = '需提升';
-  }
-
-  const ps = scoreSummary['lzu-personality'];
-  if (ps?.dimensionScores) {
-    const cp = ps.dimensionScores['creativity_potential'] ?? 0;
-    const mh = ps.dimensionScores['mental_health'] ?? 0;
-    const mp = ps.dimensionScores['management_potential'] ?? 0;
-    result.personality.creativityPotential = { raw: cp, standard: rawToStandard(cp, 10), level: standardToLevel(rawToStandard(cp, 10)) };
-    result.personality.mentalHealth = { raw: mh, standard: rawToStandard(mh, 10), level: standardToLevel(rawToStandard(mh, 10)) };
-    result.personality.managementPotential = { raw: mp, standard: rawToStandard(mp, 10), level: standardToLevel(rawToStandard(mp, 10)) };
-    const cpNorm = (cp / 10) * 100, mhNorm = (mh / 10) * 100, mpNorm = (mp / 10) * 100;
-    const personalityComposite = cpNorm * 0.40 + mhNorm * 0.30 + mpNorm * 0.30;
-    result.breakdown.personality = Math.round(personalityComposite * 0.40 * 10) / 10;
-  }
-
-  const cs = scoreSummary['lzu-creativity'];
-  if (cs?.dimensionScores) {
-    const psy = cs.dimensionScores['psychological_barrier'] ?? 0;
-    const cog = cs.dimensionScores['cognitive_barrier'] ?? 0;
-    const env = cs.dimensionScores['environmental_barrier'] ?? 0;
-    result.creativityBarrier.psychological = { score: psy, max: 16, level: barrierLevel(psy, 12, 6) };
-    result.creativityBarrier.cognitive = { score: cog, max: 12, level: barrierLevel(cog, 9, 5) };
-    result.creativityBarrier.environmental = { score: env, max: 20, level: barrierLevel(env, 15, 8) };
-    const psyNorm = (psy / 16) * 100, cogNorm = (cog / 12) * 100, envNorm = (env / 20) * 100;
-    const barrierComposite = (psyNorm + cogNorm + envNorm) / 3;
-    result.breakdown.creativityBarrier = Math.round(barrierComposite * 0.30 * 10) / 10;
-    const barriers = [
-      { type: '心理障碍', score: psyNorm }, { type: '认知障碍', score: cogNorm }, { type: '环境与资源障碍', score: envNorm },
-    ];
-    barriers.sort((a, b) => a.score - b.score);
-    result.creativityBarrier.primaryBarrierType = barriers[0].type;
-  }
-
-  result.totalScore = Math.round(result.breakdown.leadership + result.breakdown.personality + result.breakdown.creativityBarrier);
-  if (result.totalScore >= 90) { result.grade = '卓越型'; result.gradeDescription = '领导力、人格素质与创造力俱佳'; }
-  else if (result.totalScore >= 75) { result.grade = '进取型'; result.gradeDescription = '具备良好的发展潜力'; }
-  else if (result.totalScore >= 60) { result.grade = '成长型'; result.gradeDescription = '有明确的可提升空间'; }
-  else { result.grade = '待发展型'; result.gradeDescription = '需系统性的能力建设'; }
-  return result;
-}
+const { calculateLZUComprehensiveScore } = require('../services/lzuScoringService');
 
 function buildLZUReportPrompt(userName, scoreSummary, lzu) {
   const lines = [];

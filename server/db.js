@@ -118,6 +118,17 @@ async function initDatabase() {
     },
   };
 
+  // Run schema migrations for existing databases
+  try {
+    db.exec('ALTER TABLE comprehensive_reports ADD COLUMN report_html TEXT');
+    console.log('[DB] Migration: added report_html column');
+  } catch (e) { /* column already exists */ }
+  try {
+    db.exec('ALTER TABLE comprehensive_reports ADD COLUMN docx_path TEXT');
+    console.log('[DB] Migration: added docx_path column');
+  } catch (e) { /* column already exists */ }
+  saveToDisk();
+
   console.log('[DB] Ready');
 }
 

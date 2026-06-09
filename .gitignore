@@ -17,6 +17,16 @@ dist
 .DS_Store
 Thumbs.db
 
+# Database
+server/kiroo.db
+
+# Generated reports
+server/reports/
+
+# Temp files
+tmp_docx/
+server/{const
+
 # Logs
 *.log
 npm-debug.log*

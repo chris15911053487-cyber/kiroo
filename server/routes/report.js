@@ -40,6 +40,8 @@ router.get('/:id', authMiddleware, async (req, res) => {
               cr.questionnaires_completed AS questionnairesCompleted,
               cr.score_summary AS scoreSummary,
               cr.report_content AS reportContent,
+              cr.report_html AS reportHtml,
+              cr.docx_path AS docxPath,
               cr.comprehensive_score AS comprehensiveScore,
               cr.review_status AS reviewStatus,
               cr.review_comment AS reviewComment,
@@ -59,6 +61,8 @@ router.get('/:id', authMiddleware, async (req, res) => {
     // 审核未通过时隐藏报告内容
     if (report.reviewStatus !== 'approved') {
       report.reportContent = null;
+      report.reportHtml = null;
+      report.docxPath = null;
       report.scoreSummary = null;
     }
 
@@ -77,12 +81,12 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/reports/:id/pdf - 下载PDF版本
+// GET /api/reports/:id/pdf - 下载报告文件（优先DOCX，降级PDF）
 router.get('/:id/pdf', authMiddleware, async (req, res) => {
   try {
     // 获取报告数据
     const [rows] = await pool.query(
-      `SELECT report_content, review_status, user_id
+      `SELECT report_content, report_html, docx_path, review_status, user_id
        FROM comprehensive_reports
        WHERE id = ?`,
       [req.params.id]
@@ -94,8 +98,8 @@ router.get('/:id/pdf', authMiddleware, async (req, res) => {
 
     const report = rows[0];
 
-    // 只允许报告所有者或管理员下载
-    if (report.user_id !== req.user.id && report.review_status !== 'approved') {
+    // 只允许报告所有者下载
+    if (report.user_id !== req.user.id) {
       return res.status(403).json({ error: '无权下载此报告' });
     }
 
@@ -104,15 +108,32 @@ router.get('/:id/pdf', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: '报告尚未通过审核，无法下载' });
     }
 
-    // 生成PDF
+    // 优先使用新格式 .doc 文件
+    if (report.docx_path) {
+      const fs = require('fs');
+      const path = require('path');
+      const absolutePath = path.resolve(report.docx_path);
+
+      if (fs.existsSync(absolutePath)) {
+        const ext = path.extname(absolutePath).toLowerCase();
+        const filename = `人才测评报告_${req.params.id}${ext}`;
+        const mimeType = ext === '.docx'
+          ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          : 'application/msword';
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+        return res.sendFile(absolutePath);
+      }
+    }
+
+    // 降级：生成PDF
     const { generateReportPDF } = require('../services/pdfService');
-    const reportData = report.report_content;
+    const reportData = report.report_html || report.report_content;
 
     const pdfBuffer = await generateReportPDF(reportData);
 
-    // 根据输出类型设置响应头
     if (pdfBuffer.toString('utf-8', 0, 15).includes('<!DOCTYPE')) {
-      // 降级为HTML输出（Puppeteer未安装）
+      // 降级为HTML输出
       res.set({
         'Content-Type': 'text/html; charset=utf-8',
         'Content-Disposition': 'inline',
@@ -127,8 +148,8 @@ router.get('/:id/pdf', authMiddleware, async (req, res) => {
 
     res.send(pdfBuffer);
   } catch (err) {
-    console.error('Generate PDF error:', err);
-    res.status(500).json({ error: 'PDF生成失败' });
+    console.error('Download report error:', err);
+    res.status(500).json({ error: '下载失败' });
   }
 });
 
