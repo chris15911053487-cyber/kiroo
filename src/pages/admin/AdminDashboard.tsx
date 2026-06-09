@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  parseReportJSON,
+  LZUScoreSection,
+  LZULeadershipSection,
+  LZUPersonalitySection,
+  LZUCreativityBarrierSection,
+  LZUImprovementPlanSection,
+  LZUCareerSection,
+  LZUReportSummary,
+} from '../../components/LZUReportSections'
 
 // ==================== Types ====================
 
@@ -76,12 +86,7 @@ export default function AdminDashboard() {
   // Detail modal
   const [detailReport, setDetailReport] = useState<ReportDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
-  const [editingReport, setEditingReport] = useState(false)
-  const [editReportText, setEditReportText] = useState('')
-  const [editScore, setEditScore] = useState(0)
   const [reviewLoading, setReviewLoading] = useState(false)
-  const [structuredEdit, setStructuredEdit] = useState(false)
-  const [structuredFields, setStructuredFields] = useState<Record<string, string>>({})
 
   // Tab: 'reports' | 'assessments' | 'users'
   const [activeTab, setActiveTab] = useState<'reports' | 'assessments' | 'users'>('reports')
@@ -140,12 +145,9 @@ export default function AdminDashboard() {
 
   async function loadDetail(id: number) {
     setDetailLoading(true)
-    setEditingReport(false)
     try {
       const data = await apiFetch<{ report: ReportDetail }>(`/api/admin/reports/${id}`)
       setDetailReport(data.report)
-      setEditReportText(data.report.reportContent || '')
-      setEditScore(data.report.comprehensiveScore)
     } catch { /* handled */ }
     finally { setDetailLoading(false) }
   }
@@ -176,68 +178,6 @@ export default function AdminDashboard() {
       loadReports(page)
     } catch { /* handled */ }
     finally { setReviewLoading(false) }
-  }
-
-  async function handleSaveReport(id: number) {
-    try {
-      await apiFetch(`/api/admin/reports/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          reportContent: editReportText,
-          comprehensiveScore: editScore,
-        }),
-      })
-      setDetailReport(prev =>
-        prev ? { ...prev, reportContent: editReportText, comprehensiveScore: editScore } : null
-      )
-      setEditingReport(false)
-      setStructuredEdit(false)
-    } catch { /* handled */ }
-  }
-
-  /** 尝试解析JSON并打开结构化编辑 */
-  function tryStructuredEdit() {
-    if (!detailReport?.reportContent) return
-    try {
-      const json = JSON.parse(detailReport.reportContent)
-      const fields: Record<string, string> = {
-        comprehensiveScore: String(json.comprehensiveScore || 75),
-        coreEvaluation: json.coreEvaluation || '',
-        summary: json.summary || '',
-        teamRolePrimary: json.teamRole?.primary || '',
-        teamRoleSecondary: json.teamRole?.secondary || '',
-        teamRoleDescription: json.teamRole?.description || '',
-        careerSuggestions: JSON.stringify(json.careerSuggestions || [], null, 2),
-        improvementSuggestions: JSON.stringify(json.improvementSuggestions || [], null, 2),
-        coreAdvantages: JSON.stringify(json.coreAdvantages || [], null, 2),
-      }
-      setStructuredFields(fields)
-      setEditScore(Number(fields.comprehensiveScore))
-      setStructuredEdit(true)
-      setEditingReport(true)
-    } catch {
-      // 解析失败，使用原始JSON编辑
-      setEditReportText(detailReport.reportContent || '')
-      setEditScore(detailReport.comprehensiveScore)
-      setEditingReport(true)
-    }
-  }
-
-  /** 从结构化字段重建JSON */
-  function rebuildJsonFromFields(): string {
-    const orig = (() => { try { return JSON.parse(detailReport?.reportContent || '{}') } catch { return {} } })()
-    orig.comprehensiveScore = Number(structuredFields.comprehensiveScore) || 75
-    orig.coreEvaluation = structuredFields.coreEvaluation || ''
-    orig.summary = structuredFields.summary || ''
-    orig.teamRole = {
-      primary: structuredFields.teamRolePrimary || '',
-      secondary: structuredFields.teamRoleSecondary || '',
-      description: structuredFields.teamRoleDescription || '',
-    }
-    try { orig.careerSuggestions = JSON.parse(structuredFields.careerSuggestions || '[]') } catch { orig.careerSuggestions = [] }
-    try { orig.improvementSuggestions = JSON.parse(structuredFields.improvementSuggestions || '[]') } catch { orig.improvementSuggestions = [] }
-    try { orig.coreAdvantages = JSON.parse(structuredFields.coreAdvantages || '[]') } catch { orig.coreAdvantages = [] }
-    return JSON.stringify(orig, null, 2)
   }
 
   function getQuestionnaireLabel(qid: string): string {
@@ -487,181 +427,49 @@ export default function AdminDashboard() {
                   <button onClick={closeDetail} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
                 </div>
 
-                {/* Body */}
-                <div className="overflow-y-auto flex-1 px-6 py-4 space-y-5">
-                  {/* 综合得分 + 问卷完成情况 */}
-                  <div className="flex flex-wrap gap-4">
-                    <div className="bg-indigo-50 rounded-xl px-5 py-4 flex items-center gap-3">
-                      <span className="text-sm text-gray-500">综合得分</span>
-                      {editingReport ? (
-                        <input
-                          type="number"
-                          value={editScore}
-                          onChange={e => setEditScore(Number(e.target.value))}
-                          className="w-20 px-2 py-1 border border-gray-200 rounded-lg text-xl font-bold text-indigo-600 text-center"
-                          min={65}
-                          max={85}
-                          step={0.5}
-                        />
-                      ) : (
-                        <span className="text-2xl font-extrabold text-indigo-600">{detailReport.comprehensiveScore}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-[200px]">
-                      <p className="text-xs text-gray-400 mb-1.5">已完成问卷：</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {detailReport.orderedQuestionnaires?.map(qid => {
-                          const completed = detailReport.questionnairesCompleted.includes(qid)
-                          return (
-                            <span
-                              key={qid}
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                completed
-                                  ? 'bg-green-100 text-green-700 border border-green-200'
-                                  : 'bg-gray-100 text-gray-400 border border-gray-200'
-                              }`}
-                            >
-                              {completed ? '✓ ' : '✗ '}{getQuestionnaireLabel(qid)}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 各问卷得分摘要 */}
-                  {detailReport.assessmentRecords.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-gray-700 mb-2">📊 各问卷得分</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {detailReport.assessmentRecords.map(record => (
-                          <div key={record.id} className="bg-gray-50 rounded-lg px-3 py-2 text-sm">
-                            <span className="font-medium text-gray-700">{record.questionnaireName}</span>
-                            {record.scoreResult.type === 'categorical' && record.scoreResult.categoryResult && (
-                              <span className="ml-2 text-indigo-600 font-bold">
-                                {String(record.scoreResult.categoryResult)}
-                              </span>
-                            )}
-                            {record.scoreResult.type === 'additive' && record.scoreResult.dimensionScores && (
-                              <div className="mt-1 flex flex-wrap gap-1">
-                                {Object.entries(record.scoreResult.dimensionScores as Record<string, number>)
-                                  .slice(0, 4)
-                                  .map(([k, v]) => (
-                                    <span key={k} className="text-xs text-gray-500">
-                                      {k}: {v}
-                                    </span>
-                                  ))}
-                              </div>
-                            )}
+                {/* Body — 综合报告预览（与用户端完全一致） */}
+                <div className="overflow-y-auto flex-1 px-6 py-4">
+                    {(() => {
+                      const report = parseReportJSON(detailReport.reportContent)
+                      if (!report) {
+                        return (
+                          <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-400">
+                            {detailReport.reportContent
+                              ? '报告格式不支持预览，请查看原始JSON'
+                              : '暂无报告内容'}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* AI报告内容 */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">🤖 AI综合报告</h3>
-                      {!editingReport && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={tryStructuredEdit}
-                            className="text-xs text-green-600 hover:text-green-800 font-medium"
-                          >
-                            📋 结构化编辑
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditReportText(detailReport.reportContent || '')
-                              setEditScore(detailReport.comprehensiveScore)
-                              setEditingReport(true)
-                            }}
-                            className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-                          >
-                            ✏️ 编辑JSON
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {editingReport ? (
-                      <div>
-                        {structuredEdit ? (
-                          /* 结构化编辑模式 */
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-xs text-gray-500 mb-1">综合得分</label>
-                                <input type="number" value={editScore} min={65} max={85} step={0.5}
-                                  onChange={e => { setEditScore(Number(e.target.value)); setStructuredFields(prev => ({ ...prev, comprehensiveScore: e.target.value })) }}
-                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-bold text-indigo-600" />
-                              </div>
-                              <div>
-                                <label className="block text-xs text-gray-500 mb-1">团队角色-主</label>
-                                <input type="text" value={structuredFields.teamRolePrimary || ''}
-                                  onChange={e => setStructuredFields(prev => ({ ...prev, teamRolePrimary: e.target.value }))}
-                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">核心评价</label>
-                              <textarea value={structuredFields.coreEvaluation || ''}
-                                onChange={e => setStructuredFields(prev => ({ ...prev, coreEvaluation: e.target.value }))}
-                                className="w-full h-16 p-2 border border-gray-200 rounded-lg text-sm resize-y" />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">核心优势（JSON数组）</label>
-                              <textarea value={structuredFields.coreAdvantages || ''}
-                                onChange={e => setStructuredFields(prev => ({ ...prev, coreAdvantages: e.target.value }))}
-                                className="w-full h-20 p-2 border border-gray-200 rounded-lg text-xs font-mono resize-y" />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">总结</label>
-                              <textarea value={structuredFields.summary || ''}
-                                onChange={e => setStructuredFields(prev => ({ ...prev, summary: e.target.value }))}
-                                className="w-full h-16 p-2 border border-gray-200 rounded-lg text-sm resize-y" />
-                            </div>
-                            <div className="flex gap-2 mt-2">
-                              <button onClick={() => setStructuredEdit(false)} className="text-xs text-gray-500 hover:text-gray-700">切换到JSON编辑</button>
-                            </div>
-                          </div>
-                        ) : (
-                          /* 原始JSON编辑模式 */
-                          <textarea
-                            value={editReportText}
-                            onChange={e => setEditReportText(e.target.value)}
-                            className="w-full h-64 p-3 border border-gray-200 rounded-lg text-sm text-gray-700 focus:border-indigo-400 outline-none resize-y font-mono"
-                            placeholder="编辑报告JSON..."
+                        )
+                      }
+                      return (
+                        <div className="max-w-2xl">
+                          <LZUScoreSection
+                            score={report.comprehensiveScore}
+                            grade={report.grade}
+                            gradeDescription={report.gradeDescription}
                           />
-                        )}
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            onClick={() => {
-                              if (structuredEdit) {
-                                const json = rebuildJsonFromFields()
-                                setEditReportText(json)
-                              }
-                              handleSaveReport(detailReport.id)
-                            }}
-                            className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700"
-                          >
-                            保存修改
-                          </button>
-                          <button
-                            onClick={() => { setEditingReport(false); setStructuredEdit(false) }}
-                            className="px-4 py-2 rounded-lg bg-gray-100 text-gray-600 text-sm hover:bg-gray-200"
-                          >
-                            取消
-                          </button>
+                          <LZUReportSummary
+                            evaluation={report.coreEvaluation}
+                            advantages={report.coreAdvantages || []}
+                            summary={report.summary || ''}
+                          />
+                          {report.leadershipAnalysis && (
+                            <LZULeadershipSection data={report.leadershipAnalysis} />
+                          )}
+                          {report.personalityAnalysis && (
+                            <LZUPersonalitySection data={report.personalityAnalysis} />
+                          )}
+                          {report.creativityBarrierAnalysis && (
+                            <LZUCreativityBarrierSection data={report.creativityBarrierAnalysis} />
+                          )}
+                          {report.careerSuggestions && report.careerSuggestions.length > 0 && (
+                            <LZUCareerSection suggestions={report.careerSuggestions} />
+                          )}
+                          {report.improvementPlan && (
+                            <LZUImprovementPlanSection plan={report.improvementPlan} />
+                          )}
                         </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">
-                        {detailReport.reportContent || '暂无报告内容'}
-                      </div>
-                    )}
-                  </div>
+                      )
+                    })()}
                 </div>
 
                 {/* Footer - 审核操作 */}

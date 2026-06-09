@@ -43,6 +43,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - LZU_MODE=${LZU_MODE:-true}
       - SMS_ENABLED=false
     depends_on:
       db:

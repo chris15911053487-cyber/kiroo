@@ -10,6 +10,9 @@ const VALID_CATEGORIES: QuestionnaireCategory[] = [
   '16pf',
   'creativity',
   'holland',
+  'lzu-leadership',
+  'lzu-personality',
+  'lzu-creativity',
 ]
 
 const VALID_SCORING_RULE_TYPES: ScoringRuleType[] = ['additive', 'categorical']

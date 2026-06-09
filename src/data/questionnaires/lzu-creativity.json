@@ -1,0 +1,180 @@
+{
+  "id": "lzu-creativity",
+  "name": "创造力障碍测试",
+  "category": "lzu-creativity",
+  "description": "通过12道题目从心理障碍、认知障碍和环境与资源障碍三个维度评估阻碍创造力发挥的因素。得分越高表示障碍越少，创造力发挥越顺畅。本测验为兰州大学管理学院研究生职业发展测评定制。",
+  "enabled": true,
+  "createdAt": "2026-06-01T00:00:00Z",
+  "questions": [
+    {
+      "id": "lzu-c1",
+      "sequence": 1,
+      "text": "我害怕自己的想法被别人批评或嘲笑。",
+      "options": [
+        { "id": "lzu-c1-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c1-b", "text": "经常", "scores": { "psychological_barrier": 1, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c1-c", "text": "有时", "scores": { "psychological_barrier": 2, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c1-d", "text": "很少", "scores": { "psychological_barrier": 3, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c1-e", "text": "从不", "scores": { "psychological_barrier": 4, "cognitive_barrier": 0, "environmental_barrier": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-c2",
+      "sequence": 2,
+      "text": "我倾向于追求完美，经常因为细节问题而拖延。",
+      "options": [
+        { "id": "lzu-c2-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c2-b", "text": "经常", "scores": { "psychological_barrier": 1, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c2-c", "text": "有时", "scores": { "psychological_barrier": 2, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c2-d", "text": "很少", "scores": { "psychological_barrier": 3, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c2-e", "text": "从不", "scores": { "psychological_barrier": 4, "cognitive_barrier": 0, "environmental_barrier": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-c3",
+      "sequence": 3,
+      "text": "我习惯于按照固定模式思考问题，难以跳出常规。",
+      "options": [
+        { "id": "lzu-c3-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c3-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 1, "environmental_barrier": 0 } },
+        { "id": "lzu-c3-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 2, "environmental_barrier": 0 } },
+        { "id": "lzu-c3-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 3, "environmental_barrier": 0 } },
+        { "id": "lzu-c3-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 4, "environmental_barrier": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-c4",
+      "sequence": 4,
+      "text": "我缺乏足够的时间和空间来进行创造性思考。",
+      "options": [
+        { "id": "lzu-c4-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c4-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 1 } },
+        { "id": "lzu-c4-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 2 } },
+        { "id": "lzu-c4-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 3 } },
+        { "id": "lzu-c4-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 4 } }
+      ]
+    },
+    {
+      "id": "lzu-c5",
+      "sequence": 5,
+      "text": "我对新事物的尝试持谨慎态度，害怕失败。",
+      "options": [
+        { "id": "lzu-c5-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c5-b", "text": "经常", "scores": { "psychological_barrier": 1, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c5-c", "text": "有时", "scores": { "psychological_barrier": 2, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c5-d", "text": "很少", "scores": { "psychological_barrier": 3, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c5-e", "text": "从不", "scores": { "psychological_barrier": 4, "cognitive_barrier": 0, "environmental_barrier": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-c6",
+      "sequence": 6,
+      "text": "我经常因为自我怀疑而放弃原本有创意的想法。",
+      "options": [
+        { "id": "lzu-c6-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c6-b", "text": "经常", "scores": { "psychological_barrier": 1, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c6-c", "text": "有时", "scores": { "psychological_barrier": 2, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c6-d", "text": "很少", "scores": { "psychological_barrier": 3, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c6-e", "text": "从不", "scores": { "psychological_barrier": 4, "cognitive_barrier": 0, "environmental_barrier": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-c7",
+      "sequence": 7,
+      "text": "周围环境（组织文化、团队氛围）不鼓励创新。",
+      "options": [
+        { "id": "lzu-c7-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c7-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 1 } },
+        { "id": "lzu-c7-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 2 } },
+        { "id": "lzu-c7-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 3 } },
+        { "id": "lzu-c7-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 4 } }
+      ]
+    },
+    {
+      "id": "lzu-c8",
+      "sequence": 8,
+      "text": "我缺乏相关知识储备，难以产生高质量的创意。",
+      "options": [
+        { "id": "lzu-c8-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c8-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 1 } },
+        { "id": "lzu-c8-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 2 } },
+        { "id": "lzu-c8-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 3 } },
+        { "id": "lzu-c8-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 4 } }
+      ]
+    },
+    {
+      "id": "lzu-c9",
+      "sequence": 9,
+      "text": "我倾向于快速判断一个想法「可行」或「不可行」。",
+      "options": [
+        { "id": "lzu-c9-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c9-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 1, "environmental_barrier": 0 } },
+        { "id": "lzu-c9-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 2, "environmental_barrier": 0 } },
+        { "id": "lzu-c9-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 3, "environmental_barrier": 0 } },
+        { "id": "lzu-c9-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 4, "environmental_barrier": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-c10",
+      "sequence": 10,
+      "text": "我很难容忍模糊和不确定性。",
+      "options": [
+        { "id": "lzu-c10-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c10-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 1, "environmental_barrier": 0 } },
+        { "id": "lzu-c10-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 2, "environmental_barrier": 0 } },
+        { "id": "lzu-c10-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 3, "environmental_barrier": 0 } },
+        { "id": "lzu-c10-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 4, "environmental_barrier": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-c11",
+      "sequence": 11,
+      "text": "我缺乏将创意付诸实践的行动力。",
+      "options": [
+        { "id": "lzu-c11-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c11-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 1 } },
+        { "id": "lzu-c11-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 2 } },
+        { "id": "lzu-c11-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 3 } },
+        { "id": "lzu-c11-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 4 } }
+      ]
+    },
+    {
+      "id": "lzu-c12",
+      "sequence": 12,
+      "text": "我太忙，没有时间「胡思乱想」。",
+      "options": [
+        { "id": "lzu-c12-a", "text": "总是", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 0 } },
+        { "id": "lzu-c12-b", "text": "经常", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 1 } },
+        { "id": "lzu-c12-c", "text": "有时", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 2 } },
+        { "id": "lzu-c12-d", "text": "很少", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 3 } },
+        { "id": "lzu-c12-e", "text": "从不", "scores": { "psychological_barrier": 0, "cognitive_barrier": 0, "environmental_barrier": 4 } }
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "additive",
+    "dimensions": [
+      {
+        "key": "psychological_barrier",
+        "name": "心理障碍（内在）",
+        "min": 0,
+        "max": 16,
+        "description": "评估害怕批评、完美主义、自我怀疑、害怕失败等内在心理因素对创造力的阻碍。得分越高表示心理障碍越少。"
+      },
+      {
+        "key": "cognitive_barrier",
+        "name": "认知障碍",
+        "min": 0,
+        "max": 12,
+        "description": "评估思维固化、过早评判、不能容忍模糊等认知模式对创造力的限制。得分越高表示认知障碍越少。"
+      },
+      {
+        "key": "environmental_barrier",
+        "name": "环境与资源障碍",
+        "min": 0,
+        "max": 20,
+        "description": "评估时间不足、资源缺乏、环境不支持、知识储备不足等外部因素对创造力的制约。得分越高表示环境障碍越少。"
+      }
+    ]
+  }
+}

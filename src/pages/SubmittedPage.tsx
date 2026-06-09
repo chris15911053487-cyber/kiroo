@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { sessionService } from '../services/sessionService'
 import { useAssessment } from '../context/AssessmentContext'
 import { useAuth } from '../context/AuthContext'
+import { IS_LZU_MODE } from '../types'
 
 export default function SubmittedPage() {
   const { dispatch } = useAssessment()
@@ -18,7 +19,7 @@ export default function SubmittedPage() {
 
   useEffect(() => {
     if (!sessionId || !user) {
-      navigate('/select', { replace: true })
+      navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })
       return
     }
 
@@ -106,7 +107,7 @@ export default function SubmittedPage() {
                 我的报告列表
               </Link>
               <Link
-                to="/select"
+                to="/"
                 className="w-full py-3.5 rounded-2xl text-gray-400 text-sm text-center hover:text-indigo-600 transition-all"
               >
                 返回首页
@@ -121,7 +122,7 @@ export default function SubmittedPage() {
             <h1 className="text-xl font-bold text-[#1a1a2e] mb-3">提交遇到问题</h1>
             <p className="text-red-500 text-sm mb-6">{errorMsg}</p>
             <button
-              onClick={() => navigate('/select', { replace: true })}
+              onClick={() => navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })}
               className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-bold"
             >
               返回首页

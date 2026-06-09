@@ -1,0 +1,194 @@
+{
+  "id": "lzu-personality",
+  "name": "16PF人格测验（精选版）",
+  "category": "lzu-personality",
+  "description": "基于卡特尔16PF理论，选取与职业发展相关的3个核心维度（创造力潜质、心理健康水平、管理潜能），共15道题目。本测验为兰州大学管理学院研究生职业发展测评定制。",
+  "enabled": true,
+  "createdAt": "2026-06-01T00:00:00Z",
+  "questions": [
+    {
+      "id": "lzu-p1",
+      "sequence": 1,
+      "text": "我喜欢尝试各种新的方法来做事情，即使可能会失败。",
+      "options": [
+        { "id": "lzu-p1-a", "text": "非常符合", "scores": { "creativity_potential": 2, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p1-b", "text": "比较符合", "scores": { "creativity_potential": 1, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p1-c", "text": "不太符合", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p1-d", "text": "完全不符", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p2",
+      "sequence": 2,
+      "text": "我经常产生许多新奇的想法和创意。",
+      "options": [
+        { "id": "lzu-p2-a", "text": "非常符合", "scores": { "creativity_potential": 2, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p2-b", "text": "比较符合", "scores": { "creativity_potential": 1, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p2-c", "text": "不太符合", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p2-d", "text": "完全不符", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p3",
+      "sequence": 3,
+      "text": "我更倾向于遵循传统和既定的规则办事。",
+      "options": [
+        { "id": "lzu-p3-a", "text": "非常符合", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p3-b", "text": "比较符合", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p3-c", "text": "不太符合", "scores": { "creativity_potential": 1, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p3-d", "text": "完全不符", "scores": { "creativity_potential": 2, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p4",
+      "sequence": 4,
+      "text": "我对抽象理论和复杂概念有很强的理解能力。",
+      "options": [
+        { "id": "lzu-p4-a", "text": "是", "scores": { "creativity_potential": 2, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p4-b", "text": "不确定", "scores": { "creativity_potential": 1, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p4-c", "text": "否", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p5",
+      "sequence": 5,
+      "text": "我愿意质疑权威和现有做法的合理性。",
+      "options": [
+        { "id": "lzu-p5-a", "text": "经常", "scores": { "creativity_potential": 2, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p5-b", "text": "有时", "scores": { "creativity_potential": 1, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p5-c", "text": "很少", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p6",
+      "sequence": 6,
+      "text": "我很少因为工作或学习压力而感到焦虑不安。",
+      "options": [
+        { "id": "lzu-p6-a", "text": "是", "scores": { "creativity_potential": 0, "mental_health": 2, "management_potential": 0 } },
+        { "id": "lzu-p6-b", "text": "有时", "scores": { "creativity_potential": 0, "mental_health": 1, "management_potential": 0 } },
+        { "id": "lzu-p6-c", "text": "否", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p7",
+      "sequence": 7,
+      "text": "我能够很快从挫折和失败中恢复过来。",
+      "options": [
+        { "id": "lzu-p7-a", "text": "是", "scores": { "creativity_potential": 0, "mental_health": 2, "management_potential": 0 } },
+        { "id": "lzu-p7-b", "text": "有时", "scores": { "creativity_potential": 0, "mental_health": 1, "management_potential": 0 } },
+        { "id": "lzu-p7-c", "text": "否", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p8",
+      "sequence": 8,
+      "text": "我经常感到情绪低落或沮丧。",
+      "options": [
+        { "id": "lzu-p8-a", "text": "经常", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p8-b", "text": "有时", "scores": { "creativity_potential": 0, "mental_health": 1, "management_potential": 0 } },
+        { "id": "lzu-p8-c", "text": "很少", "scores": { "creativity_potential": 0, "mental_health": 2, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p9",
+      "sequence": 9,
+      "text": "我对自己处理问题的能力有信心。",
+      "options": [
+        { "id": "lzu-p9-a", "text": "很有信心", "scores": { "creativity_potential": 0, "mental_health": 2, "management_potential": 0 } },
+        { "id": "lzu-p9-b", "text": "一般", "scores": { "creativity_potential": 0, "mental_health": 1, "management_potential": 0 } },
+        { "id": "lzu-p9-c", "text": "不太有信心", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p10",
+      "sequence": 10,
+      "text": "我能够很好地平衡工作和生活。",
+      "options": [
+        { "id": "lzu-p10-a", "text": "是", "scores": { "creativity_potential": 0, "mental_health": 2, "management_potential": 0 } },
+        { "id": "lzu-p10-b", "text": "一般", "scores": { "creativity_potential": 0, "mental_health": 1, "management_potential": 0 } },
+        { "id": "lzu-p10-c", "text": "否", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p11",
+      "sequence": 11,
+      "text": "在团队中，我常常自然而然地成为领导者。",
+      "options": [
+        { "id": "lzu-p11-a", "text": "总是", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 2 } },
+        { "id": "lzu-p11-b", "text": "经常", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 1 } },
+        { "id": "lzu-p11-c", "text": "偶尔", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p11-d", "text": "从不", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p12",
+      "sequence": 12,
+      "text": "我喜欢影响和说服他人接受我的观点。",
+      "options": [
+        { "id": "lzu-p12-a", "text": "非常喜欢", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 2 } },
+        { "id": "lzu-p12-b", "text": "喜欢", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 1 } },
+        { "id": "lzu-p12-c", "text": "一般", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p12-d", "text": "不喜欢", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p13",
+      "sequence": 13,
+      "text": "我善于协调团队成员之间的矛盾和冲突。",
+      "options": [
+        { "id": "lzu-p13-a", "text": "非常擅长", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 2 } },
+        { "id": "lzu-p13-b", "text": "比较擅长", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 1 } },
+        { "id": "lzu-p13-c", "text": "不太擅长", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p13-d", "text": "完全不擅长", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p14",
+      "sequence": 14,
+      "text": "我乐于承担责任，并愿意为结果负责。",
+      "options": [
+        { "id": "lzu-p14-a", "text": "非常符合", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 2 } },
+        { "id": "lzu-p14-b", "text": "比较符合", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 1 } },
+        { "id": "lzu-p14-c", "text": "不太符合", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p14-d", "text": "完全不符", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    },
+    {
+      "id": "lzu-p15",
+      "sequence": 15,
+      "text": "我能够制定清晰的计划并推动执行。",
+      "options": [
+        { "id": "lzu-p15-a", "text": "总是", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 2 } },
+        { "id": "lzu-p15-b", "text": "经常", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 1 } },
+        { "id": "lzu-p15-c", "text": "偶尔", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } },
+        { "id": "lzu-p15-d", "text": "从不", "scores": { "creativity_potential": 0, "mental_health": 0, "management_potential": 0 } }
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "additive",
+    "dimensions": [
+      {
+        "key": "creativity_potential",
+        "name": "创造力潜质",
+        "min": 0,
+        "max": 10,
+        "description": "评估思维开放、想象力、尝试新方法的倾向和对复杂概念的理解能力。高分表示具有较强的创新思维素质。"
+      },
+      {
+        "key": "mental_health",
+        "name": "心理健康水平",
+        "min": 0,
+        "max": 10,
+        "description": "评估情绪稳定性、抗压能力、自我效能感和工作生活平衡。高分表示心理健康状况良好。"
+      },
+      {
+        "key": "management_potential",
+        "name": "管理潜能",
+        "min": 0,
+        "max": 10,
+        "description": "评估领导意愿、影响力、协调能力和执行力。高分表示具备从事管理类职业的良好素质。"
+      }
+    ]
+  }
+}

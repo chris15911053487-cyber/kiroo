@@ -12,6 +12,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# 兰大模式构建参数（默认true）
+ARG VITE_LZU_MODE=true
+ENV VITE_LZU_MODE=${VITE_LZU_MODE}
+
 COPY . .
 RUN npm run build
 

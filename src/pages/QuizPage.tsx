@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { sessionService, type SessionData } from '../services/sessionService'
 import QuestionCard from '../components/QuestionCard'
 import { compute } from '../lib/scoringEngine'
+import { IS_LZU_MODE } from '../types'
 import type { Questionnaire } from '../types'
 
 export default function QuizPage() {
@@ -23,14 +24,14 @@ export default function QuizPage() {
   // 加载session和当前问卷
   useEffect(() => {
     if (!sessionId || !user) {
-      navigate('/select', { replace: true })
+      navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })
       return
     }
 
     sessionService.getById(Number(sessionId))
       .then(data => {
         if (!data.session || data.session.status !== 'in_progress') {
-          navigate('/select', { replace: true })
+          navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })
           return
         }
         setSession(data.session)
@@ -45,7 +46,7 @@ export default function QuizPage() {
           }
         }
       })
-      .catch(() => navigate('/select', { replace: true }))
+      .catch(() => navigate(IS_LZU_MODE ? '/' : '/select', { replace: true }))
       .finally(() => setLoading(false))
   }, [sessionId, user, navigate, dispatch, state.questionnaires])
 
@@ -69,10 +70,10 @@ export default function QuizPage() {
       <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-4 px-6">
         <p className="text-red-500">问卷数据未找到：{currentQId}</p>
         <button
-          onClick={() => navigate('/select')}
+          onClick={() => navigate(IS_LZU_MODE ? '/' : '/select')}
           className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-bold"
         >
-          返回选择页
+          {IS_LZU_MODE ? '返回首页' : '返回选择页'}
         </button>
       </div>
     )
@@ -159,7 +160,7 @@ export default function QuizPage() {
       <header className="bg-white border-b border-black/[0.04]">
         <div className="flex items-center gap-3 px-6 h-14 max-w-xl mx-auto">
           <button
-            onClick={() => navigate('/select')}
+            onClick={() => navigate(IS_LZU_MODE ? '/' : '/select')}
             className="text-gray-400 hover:text-gray-600 transition-colors text-sm font-medium shrink-0"
           >
             ← 退出

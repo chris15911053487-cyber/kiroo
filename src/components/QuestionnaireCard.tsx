@@ -15,6 +15,9 @@ const CATEGORY_LABELS: Record<QuestionnaireCategory, string> = {
   '16pf': '16PF',
   creativity: '创造力',
   holland: '霍兰德',
+  'lzu-leadership': '领导风格',
+  'lzu-personality': '人格测试',
+  'lzu-creativity': '创造力',
 }
 
 const CATEGORY_ICONS: Record<QuestionnaireCategory, string> = {
@@ -27,6 +30,9 @@ const CATEGORY_ICONS: Record<QuestionnaireCategory, string> = {
   '16pf': '📐',
   creativity: '💡',
   holland: '🧭',
+  'lzu-leadership': '👑',
+  'lzu-personality': '🧠',
+  'lzu-creativity': '💡',
 }
 
 const CATEGORY_ICON_BG: Record<QuestionnaireCategory, string> = {
@@ -39,6 +45,9 @@ const CATEGORY_ICON_BG: Record<QuestionnaireCategory, string> = {
   '16pf': 'bg-gradient-to-br from-slate-50 to-gray-50',
   creativity: 'bg-gradient-to-br from-yellow-50 to-orange-50',
   holland: 'bg-gradient-to-br from-green-50 to-teal-50',
+  'lzu-leadership': 'bg-gradient-to-br from-amber-50 to-yellow-50',
+  'lzu-personality': 'bg-gradient-to-br from-violet-50 to-purple-50',
+  'lzu-creativity': 'bg-gradient-to-br from-yellow-50 to-orange-50',
 }
 
 const CATEGORY_BADGE: Record<QuestionnaireCategory, string> = {
@@ -51,6 +60,9 @@ const CATEGORY_BADGE: Record<QuestionnaireCategory, string> = {
   '16pf': 'bg-slate-50 text-slate-600',
   creativity: 'bg-orange-50 text-orange-600',
   holland: 'bg-emerald-50 text-emerald-600',
+  'lzu-leadership': 'bg-amber-50 text-amber-600',
+  'lzu-personality': 'bg-violet-50 text-violet-600',
+  'lzu-creativity': 'bg-orange-50 text-orange-600',
 }
 
 /** 估算答题时间（每题约 30 秒） */

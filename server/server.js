@@ -1,13 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth');
-const assessmentRoutes = require('./routes/assessment');
-const adminRoutes = require('./routes/admin');
-const sessionRoutes = require('./routes/session');
-const reportRoutes = require('./routes/report');
+const { initDatabase, getPool } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -123,7 +120,6 @@ app.post('/api/generate-comprehensive-report', async (req, res) => {
       return res.status(500).json({ error: 'Empty response from AI' });
     }
 
-    // 尝试解析为JSON，如果失败则返回原始文本
     try {
       const parsed = JSON.parse(content);
       res.json({ content, parsed });
@@ -147,7 +143,6 @@ app.post('/api/reports/save', async (req, res) => {
     return res.status(400).json({ error: '缺少必要的报告数据' });
   }
 
-  // 简易token验证
   if (!token) {
     return res.status(401).json({ error: '未登录' });
   }
@@ -163,25 +158,22 @@ app.post('/api/reports/save', async (req, res) => {
   }
 
   try {
-    const pool = require('./db');
+    const pool = getPool();
 
-    // 检查是否已有报告
     const [existing] = await pool.query(
       'SELECT id FROM comprehensive_reports WHERE session_id = ?',
       [sessionId]
     );
 
     if (existing.length > 0) {
-      // 更新已有报告
       await pool.query(
         `UPDATE comprehensive_reports
          SET report_content = ?, comprehensive_score = ?, score_summary = ?,
-             review_status = 'pending', updated_at = NOW()
+             review_status = 'pending', updated_at = datetime('now')
          WHERE session_id = ?`,
         [reportContent, comprehensiveScore, JSON.stringify(scoreSummary), sessionId]
       );
 
-      // 同时更新session状态
       await pool.query(
         'UPDATE assessment_sessions SET status = ? WHERE id = ?',
         ['submitted', sessionId]
@@ -190,7 +182,6 @@ app.post('/api/reports/save', async (req, res) => {
       return res.json({ message: '报告已更新', reportId: existing[0].id });
     }
 
-    // 创建新报告
     const [result] = await pool.query(
       `INSERT INTO comprehensive_reports
        (session_id, user_id, questionnaires_completed, score_summary, report_content, comprehensive_score, review_status)
@@ -205,7 +196,6 @@ app.post('/api/reports/save', async (req, res) => {
       ]
     );
 
-    // 更新session状态
     await pool.query(
       'UPDATE assessment_sessions SET status = ? WHERE id = ?',
       ['submitted', sessionId]
@@ -218,42 +208,50 @@ app.post('/api/reports/save', async (req, res) => {
   }
 });
 
-// 用户认证路由
-app.use('/api/auth', authRoutes);
-
-// 测评记录路由（保留，兼容旧版）
-app.use('/api/assessments', assessmentRoutes);
-
-// 测评会话路由（新版）
-app.use('/api/sessions', sessionRoutes);
-
-// 综合报告路由（新版）
-app.use('/api/reports', reportRoutes);
-
-// 管理后台路由
-app.use('/api/admin', adminRoutes);
-
 // 健康检查接口
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// 托管前端静态文件（兼容本地开发 server/ 目录 和 Docker /app 目录）
-const fs = require('fs');
-const distPath = fs.existsSync(path.join(__dirname, 'dist'))
-  ? path.join(__dirname, 'dist')
-  : path.join(__dirname, '..', 'dist');
-app.use(express.static(distPath));
+// ============================================================
+// Async startup: init DB then mount routes and start listening
+// ============================================================
+async function start() {
+  await initDatabase();
 
-// SPA 路由兜底 — 所有非 /api 路径返回 index.html
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(distPath, 'index.html'));
-  }
-});
+  const authRoutes = require('./routes/auth');
+  const assessmentRoutes = require('./routes/assessment');
+  const adminRoutes = require('./routes/admin');
+  const sessionRoutes = require('./routes/session');
+  const reportRoutes = require('./routes/report');
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server running on port ${PORT}`);
-  console.log(`   API: http://0.0.0.0:${PORT}/api/`);
-  console.log(`   Web: http://0.0.0.0:${PORT}`);
+  app.use('/api/auth', authRoutes);
+  app.use('/api/assessments', assessmentRoutes);
+  app.use('/api/sessions', sessionRoutes);
+  app.use('/api/reports', reportRoutes);
+  app.use('/api/admin', adminRoutes);
+
+  // 托管前端静态文件（兼容本地开发 server/dist 和 Docker /app/dist）
+  const distPath = fs.existsSync(path.join(__dirname, 'dist'))
+    ? path.join(__dirname, 'dist')
+    : path.join(__dirname, '..', 'dist');
+  app.use(express.static(distPath));
+
+  // SPA 路由兜底
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(distPath, 'index.html'));
+    }
+  });
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`   API: http://localhost:${PORT}/api/`);
+    console.log(`   LZU Mode: ${process.env.LZU_MODE || 'false'}`);
+  });
+}
+
+start().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });

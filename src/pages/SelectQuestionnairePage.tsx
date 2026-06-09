@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAssessment } from '../context/AssessmentContext'
 import { useAuth } from '../context/AuthContext'
 import { sessionService } from '../services/sessionService'
-import { QUESTIONNAIRE_PRIORITY } from '../types'
+import { QUESTIONNAIRE_PRIORITY, LZU_QUESTIONNAIRE_PRIORITY, IS_LZU_MODE } from '../types'
 
 export default function SelectQuestionnairePage() {
   const { state, dispatch } = useAssessment()
@@ -16,6 +16,7 @@ export default function SelectQuestionnairePage() {
   const [hasExistingSession, setHasExistingSession] = useState(false)
   const [existingSessionId, setExistingSessionId] = useState<number | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
+  const autoStarted = useRef(false)
 
   // 未登录跳转
   useEffect(() => {
@@ -38,14 +39,53 @@ export default function SelectQuestionnairePage() {
       .finally(() => setCheckingSession(false))
   }, [user])
 
-  // 获取可用问卷列表（与加载的questionnaire列表匹配优先级信息）
+  // 获取可用问卷列表（根据模式使用不同优先级）
   const enabledIds = new Set(
     state.questionnaires.filter(q => q.enabled).map(q => q.id)
   )
 
-  const availableQuestionnaires = QUESTIONNAIRE_PRIORITY.filter(q =>
+  const priorityList = IS_LZU_MODE ? LZU_QUESTIONNAIRE_PRIORITY : QUESTIONNAIRE_PRIORITY
+
+  const availableQuestionnaires = priorityList.filter(q =>
     enabledIds.has(q.id)
   )
+
+  // 兰大模式：自动创建session并跳转到第一个问卷
+  useEffect(() => {
+    if (!IS_LZU_MODE) return
+    if (autoStarted.current) return
+    if (checkingSession || authLoading) return
+    if (!user) return
+    if (hasExistingSession) return
+    if (availableQuestionnaires.length === 0) return
+
+    autoStarted.current = true
+    setSubmitting(true)
+
+    const lzuIds = availableQuestionnaires.map(q => q.id)
+    sessionService.create(lzuIds)
+      .then(data => {
+        dispatch({ type: 'SET_SESSION', payload: data as any })
+        dispatch({ type: 'SET_ALL_SCORES', payload: {} })
+        navigate(`/quiz/${data.id}`, { replace: true })
+      })
+      .catch(err => {
+        if (err instanceof Error && err.message.includes('409')) {
+          setError('您有一个进行中的测评会话，请先完成后再开始新的测评。')
+        } else {
+          setError(err instanceof Error ? err.message : '创建测评会话失败')
+        }
+        autoStarted.current = false
+        setSubmitting(false)
+      })
+  }, [IS_LZU_MODE, checkingSession, authLoading, user, hasExistingSession, availableQuestionnaires, dispatch, navigate])
+
+  // 非兰大模式：默认全选
+  useEffect(() => {
+    if (!IS_LZU_MODE && availableQuestionnaires.length > 0) {
+      setSelected(new Set(availableQuestionnaires.map(q => q.id)))
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 全选/取消全选
   const allSelected = availableQuestionnaires.length > 0 &&
@@ -98,6 +138,74 @@ export default function SelectQuestionnairePage() {
       navigate(`/quiz/${existingSessionId}`)
     }
   }
+
+  // 兰大模式：显示自动初始化loading
+  if (IS_LZU_MODE) {
+    if (authLoading || checkingSession) {
+      return (
+        <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+          <p className="text-gray-400">加载中…</p>
+        </div>
+      )
+    }
+
+    if (!user) return null
+
+    // 兰大模式：正在自动创建session
+    if (submitting && !hasExistingSession) {
+      return (
+        <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center px-6">
+          <div className="text-5xl mb-6 animate-spin">⏳</div>
+          <h2 className="text-xl font-bold text-[#1a1a2e] mb-3">正在初始化测评</h2>
+          <p className="text-gray-400 text-sm mb-4">正在为您准备测评问卷…</p>
+          <div className="flex gap-2">
+            {availableQuestionnaires.map((q, i) => (
+              <span key={q.id} className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                {i + 1}. {q.name}
+              </span>
+            ))}
+          </div>
+          {error && (
+            <div className="mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm text-center max-w-xs">
+              {error}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // 兰大模式：有进行中session，显示继续测评
+    if (hasExistingSession) {
+      return (
+        <div className="min-h-screen bg-[#fafafa] pb-20">
+          <header className="bg-white border-b border-black/[0.04] sticky top-0 z-40">
+            <div className="flex items-center justify-between px-6 h-14 max-w-2xl mx-auto">
+              <h1 className="text-lg font-bold text-[#1a1a2e]">兰大研究生职业发展测评</h1>
+            </div>
+          </header>
+          <main className="px-6 py-6 max-w-2xl mx-auto">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6 text-center">
+              <span className="text-3xl mb-3 block">📋</span>
+              <h3 className="font-bold text-amber-800 mb-2">您有一个未完成的测评</h3>
+              <p className="text-amber-600 text-sm mb-4">
+                上次测评进度已保存，您可以继续完成剩余问卷。
+              </p>
+              <button
+                onClick={handleContinue}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-[0_4px_15px_rgba(245,158,11,0.3)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.4)] transition-all"
+              >
+                继续上次测评 →
+              </button>
+            </div>
+          </main>
+        </div>
+      )
+    }
+
+    return null
+  }
+
+  // ========== 非兰大模式：问卷选择 ==========
 
   if (authLoading || checkingSession) {
     return (
@@ -235,7 +343,11 @@ export default function SelectQuestionnairePage() {
               disabled={selected.size === 0 || submitting}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white font-bold text-base shadow-[0_4px_20px_rgba(99,102,241,0.3)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
             >
-              {submitting ? '创建中…' : selected.size === 0 ? '请至少选择一个测评问卷' : `开始探索（${selected.size}个问卷）`}
+              {submitting
+                ? '创建中…'
+                : selected.size === 0
+                ? '请至少选择一个测评问卷'
+                : `开始探索（${selected.size}个问卷）`}
             </button>
 
             {/* 推荐提示 */}

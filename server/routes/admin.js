@@ -1,7 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../db');
+const { getPool } = require('../db');
+const pool = getPool();
 const adminAuthMiddleware = require('../middleware/adminAuth');
 
 const router = express.Router();
@@ -363,45 +364,6 @@ router.get('/reports/:id', adminAuthMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/admin/reports/:id - 管理员：编辑报告内容
-router.put('/reports/:id', adminAuthMiddleware, async (req, res) => {
-  const { reportContent, comprehensiveScore } = req.body;
-
-  if (reportContent === undefined && comprehensiveScore === undefined) {
-    return res.status(400).json({ error: '缺少要更新的内容' });
-  }
-
-  try {
-    const updates = [];
-    const params = [];
-
-    if (reportContent !== undefined) {
-      updates.push('report_content = ?');
-      params.push(reportContent);
-    }
-    if (comprehensiveScore !== undefined) {
-      updates.push('comprehensive_score = ?');
-      params.push(comprehensiveScore);
-    }
-
-    params.push(req.params.id);
-
-    const [result] = await pool.query(
-      `UPDATE comprehensive_reports SET ${updates.join(', ')} WHERE id = ?`,
-      params
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: '报告不存在' });
-    }
-
-    res.json({ message: '报告已更新' });
-  } catch (err) {
-    console.error('Update report error:', err);
-    res.status(500).json({ error: '更新报告失败' });
-  }
-});
-
 // POST /api/admin/reports/:id/approve - 管理员：审核通过
 router.post('/reports/:id/approve', adminAuthMiddleware, async (req, res) => {
   const conn = await pool.getConnection();
@@ -489,60 +451,6 @@ router.post('/reports/:id/reject', adminAuthMiddleware, async (req, res) => {
 });
 
 // ==================== 旧版单条审核（保留兼容） ====================
-
-// PUT /api/admin/assessments/:id/review - 审核（通过/拒绝）
-router.put('/assessments/:id/review', adminAuthMiddleware, async (req, res) => {
-  const { id } = req.params;
-  const { status, comment } = req.body;
-
-  if (!status || !['approved', 'rejected'].includes(status)) {
-    return res.status(400).json({ error: '无效的审核状态，必须为 approved 或 rejected' });
-  }
-
-  try {
-    const [result] = await pool.query(
-      `UPDATE assessment_records
-       SET review_status = ?, review_comment = ?, reviewed_at = NOW()
-       WHERE id = ?`,
-      [status, comment || null, id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: '记录不存在' });
-    }
-
-    res.json({ message: '审核操作成功', reviewStatus: status });
-  } catch (err) {
-    console.error('Review error:', err);
-    res.status(500).json({ error: '审核操作失败' });
-  }
-});
-
-// PUT /api/admin/assessments/:id/report - 编辑 AI 报告
-router.put('/assessments/:id/report', adminAuthMiddleware, async (req, res) => {
-  const { id } = req.params;
-  const { aiReport } = req.body;
-
-  if (aiReport === undefined || aiReport === null) {
-    return res.status(400).json({ error: '缺少报告内容' });
-  }
-
-  try {
-    const [result] = await pool.query(
-      `UPDATE assessment_records SET ai_report = ? WHERE id = ?`,
-      [aiReport, id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: '记录不存在' });
-    }
-
-    res.json({ message: '报告已更新' });
-  } catch (err) {
-    console.error('Update report error:', err);
-    res.status(500).json({ error: '更新报告失败' });
-  }
-});
 
 // GET /api/admin/assessments/:id - 获取单条测评详情
 router.get('/assessments/:id', adminAuthMiddleware, async (req, res) => {

@@ -10,6 +10,9 @@ export type QuestionnaireCategory =
   | '16pf'
   | 'creativity'
   | 'holland'
+  | 'lzu-leadership'
+  | 'lzu-personality'
+  | 'lzu-creativity'
 
 export interface Option {
   id: string
@@ -87,6 +90,24 @@ export const QUESTIONNAIRE_PRIORITY: Array<{
 ]
 
 export const PRIORITY_ORDER = QUESTIONNAIRE_PRIORITY.map(q => q.id)
+
+// ==================== 兰大测评优先级配置 ====================
+
+export const LZU_QUESTIONNAIRE_PRIORITY: Array<{
+  id: string
+  name: string
+  questions: number
+  estimatedMinutes: number
+}> = [
+  { id: 'lzu-leadership',  name: '领导风格问卷（LASI）',      questions: 12, estimatedMinutes: 15 },
+  { id: 'lzu-personality', name: '16PF人格测验（精选版）',    questions: 15, estimatedMinutes: 20 },
+  { id: 'lzu-creativity',  name: '创造力障碍测试',            questions: 12, estimatedMinutes: 15 },
+]
+
+export const LZU_PRIORITY_ORDER = LZU_QUESTIONNAIRE_PRIORITY.map(q => q.id)
+
+/** 是否为兰大测评模式 */
+export const IS_LZU_MODE = import.meta.env.VITE_LZU_MODE === 'true'
 
 // ==================== 测评会话类型 ====================
 
