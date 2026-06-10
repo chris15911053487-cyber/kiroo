@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { reportService, type ReportListItem } from '../services/reportService'
 import { QUESTIONNAIRE_PRIORITY } from '../types'
 
 export default function HistoryPage() {
+  const navigate = useNavigate()
   const [reports, setReports] = useState<ReportListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -56,8 +57,15 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-[#fafafa] pb-20">
       <header className="bg-white border-b border-black/[0.04] sticky top-0 z-40">
-        <div className="flex items-center px-6 h-14 max-w-2xl mx-auto">
-          <h1 className="text-lg font-bold text-[#1a1a2e]">我的报告</h1>
+        <div className="flex items-center px-6 h-14 max-w-2xl mx-auto gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-gray-500 hover:text-indigo-600 transition-colors text-sm flex items-center gap-1 flex-shrink-0"
+          >
+            <span className="text-lg leading-none">←</span>
+            <span className="hidden sm:inline">返回</span>
+          </button>
+          <h1 className="text-lg font-bold text-[#1a1a2e]">我的测评</h1>
         </div>
       </header>
 

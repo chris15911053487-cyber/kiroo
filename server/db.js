@@ -9,10 +9,10 @@ let transactionDepth = 0;   // Track nested transaction depth
 
 function normalizeSQL(sql) {
   return sql
-    .replace(/\bNOW\(\)/gi, "datetime('now')")
-    .replace(/\bCURDATE\(\)/gi, "date('now')")
-    .replace(/DATE_SUB\(NOW\(\),\s*INTERVAL\s+(\d+)\s+SECOND\)/gi, "datetime('now', '-$1 seconds')")
-    .replace(/DATE_ADD\(NOW\(\),\s*INTERVAL\s+(\d+)\s+MINUTE\)/gi, "datetime('now', '+$1 minutes')")
+    .replace(/\bNOW\(\)/gi, "datetime('now', 'localtime')")
+    .replace(/\bCURDATE\(\)/gi, "date('now', 'localtime')")
+    .replace(/DATE_SUB\(NOW\(\),\s*INTERVAL\s+(\d+)\s+SECOND\)/gi, "datetime('now', 'localtime', '-$1 seconds')")
+    .replace(/DATE_ADD\(NOW\(\),\s*INTERVAL\s+(\d+)\s+MINUTE\)/gi, "datetime('now', 'localtime', '+$1 minutes')")
     .replace(/DATE\(created_at\)/gi, "date(created_at)")
     .replace(/ON DUPLICATE KEY UPDATE/gi, 'ON CONFLICT DO UPDATE SET');
 }

@@ -107,7 +107,7 @@ export default function SubmittedPage() {
                 我的报告列表
               </Link>
               <Link
-                to="/"
+                to={IS_LZU_MODE ? '/' : '/select'}
                 className="w-full py-3.5 rounded-2xl text-gray-400 text-sm text-center hover:text-indigo-600 transition-all"
               >
                 返回首页

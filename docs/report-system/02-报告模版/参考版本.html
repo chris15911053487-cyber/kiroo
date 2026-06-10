@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人才测评报告：区域销售总监晋升评估（正式版）</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #eef2f5;
+            font-family: 'Segoe UI', 'Roboto', 'Georgia', 'Times New Roman', serif;
+            padding: 48px 32px;
+            color: #1e2f3e;
+        }
+        .formal-report {
+            max-width: 1280px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            padding: 40px 48px;
+            border: 1px solid #e2edf2;
+        }
+        @media (max-width: 760px) {
+            body { padding: 20px 12px; }
+            .formal-report { padding: 24px 20px; }
+        }
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1e4663;
+            border-left: 4px solid #eab308;
+            padding-left: 20px;
+        }
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 1.8rem 0 1rem 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e9edf2;
+            color: #1e4663;
+        }
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.4rem 0 0.8rem 0;
+            color: #2c5a7a;
+        }
+        .info-section {
+            margin: 20px 0 28px 0;
+        }
+        .info-line {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .badge {
+            display: inline-block;
+            background: #eef2f8;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #2c5f8a;
+        }
+        .score-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            margin: 20px 0 16px 0;
+            align-items: baseline;
+        }
+        .score-block {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 8px 18px;
+            border: 1px solid #e2edf2;
+            text-align: center;
+            min-width: 130px;
+        }
+        .score-number-lg {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #1e4663;
+            line-height: 1;
+        }
+        .score-label {
+            font-size: 0.7rem;
+            color: #5f6f82;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.2rem 0;
+            font-size: 0.85rem;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            vertical-align: top;
+            text-align: left;
+        }
+        th {
+            background: #f8fafd;
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+        .insight-box {
+            background: #f8fafc;
+            padding: 14px 18px;
+            margin: 16px 0;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            color: #2c3e50;
+            border-radius: 8px;
+        }
+        .note-meta {
+            background: #f9f9fb;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin: 16px 0;
+            font-size: 0.85rem;
+        }
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 12px;
+            height: 10px;
+            width: 100%;
+            margin: 12px 0;
+        }
+        .progress-fill {
+            background: #2c5f8a;
+            width: 0%;
+            height: 10px;
+            border-radius: 12px;
+        }
+        .graph-card {
+            margin: 20px 0;
+            padding: 16px;
+            border: 1px solid #e2edf2;
+            border-radius: 12px;
+            background: #ffffff;
+        }
+        .graph-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c5a7a;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .small-meta {
+            font-size: 0.7rem;
+            color: #5f6f82;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .horizontal-bar-container {
+            margin: 12px 0;
+        }
+        .bar-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+        .bar-label {
+            width: 100px;
+            font-weight: 500;
+        }
+        .bar-bg {
+            flex: 1;
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 24px;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+        .bar-fill {
+            background: #2c5f8a;
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6b7b8f;
+            border-top: 1px solid #e2edf2;
+        }
+    </style>
+</head>
+<body>
+<div class="formal-report">
+    <h1>人才测评案例：区域销售总监晋升评估</h1>
+
+    <div class="info-section">
+        <div class="info-line">
+            <span class="badge">报告编号：TAL-2026-0609</span>   
+            <span class="badge">测评对象：张敏华（产品总监储备）</span>
+        </div>
+        <div class="info-line">测评日期：2026年6月9日</div>
+        <div class="info-line" style="margin-top: 16px; font-weight: 500;">本次评估使用大五人格（BFI-44）、16PF（第五版）和领导风格量表三工具组合，按预设权重计算综合得分。计分权重为总分100 = 大五(40) + 16PF(35) + 领导风格(25)</div>
+        
+        <div class="score-row">
+            <div class="score-block">
+                <div class="score-number-lg">87.3</div>
+                <div class="score-label">综合胜任力指数</div>
+            </div>
+            <div class="score-block">
+                <div class="score-number-lg">35.1<span style="font-size:1rem;">/40</span></div>
+                <div class="score-label">大五人格得分 (87.5%)</div>
+            </div>
+            <div class="score-block">
+                <div class="score-number-lg">29.6<span style="font-size:1rem;">/35</span></div>
+                <div class="score-label">16PF领导因子 (84.7%)</div>
+            </div>
+            <div class="score-block">
+                <div class="score-number-lg">22.6<span style="font-size:1rem;">/25</span></div>
+                <div class="score-label">领导风格适配 · 卓越匹配</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 总体画像：修正表格格式，th与td正确 -->
+    <h2>一、总体画像</h2>
+    <table>
+        <tbody>
+            <tr><th width="20%">突出优势</th><td>高尽责（9.0）、高外向（8.5）、高有恒（9.0）—— 能扛目标、能带团队</td></tr>
+            <tr><th>优先发展项</th><td>情绪稳定性（5.0）、开放性（6.0）、独立性（5.5）—— 压力下的从容度和战略决策中的探索勇气</td></tr>
+            <tr><th>领导风格</th><td>民主/参与型（78）为主，教练型（65）为辅；指令型偏低（30）</td></tr>
+            <tr><th>当前表现</th><td>销售经理 —— 业绩持续达标，带12人团队稳定</td></tr>
+            <tr><th>目标定位关键差异</th><td>从“管一个团队”到“管六个区域负责人”；从“执行公司战略”到“参与制定区域战略”；从“高频面对面”到“低频高影响力”</td></tr>
+        </tbody>
+    </table>
+
+    <h2>二、大五人格评分（满分 40 分）</h2>
+    <h3>各维度原始得分与折算</h3>
+    <table>
+        <thead><tr><th>维度</th><th>原始分(0–10)</th><th>权重占比</th><th>满分</th><th>折算公式</th><th>折算得分</th></tr></thead>
+        <tbody>
+            <tr><td>尽责性</td><td>9.0</td><td>35%</td><td>14</td><td>(9.0 ÷ 10) × 14</td><td>12.60</td></tr>
+            <tr><td>开放性</td><td>6.0</td><td>25%</td><td>10</td><td>(6.0 ÷ 10) × 10</td><td>6.00</td></tr>
+            <tr><td>情绪稳定性</td><td>5.0</td><td>20%</td><td>8</td><td>(5.0 ÷ 10) × 8</td><td>4.00</td></tr>
+            <tr><td>外向性</td><td>8.5</td><td>10%</td><td>4</td><td>(8.5 ÷ 10) × 4</td><td>3.40</td></tr>
+            <tr><td>宜人性</td><td>7.0</td><td>10%</td><td>4</td><td>(7.0 ÷ 10) × 4</td><td>2.80</td></tr>
+            <tr><td><strong>大五总分</strong></td><td colspan="4"></td><td><strong>28.80</strong></td></tr>
+        </tbody>
+    </table>
+
+    <div class="graph-card">
+        <div class="graph-title">大五人格维度雷达图（原始分 0-10）— 特质轮廓</div>
+        <div style="display: flex; justify-content: center;"><canvas id="radarChart" width="320" height="240" style="max-width:320px; height:auto;"></canvas></div>
+        <div class="small-meta">尽责性9.0 / 外向性8.5 双高驱动，情绪稳定性5.0为发展重点</div>
+    </div>
+
+    <h3>维度解读与行为锚定</h3>
+    <div class="insight-box"><strong>尽责性 9.0 —— 最可靠的武器</strong><br>解读依据：9.0/10 在所有维度中排名第一。大五研究中，尽责性是预测工作绩效最稳定的单一特质指标（Barrick & Mount, 1991），尤其对管理岗的预测效度更高。<br>对评估对象意味着：已经做到目标分解、过程追踪、承诺必达。在新角色上需从“自己盯”升级为“建机制让别人盯”。<br>✔ 行动指南：信任流程，而不是检查。</div>
+    <div class="insight-box"><strong>外向性 8.5 —— 影响力引擎</strong><br>解读依据：8.5/10 表示社交活跃度、正性情绪、自信显著高于均值。对销售管理岗，外向性与关系构建、团队动员能力紧密相关。<br>在新角色上需把高频社交能量转化为低频高影响力连接。<br>✔ 行动指南：每次接触制造一个“记忆点”。</div>
+    <div class="insight-box"><strong>情绪稳定性 5.0 —— 最值得投资的发展领域</strong><br>解读依据：5.0/10 处于常模均值线，跨工具一致性高。核心洞察：尽责性（9.0）在压力下会“过度运转”，导致团队感知焦虑。<br>调整方向：先问“数据告诉我们什么”，接受有些客户会离开，角色是裁判而非和事佬。<br>✔ 行动指南：压力来临时，先界定“真正的控制范围”。</div>
+    <div class="insight-box"><strong>开放性 6.0 —— 在合适时机拓展</strong><br>解读依据：6.0/10 略高于均值，务实倾向。每年至少需要1–2次“主动折腾”。<br>✔ 行动指南：每季度指定一个区域做“最小化试验”，失败算学习成本。</div>
+    <div class="insight-box"><strong>宜人性 7.0 —— 恰到好处</strong><br>不需要特别调整，在“关心人”和“坚持事”之间取得平衡。</div>
+
+    <h3>大五人格综合结论</h3>
+    <div class="insight-box">
+        <p>测评对象呈现出“高尽责+高外向”的经典高效管理者组合。高尽责确保目标拆解、过程管控、承诺闭环，是业绩达成的压舱石；高外向带来天然的影响力和团队动员能力，使目标能够顺畅传递并激发士气。这两个特质的叠加，使得执行层极具竞争力。</p>
+        <p>情绪稳定性（5.0）是当前最大的限制因子。低情绪稳定性在高尽责的催化下，容易演变为“焦虑式管理”——过度检查、微观干预、对失误反应过度。在区域总监岗位上，这种模式会被放大，导致团队氛围紧张、授权不足。发展方向不是“压抑情绪”，而是建立“觉察—暂停—回应”的压力响应机制，学会在压力下传递稳定感。建议通过正念训练、高管教练、模拟压力场景演练等方式，在6个月内将稳定性提升至6.5以上。</p>
+        <table style="width: auto; margin:0;"><tr><th>结论维度</th><th>评定</th></tr>
+        <tr><td>人格-角色匹配度</td><td>⭐⭐⭐⭐ 核心双维度与角色需求高度一致</td></tr>
+        <tr><td>最突出的资产</td><td>尽责性——预测管理绩效最稳定的单一指标</td></tr>
+        <tr><td>最值得投入的方向</td><td>情绪稳定性——从“个人应对方式”升级为“团队领导状态”</td></tr>
+        </table>
+    </div>
+
+    <h2>三、16PF 评分（满分 35 分）</h2>
+    <h3>关键因素原始得分与折算</h3>
+    <table>
+        <thead><tr><th>16PF因素</th><th>原始分(0-10)</th><th>权重占比</th><th>满分</th><th>折算公式</th><th>折算得分</th></tr></thead>
+        <tbody>
+            <tr><td>恃强性(E)</td><td>7.5</td><td>20%</td><td>7.00</td><td>(7.5÷10)×7.00</td><td>5.25</td></tr>
+            <tr><td>敢为性(H)</td><td>6.5</td><td>15%</td><td>5.25</td><td>(6.5÷10)×5.25</td><td>3.41</td></tr>
+            <tr><td>稳定性(C)</td><td>5.0</td><td>15%</td><td>5.25</td><td>(5.0÷10)×5.25</td><td>2.63</td></tr>
+            <tr><td>有恒性(G)</td><td>9.0</td><td>15%</td><td>5.25</td><td>(9.0÷10)×5.25</td><td><strong>4.73</strong></td></tr>
+            <tr><td>独立性(Q2)</td><td>5.5</td><td>15%</td><td>5.25</td><td>(5.5÷10)×5.25</td><td>2.89</td></tr>
+            <tr><td>实验性(Q1)</td><td>5.0</td><td>10%</td><td>3.50</td><td>(5.0÷10)×3.50</td><td>1.75</td></tr>
+            <tr><td>聪慧性(B)</td><td>7.5</td><td>10%</td><td>3.50</td><td>(7.5÷10)×3.50</td><td>2.63</td></tr>
+            <tr><td><strong>16PF总分</strong></td><td colspan="4"></td><td><strong>23.29</strong></td></tr>
+        </tbody>
+    </table>
+
+    <div class="graph-card">
+        <div class="graph-title">16PF 关键因素得分（原始分 0-10）— 横向条形图</div>
+        <div class="horizontal-bar-container">
+            <div class="bar-item"><span class="bar-label">有恒性(G)</span><div class="bar-bg"><div class="bar-fill" style="width: 90%;">9.0</div></div></div>
+            <div class="bar-item"><span class="bar-label">恃强性(E)</span><div class="bar-bg"><div class="bar-fill" style="width: 75%;">7.5</div></div></div>
+            <div class="bar-item"><span class="bar-label">聪慧性(B)</span><div class="bar-bg"><div class="bar-fill" style="width: 75%;">7.5</div></div></div>
+            <div class="bar-item"><span class="bar-label">敢为性(H)</span><div class="bar-bg"><div class="bar-fill" style="width: 65%;">6.5</div></div></div>
+            <div class="bar-item"><span class="bar-label">独立性(Q2)</span><div class="bar-bg"><div class="bar-fill" style="width: 55%;">5.5</div></div></div>
+            <div class="bar-item"><span class="bar-label">稳定性(C)</span><div class="bar-bg"><div class="bar-fill" style="width: 50%; background:#8fabbd;">5.0</div></div></div>
+            <div class="bar-item"><span class="bar-label">实验性(Q1)</span><div class="bar-bg"><div class="bar-fill" style="width: 50%; background:#8fabbd;">5.0</div></div></div>
+        </div>
+        <div class="small-meta">有恒性9.0、恃强性7.5为显著优势；稳定性(C)5.0与大五情绪稳定性一致，为发展靶点</div>
+    </div>
+
+    <h3>因素解读与行为锚定</h3>
+    <div class="insight-box"><strong>有恒性 9.0 —— 双刃但可控</strong><br>规则内化程度极高，是标准守护者。需要给团队明确的安全空间：“在这个范围内你们自己决定，超出范围来找我”。</div>
+    <div class="insight-box"><strong>恃强性 7.5 vs 敢为性 6.5 —— 一种很有意思的组合</strong><br>果断有底气来自充分准备，不是冒险冲动。练习“在收集70%信息后就做决定”。</div>
+    <div class="insight-box"><strong>独立性 5.5 —— 在高协作中找到独立判断的空间</strong><br>刻意练习：每月至少一次“没有征求意见就直接拍板”的决策。</div>
+    <div class="insight-box"><strong>聪慧性 7.5 —— 一个容易被销售管理者忽略的加速器</strong><br>主动输出“市场洞察简报”，把快速学习能力转化为团队认知。</div>
+
+    <h3>大五与 16PF 交叉验证</h3>
+    <table>
+        <thead><tr><th>大五维度</th><th>对应16PF因素</th><th>得分一致性</th><th>解读</th></tr></thead>
+        <tbody>
+            <tr><td>尽责性 (9.0)</td><td>有恒性G (9.0)</td><td>✅完全一致</td><td>执行力是最确定的优势</td></tr>
+            <tr><td>情绪稳定性 (5.0)</td><td>稳定性C (5.0)</td><td>✅完全一致</td><td>情绪管理是跨工具锚定的最确定发展方向</td></tr>
+            <tr><td>外向性 (8.5)</td><td>恃强性E(7.5)+敢为性H(6.5)</td><td>✅基本一致</td><td>社交主导力确凿，但勇于探索新领域略审慎</td></tr>
+            <tr><td>开放性 (6.0)</td><td>实验性Q1 (5.0)</td><td>✅基本一致</td><td>实用主义倾向，偏好已验证的方法</td></tr>
+        </tbody>
+    </table>
+    <div class="note-meta"><strong>提示：</strong>当两个工具的对应维度得分高度一致时，“这是真信号”的置信度大幅提高。本案例中四个维度全部一致，是理想的教学示范。</div>
+    
+    <h3>16PF综合结论</h3>
+    <div class="insight-box">
+        <p>“有恒性9.0 + 恃强性7.5”构成了“原则性权威”的领导原型。这类管理者既坚守规则和承诺，又敢于在关键时刻坚持立场、做出决断。在区域总监岗位上，这种组合有利于建立透明公平的管理秩序，下属清楚底线，同时知道领导者会为团队争取资源。</p>
+        <p>敢为性（6.5）与恃强性（7.5）之间的差距值得关注。这意味着测评对象更倾向于在信息充分、准备周全后才敢行动，而非在模糊情境中快速拍板。但在全国区域总监的岗位上，常常需要在70%信息度时做出决策。因此发展靶点不是提高敢为性绝对值，而是练习“有策略的冒险”——比如每月选一个低风险决策，主动在信息不全时拍板并复盘。</p>
+        <p>独立性（5.5）当前为中等偏上，说明习惯于寻求共识。晋升后需要刻意培养独立决断能力：每周选一件事，不征求意见直接决定，记录结果。这能帮助尽快适应更高层级的决策孤独感。</p>
+    </div>
+
+    <h2>四、领导风格评分（满分 25 分）</h2>
+    <h3>风格测评结果</h3>
+    <table>
+        <thead><tr><th>风格类型</th><th>得分 (0–100)</th><th>对应角色分</th><th>行为特征</th></tr></thead>
+        <tbody>
+            <tr><td>民主/参与型 ⭐主要</td><td>78</td><td>22</td><td>集体讨论、充分授权、信任团队判断</td></tr>
+            <tr><td>教练型</td><td>65</td><td>—</td><td>关注下属成长、主动提供反馈与发展机会</td></tr>
+            <tr><td>变革型</td><td>52</td><td>—</td><td>有一定愿景激励能力，能描绘方向</td></tr>
+            <tr><td>交易型</td><td>45</td><td>—</td><td>目标与回报挂钩，有基础但非主导</td></tr>
+            <tr><td>指令型</td><td>30</td><td>—</td><td>较少单向命令，倾向于协商而非指挥</td></tr>
+        </tbody>
+    </table>
+    <p><strong>领导风格得分：22 / 25</strong>（取主要风格对应分值）</p>
+    <div class="graph-card">
+        <div class="graph-title">领导风格强度分布（0-100）</div>
+        <canvas id="leadershipChart" width="500" height="240" style="max-width:100%; height:auto;"></canvas>
+    </div>
+
+    <h3>风格-场景匹配分析</h3>
+    <table>
+        <thead><tr><th>典型工作场景</th><th>自然应对</th><th>匹配度</th><th>需要注意什么</th></tr></thead>
+        <tbody>
+            <tr><td>日常管理</td><td>民主型：定方向→给资源→看结果→复盘</td><td>✅完美匹配</td><td>不需要改</td></tr>
+            <tr><td>推动增长</td><td>民主型为主、交易型为辅</td><td>✅基本够用</td><td>交易型45分偏低，建议明确“完成有什么、完不成有什么”</td></tr>
+            <tr><td>突发危机</td><td>民主型召集讨论</td><td>⚠️储备不足</td><td>练习前24小时单边决策</td></tr>
+            <tr><td>培养下属</td><td>教练型：问“你觉得呢”</td><td>✅高度匹配</td><td>隐藏优势</td></tr>
+            <tr><td>战略创新</td><td>变革型52分</td><td>⚠️可发展</td><td>补充结构性战略思考习惯</td></tr>
+        </tbody>
+    </table>
+    
+    <h3>领导风格综合结论</h3>
+    <div class="insight-box">
+        <p>民主/参与型（78）与教练型（65）双高，说明测评对象擅长建立参与式决策文化，并愿意投入精力培养下属。这种风格非常适合管理成熟度较高的团队，能够激发成员的自主性和创造力。在区域总监岗位上，这将帮助他快速赢得六个区域负责人的信任和追随。</p>
+        <p>指令型（30）和交易型（45）显著偏低。这意味着在需要果断下令（如合规危机、紧急调整）或明确奖惩边界时，可能会犹豫或过度协商。晋升后面对六个平级的区域负责人，如果缺乏指令型储备，容易出现“谁都不得罪，但谁都不怕”的局面。同时交易型得分不足可能导致绩效管理过于柔和，难以处理低绩效问题。</p>
+        <p>建议在6个月内完成领导风格延伸训练——每月刻意使用1次指令型行为（如直接拍板一个方案）和1次交易型行为（如明确说“如果达成X，奖励Y；如果完不成，后果Z”）。不需要改变主导风格，只需建立风格库的备用能力。</p>
+    </div>
+
+    <h2>五、综合评分汇总</h2>
+    <table>
+        <thead><tr><th>测评模块</th><th>原始得分</th><th>满分</th><th>加权得分</th></tr></thead>
+        <tbody>
+            <tr><td>大五人格</td><td>28.80</td><td>40</td><td>28.80</td></tr>
+            <tr><td>16PF</td><td>23.29</td><td>35</td><td>23.29</td></tr>
+            <tr><td>领导风格</td><td>22.00</td><td>25</td><td>22.00</td></tr>
+            <tr><td><strong>综合总分</strong></td><td colspan="2"><strong>100</strong></td><td><strong>74.09</strong></td></tr>
+        </tbody>
+    </table>
+    <div class="progress-container"><div class="progress-fill" style="width:74%;"></div></div>
+    
+    <div class="insight-box">
+        <strong>综合诊断：为什么是74.09分？</strong><br>
+        得分结构拆解：大五损失主要来自情绪稳定性（满分8得4）；16PF损失来自稳定性(C)和实验性(Q1)；领导风格得分较高，但指令型缺口影响上限。<br>
+        晋升风险评估：74分属于“可晋升，但伴随明确发展计划”的区间。核心底座（尽责+外向+有恒+恃强）足够坚实，能够保证基本盘不出问题。但情绪稳定性低可能导致团队氛围紧张、过度干预；指令型缺失可能导致权威不足。如果不做干预，晋升后6-12个月可能出现“团队疲惫”或“决策拖延”。<br>
+        发展杠杆点：情绪稳定性提升1分（从5.0到6.0）比任何其他维度提升对综合得分的边际贡献都大。建议前3个月聚焦压力反应训练和授权机制设计，而非业绩冲刺。
+    </div>
+    <p><strong>分级判定：70–84 胜任</strong> → 74.09分，位于「胜任」区间。核心判断：能力底座坚实，发展方向明确，建议晋升并同步启动配套发展计划。</p>
+
+    <h2>八、复测建议</h2>
+    <table>
+        <thead><tr><th>节点</th><th>工具</th><th>核心关注</th><th>合格信号</th></tr></thead>
+        <tbody>
+            <tr><td>6个月后</td><td>情绪稳定性专项+领导风格量表</td><td>稳定性C上移，指令型形成储备</td><td>稳定性C ≥6.0，指令型 ≥40</td></tr>
+            <tr><td>12个月后</td><td>全工具复测</td><td>综合得分突破80，实验性提升</td><td>综合≥80，实验性Q1≥6.0</td></tr>
+            <tr><td>年度</td><td>360度评估</td><td>多源验证：压力下冷静、鼓励尝试</td><td>两项≥4.0/5.0</td></tr>
+        </tbody>
+    </table>
+
+    <h2>九、整体综合结论</h2>
+    <h3>9.1 三工具交叉锚定</h3>
+    <div class="insight-box">行为层（民主/教练）↔ 特质层（16PF有恒+恃强）↔ 人格层（尽责+外向）。三层逻辑自洽，且每个关键发现都有至少两个工具的独立证据——这是高信度的测评结果。</div>
+    <h3>9.2 核心画像</h3>
+    <p>评估对象是一个<strong>“用执行力取胜、用信任感带队”</strong>的管理者。成长空间在于：从“自己扛”到“让团队一起扛”，从“多准备”到“敢决定”，从“管过程”到“定机制”。</p>
+    <h3>9.3 最终建议</h3>
+    <table>
+        <thead><tr><th>评估维度</th><th>结论</th></tr></thead>
+        <tbody>
+            <tr><td>核心能力匹配度</td><td>高度匹配。执行力、影响力、团队带动能力与区域总监角色核心需求一致</td></tr>
+            <tr><td>发展方向清晰度</td><td>清晰且精准。三个工具共同指向同一个发展重点</td></tr>
+            <tr><td>发展可行性</td><td>可行，属于可通过刻意练习在岗发展</td></tr>
+            <tr><td><strong>综合建议</strong></td><td><strong>推荐晋升，同步启动6个月高管教练+结构化复盘。前3个月以角色转换为核心，而非业绩冲刺。</strong></td></tr>
+        </tbody>
+    </table>
+    <div class="insight-box"><strong>给评估对象的一句话</strong>：最大的资产是靠谱——说到做到、团队愿意跟随。现在需要的是：在更大的棋盘上，用更少的动作撬动更大的结果。相信团队能接住授权，正如已经证明自己能接住公司的目标。</div>
+
+    <footer>
+        本报告完整保留了原始解读依据、行为锚定、表格，并采用雷达图与横向条形图呈现测评数据。
+    </footer>
+</div>
+
+<script>
+    const radarCtx = document.getElementById('radarChart').getContext('2d');
+    new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+            labels: ['尽责性 9.0', '开放性 6.0', '情绪稳定性 5.0', '外向性 8.5', '宜人性 7.0'],
+            datasets: [{
+                label: '原始得分 (0-10)',
+                data: [9.0, 6.0, 5.0, 8.5, 7.0],
+                backgroundColor: 'rgba(44, 95, 138, 0.2)',
+                borderColor: '#2c5f8a',
+                borderWidth: 2,
+                pointBackgroundColor: '#1e4663',
+                pointBorderColor: '#fff',
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 9 } } },
+                tooltip: { callbacks: { label: (ctx) => `${ctx.label} : ${ctx.raw} / 10` } }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: { stepSize: 2, backdropColor: 'transparent', font: { size: 8 } },
+                    grid: { color: '#d0dbe8' },
+                    angleLines: { color: '#e0e8f0' }
+                }
+            }
+        }
+    });
+
+    const leadCtx = document.getElementById('leadershipChart').getContext('2d');
+    new Chart(leadCtx, {
+        type: 'bar',
+        data: {
+            labels: ['民主/参与型', '教练型', '变革型', '交易型', '指令型'],
+            datasets: [{
+                label: '得分 (0-100)',
+                data: [78, 65, 52, 45, 30],
+                backgroundColor: '#6f8faa',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: '风格强度' } } },
+            plugins: { legend: { position: 'top' } }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+{
+  "model": "deepseek-chat",
+  "system_prompt": "你是一名专业的人才测评报告生成专家。请根据用户提供的测评数据（JSON格式），严格遵循以下模板，生成一份完整的HTML人才测评报告。报告样式、排版、颜色、字体、图表位置、表格结构必须与“满意版参考模板”完全一致，仅动态数据（分数、解读文本）根据实际输入进行替换。不得遗漏任何章节，不得擅自添加或删除表格列。图表使用Chart.js 4.4.0。输出完整的HTML文档，不要额外解释。",
+  "user_template": "请根据以下测评数据生成报告：\n{{data}}",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "report_id": {"type": "string", "description": "报告编号，如 TAL-20260610-001"},
+      "name": {"type": "string", "description": "测评对象姓名"},
+      "role": {"type": "string", "description": "目标岗位/储备角色"},
+      "date": {"type": "string", "description": "测评日期 YYYY年MM月DD日"},
+      "big_five": {
+        "type": "object",
+        "properties": {
+          "conscientiousness": {"type": "number", "minimum": 0, "maximum": 10},
+          "openness": {"type": "number", "minimum": 0, "maximum": 10},
+          "emotional_stability": {"type": "number", "minimum": 0, "maximum": 10},
+          "extraversion": {"type": "number", "minimum": 0, "maximum": 10},
+          "agreeableness": {"type": "number", "minimum": 0, "maximum": 10}
+        },
+        "required": ["conscientiousness", "openness", "emotional_stability", "extraversion", "agreeableness"]
+      },
+      "pf16": {
+        "type": "object",
+        "properties": {
+          "dominance_E": {"type": "number", "minimum": 0, "maximum": 10},
+          "boldness_H": {"type": "number", "minimum": 0, "maximum": 10},
+          "stability_C": {"type": "number", "minimum": 0, "maximum": 10},
+          "persistence_G": {"type": "number", "minimum": 0, "maximum": 10},
+          "independence_Q2": {"type": "number", "minimum": 0, "maximum": 10},
+          "experimentation_Q1": {"type": "number", "minimum": 0, "maximum": 10},
+          "intelligence_B": {"type": "number", "minimum": 0, "maximum": 10}
+        },
+        "required": ["dominance_E", "boldness_H", "stability_C", "persistence_G", "independence_Q2", "experimentation_Q1", "intelligence_B"]
+      },
+      "leadership": {
+        "type": "object",
+        "properties": {
+          "democratic": {"type": "number", "minimum": 0, "maximum": 100},
+          "coaching": {"type": "number", "minimum": 0, "maximum": 100},
+          "transformational": {"type": "number", "minimum": 0, "maximum": 100},
+          "transactional": {"type": "number", "minimum": 0, "maximum": 100},
+          "directive": {"type": "number", "minimum": 0, "maximum": 100}
+        },
+        "required": ["democratic", "coaching", "transformational", "transactional", "directive"]
+      },
+      "current_performance": {"type": "string", "description": "当前表现描述"},
+      "target_difference": {"type": "string", "description": "目标定位关键差异描述"}
+    },
+    "required": ["report_id", "name", "role", "date", "big_five", "pf16", "leadership", "current_performance", "target_difference"]
+  },
+  "calculation_rules": {
+    "big5_scores": {
+      "conscientiousness": {"weight": 0.35, "max_score": 14},
+      "openness": {"weight": 0.25, "max_score": 10},
+      "emotional_stability": {"weight": 0.20, "max_score": 8},
+      "extraversion": {"weight": 0.10, "max_score": 4},
+      "agreeableness": {"weight": 0.10, "max_score": 4}
+    },
+    "pf16_scores": {
+      "dominance_E": {"max_score": 7.00},
+      "boldness_H": {"max_score": 5.25},
+      "stability_C": {"max_score": 5.25},
+      "persistence_G": {"max_score": 5.25},
+      "independence_Q2": {"max_score": 5.25},
+      "experimentation_Q1": {"max_score": 3.50},
+      "intelligence_B": {"max_score": 3.50}
+    },
+    "leadership_score_formula": "democratic / 100 * 25",
+    "total_score_formula": "big5_total + pf16_total + leadership_score",
+    "grade": {
+      ">=85": "高潜人才",
+      "70-84": "胜任",
+      "50-69": "需辅导",
+      "<50": "调整岗位"
+    }
+  },
+  "output_format": {
+    "type": "html",
+    "encoding": "UTF-8",
+    "style": "完全复刻满意版参考模板的CSS（内联），不得修改颜色、字体、间距、圆角、阴影",
+    "charts": {
+      "radar": "大五人格雷达图，原始分0-10，使用Chart.js",
+      "bar": "领导风格柱状图，五种风格得分0-100",
+      "horizontal_bar": "16PF横向条形图，原始分0-10，使用Chart.js或模拟条形"
+    },
+    "sections": [
+      "报告头部",
+      "综合得分概览（卡片式）",
+      "总体画像表格",
+      "大五人格模块（得分表、雷达图、维度解读与行为锚定、综合结论）",
+      "16PF模块（得分表、横向条形图、因素解读、交叉验证表、综合结论）",
+      "领导风格模块（得分表、柱状图、风格-场景匹配分析表、综合结论）",
+      "综合评分汇总（总分表、诊断段落）",
+      "复测建议表格",
+      "整体综合结论（三工具锚定、核心画像、最终建议表格）",
+      "页脚"
+    ]
+  },
+  "interpretation_rules": {
+    "big5": {
+      "conscientiousness": "高（≥7.5）：目标承诺、过程管控、闭环能力极强；若情绪稳定性低则提示焦虑式管理。中：基本可靠但需强化追踪。低：灵活但需提升履约稳定性。",
+      "openness": "高：乐于探索、适应变革，建议每年至少一次主动折腾。中：务实稳妥，建议每季度做一次最小化试验。低：偏好传统规则，建议在熟悉领域做微创新。",
+      "emotional_stability": "高：抗压能力强，传递平静感。中：压力下偶有波动，需建立压力响应机制。低：容易焦虑，训练觉察—暂停—回应。",
+      "extraversion": "高：影响力引擎，需将高频社交转化为低频高影响力连接。中：适度社交，建议有策略地露面。低：偏好独立工作。",
+      "agreeableness": "高：善于合作，但需警惕过度迁就。中：平衡人际与任务。低：原则性强，需注意沟通方式。"
+    },
+    "pf16": {
+      "persistence_G": "高：规则守护者，需给团队安全空间。低：灵活但需明确底线。",
+      "dominance_E": "高：敢于决断，避免刚愎。低：偏好协商，需刻意练习拍板。",
+      "boldness_H": "高：冒险探索。低：谨慎周密，需练习70%信息决策。",
+      "stability_C": "同大五情绪稳定性。",
+      "independence_Q2": "高：独立决策。低：依赖共识，需练习孤独决策。",
+      "experimentation_Q1": "高：拥抱变化。低：务实传统，可做局部创新。",
+      "intelligence_B": "高：快速学习，输出洞察简报。低：依靠经验，多请教专家。"
+    },
+    "leadership_insight": "主导风格（民主/教练）优势：参与式决策、培养下属。短板（指令/交易低）：危机决策犹豫、绩效管理偏软。发展建议：每月刻意使用1次指令型行为（直接拍板）和1次交易型行为（明确奖惩）。",
+    "diagnosis": "根据总分区间生成：≥85 → 能力底座卓越，晋升后无需过多干预；70-84 → 可晋升但需配套发展计划，核心风险为最低分维度，杠杆点为提升最快维度；50-69 → 暂不建议晋升，需先完成能力培养；<50 → 岗位不匹配。",
+    "strength_priority": "突出优势取大五和16PF中≥7.5的维度组合；优先发展项取≤6.0的维度；领导风格列出最高两项和最低一项；核心画像根据组合特征生成一句话。"
+  },
+  "static_reference": "满意版参考版本.html（需内嵌其完整HTML/CSS/JS作为样式蓝本，仅替换动态内容）"
+}

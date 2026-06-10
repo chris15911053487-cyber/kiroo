@@ -220,8 +220,8 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
 
   children.push(new Paragraph({ children: [new PageBreak()] }));
 
-  // ===== 一、综合得分概览 =====
-  children.push(heading2('一、综合得分概览'));
+  // ===== 综合得分概览（不编号） =====
+  children.push(heading2('综合得分概览'));
   children.push(makeTable(
     ['指标', '得分', '满分', '百分比'],
     [
@@ -232,24 +232,28 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
     ],
     [25, 25, 25, 25]
   ));
+  // 进度条（用文字和特殊字符模拟）
+  const filledBars = Math.round(scores.totalScore / 10);
+  const emptyBars = 10 - filledBars;
+  children.push(boldPara(`综合得分进度：${'▓'.repeat(filledBars)}${'░'.repeat(emptyBars)} ${scores.totalScore}%`));
   children.push(boldPara(`${scores.grade} · ${scores.gradeDescription}`));
 
-  // ===== 二、总体画像 =====
-  children.push(heading2('二、总体画像'));
+  // ===== 一、总体画像 =====
+  children.push(heading2('一、总体画像'));
   children.push(makeTable(
     ['维度', '概况'],
     [
       ['突出优势', aiText.profileAdvantages || '根据测评数据自动生成'],
       ['优先发展项', aiText.profileDevelopments || '根据测评数据自动生成'],
       ['领导风格', `${l.dominantStyle}为主，情境适应性${scores.adaptabilityLevel}（指数: ${scores.adaptabilityIndex}）`],
-      ['目标定位', '从"个人执行"到"团队引领"；从"单一技能"到"多维管理能力"'],
+      ['目标定位关键差异', '从"个人执行"到"团队引领"；从"单一技能"到"多维管理能力"'],
     ],
     [22, 78]
   ));
 
-  // ===== 三、领导风格分析 =====
+  // ===== 二、领导风格分析 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
-  children.push(heading2('三、领导风格评分（满分 30 分）'));
+  children.push(heading2('二、领导风格评分（满分 30 分）'));
   children.push(heading3('各风格得分'));
   children.push(makeTable(
     ['风格类型', '原始得分', '满分', '行为特征'],
@@ -269,12 +273,36 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   children.push(chartCaption('图2：领导风格强度分布'));
   children.push(chartImage(barPng, 400, 240));
 
-  children.push(heading3('领导风格解读'));
+  // 风格-场景匹配表
+  children.push(heading3('风格-场景匹配分析'));
+  children.push(makeTable(
+    ['典型工作场景', '自然应对风格', '匹配度', '需要注意什么'],
+    [
+      ['新团队组建', l.s2 >= l.s1 ? 'S2教练型：指导+培养' : 'S1指令型：明确规范',
+        l.s2 >= 8 ? '✅完美匹配' : l.s2 >= 5 ? '✅基本够用' : '⚠️储备不足',
+        l.s2 >= 8 ? '不需调整' : l.s2 >= 5 ? '建议加强教练技巧' : '建议练习提问式领导'],
+      ['危机处理', 'S1指令型：果断决策',
+        l.s1 >= 5 ? '✅储备充足' : l.s1 >= 3 ? '✅基本够用' : '⚠️可加强',
+        l.s1 >= 5 ? '不需调整' : '建议练习单边决策'],
+      ['日常运营', l.s4 >= 8 ? 'S4授权型：信任+结果' : l.s3 >= 8 ? 'S3支持型：倾听+参与' : 'S2教练型：关注+反馈',
+        l.s4 >= 8 || l.s3 >= 8 ? '✅完美匹配' : '✅基本够用',
+        l.s4 >= 8 ? '不需调整' : '建议逐步授权'],
+      ['团队激励', 'S3支持型：倾听+赋能',
+        l.s3 >= 8 ? '✅高度匹配' : l.s3 >= 5 ? '✅基本够用' : '⚠️可发展',
+        l.s3 >= 8 ? '隐藏优势，善加利用' : '建议增加一对一沟通'],
+      ['战略转型', 'S2教练型：启发+共创',
+        l.s2 >= 8 ? '✅高度匹配' : l.s2 >= 5 ? '⚠️可发展' : '⚠️储备不足',
+        '补充结构性战略思考训练'],
+    ],
+    [22, 28, 18, 32]
+  ));
+
+  children.push(heading3('领导风格综合结论'));
   children.push(insightBox(aiText.leadershipInterpretation || '暂无解读'));
 
-  // ===== 四、人格特质分析 =====
+  // ===== 三、人格特质分析 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
-  children.push(heading2('四、人格特质评分（满分 40 分）'));
+  children.push(heading2('三、人格特质评分（满分 40 分）'));
   children.push(heading3('各维度得分'));
   children.push(makeTable(
     ['维度', '原始分(0-10)', '标准分', '等级', '权重'],
@@ -289,12 +317,41 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   children.push(chartCaption('图3：人格特质三维横向对比'));
   children.push(chartImage(personalityBarPng, 400, 150));
 
-  children.push(heading3('人格特质解读'));
-  children.push(insightBox(aiText.personalityInterpretation || '暂无解读'));
+  // 逐维度解读
+  children.push(heading3('维度解读与行为锚定'));
+  children.push(heading3('创造力潜质'));
+  children.push(insightBox(aiText.personality_creativity || aiText.personalityInterpretation || '暂无解读'));
+  children.push(heading3('心理健康'));
+  children.push(insightBox(aiText.personality_mentalHealth || '暂无解读'));
+  children.push(heading3('管理潜能'));
+  children.push(insightBox(aiText.personality_managementPotential || '暂无解读'));
 
-  // ===== 五、创造力障碍分析 =====
+  if (aiText.personalityInterpretation) {
+    children.push(heading3('人格特质综合结论'));
+    children.push(insightBox(aiText.personalityInterpretation));
+  }
+
+  // 交叉验证表
+  children.push(heading3('领导风格与人格特质交叉验证'));
+  children.push(makeTable(
+    ['领导风格维度', '对应人格特质', '得分一致性', '解读'],
+    [
+      ['S2教练型', `管理潜能 (${p.managementPotential.raw}/10)`,
+        `${Math.abs(Math.round(l.s2/12*100) - Math.round(p.managementPotential.raw/10*100)) <= 15 ? '✅完全一致' : Math.abs(Math.round(l.s2/12*100) - Math.round(p.managementPotential.raw/10*100)) <= 30 ? '⚠️基本一致' : '🔴有差异'}`,
+        l.s2/12*100 >= 66 && p.managementPotential.raw/10*100 >= 60 ? '培养意愿与能力双高—最确定的优势' : '关注管理能力系统提升'],
+      ['S4授权型', `心理健康 (${p.mentalHealth.raw}/10)`,
+        `${Math.abs(Math.round(l.s4/12*100) - Math.round(p.mentalHealth.raw/10*100)) <= 15 ? '✅完全一致' : Math.abs(Math.round(l.s4/12*100) - Math.round(p.mentalHealth.raw/10*100)) <= 30 ? '⚠️基本一致' : '🔴有差异'}`,
+        l.s4/12*100 >= 66 && p.mentalHealth.raw/10*100 >= 60 ? '信任与情绪稳定双支撑—授权有根基' : '建议加强情绪管理与信任建设'],
+      ['S1指令型', `创造力潜质 (${p.creativityPotential.raw}/10)`,
+        `${Math.abs(Math.round(l.s1/7*100) - Math.round(p.creativityPotential.raw/10*100)) <= 15 ? '✅完全一致' : Math.abs(Math.round(l.s1/7*100) - Math.round(p.creativityPotential.raw/10*100)) <= 30 ? '⚠️基本一致' : '🔴有差异'}`,
+        l.s1/7*100 <= 43 && p.creativityPotential.raw/10*100 < 60 ? '低指令与低创造力并存—需发展独立思考' : l.s1/7*100 >= 71 && p.creativityPotential.raw/10*100 >= 60 ? '执行力与创造力兼备—综合优势' : '探索与执行间找平衡'],
+    ],
+    [20, 22, 22, 36]
+  ));
+
+  // ===== 四、创造力障碍分析 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
-  children.push(heading2('五、创造力障碍分析（满分 30 分）'));
+  children.push(heading2('四、创造力障碍分析（满分 30 分）'));
   children.push(para('注意：得分越高表示障碍越少，创造力发挥越顺畅', { size: FONT_SIZE_SM, color: COLOR_MUTED }));
 
   children.push(makeTable(
@@ -311,17 +368,27 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   children.push(chartCaption('图4：创造力障碍横向对比'));
   children.push(chartImage(barrierBarPng, 400, 150));
 
-  children.push(heading3('创造力障碍解读'));
-  children.push(insightBox(aiText.barrierInterpretation || '暂无解读'));
+  children.push(heading3('障碍类型详细解读'));
+  children.push(heading3('心理障碍'));
+  children.push(insightBox(aiText.barrier_psychological || aiText.barrierInterpretation || '暂无解读'));
+  children.push(heading3('认知障碍'));
+  children.push(insightBox(aiText.barrier_cognitive || '暂无解读'));
+  children.push(heading3('环境与资源障碍'));
+  children.push(insightBox(aiText.barrier_environmental || '暂无解读'));
+
+  if (aiText.barrierInterpretation) {
+    children.push(heading3('创造力障碍综合结论'));
+    children.push(insightBox(aiText.barrierInterpretation));
+  }
 
   if (aiText.barrierSuggestions) {
     children.push(heading3('突破建议'));
     children.push(insightBox(aiText.barrierSuggestions));
   }
 
-  // ===== 六、综合评分汇总 =====
+  // ===== 五、综合评分汇总 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
-  children.push(heading2('六、综合评分汇总'));
+  children.push(heading2('五、综合评分汇总'));
   children.push(makeTable(
     ['测评模块', '加权得分', '满分', '占比'],
     [
@@ -337,21 +404,21 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   children.push(insightBox(aiText.comprehensiveDiagnosis || `综合总分${scores.totalScore}/100，等级"${scores.grade}"。`));
   children.push(boldPara(`分级判定：${scores.totalScore}分 → 「${scores.grade}」区间。${scores.gradeDescription}`));
 
-  // ===== 七、能力提升计划 =====
-  children.push(heading2('七、能力提升计划'));
+  // ===== 六、能力提升计划 =====
+  children.push(heading2('六、能力提升计划'));
   if (aiText.improvementPlan) {
     children.push(insightBox(aiText.improvementPlan));
   }
 
-  // ===== 八、职业发展建议 =====
-  children.push(heading2('八、职业发展建议'));
+  // ===== 七、职业发展建议 =====
+  children.push(heading2('七、职业发展建议'));
   if (aiText.careerSuggestions) {
     children.push(insightBox(aiText.careerSuggestions));
   }
 
-  // ===== 九、整体综合结论 =====
+  // ===== 八、整体综合结论 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
-  children.push(heading2('九、整体综合结论'));
+  children.push(heading2('八、整体综合结论'));
 
   children.push(heading3('核心评价'));
   children.push(insightBox(aiText.coreEvaluation || '暂无核心评价'));
@@ -371,7 +438,7 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
     spacing: { before: 200 },
     border: { top: { style: BorderStyle.SINGLE, size: 1, color: 'E2EDF2' } },
     children: [new TextRun({
-      text: `本报告由系统精准计分结合AI智能分析生成。报告内容仅供参考，建议结合实际情况综合判断。\n测评工具：领导风格量表（LASI）｜ 16PF人格测验（精选版）｜ 创造力障碍测试\n报告生成时间：${reportDate}`,
+      text: `本报告依据兰州大学管理学院职业发展测评系统生成（LASI + 16PF精选版 + 创造力障碍测试），权重与解读符合测评手册标准。结果用于职业规划参考，建议每6-12个月复测追踪发展成效。`,
       size: 15,
       font: FONT,
       color: COLOR_MUTED,
