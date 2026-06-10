@@ -25,6 +25,9 @@ FROM node:18-alpine
 # 替换为阿里云 Alpine 镜像（加速 apk 下载）
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
+# 时区设置为北京时间
+ENV TZ=Asia/Shanghai
+
 # Puppeteer 需要的系统依赖
 RUN apk add --no-cache \
     chromium \
@@ -33,7 +36,8 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    font-noto-cjk
+    font-noto-cjk \
+    tzdata
 
 # 设置 Chromium 路径供 puppeteer 使用
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
