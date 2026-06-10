@@ -37,7 +37,7 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>职业发展测评报告：${userName}</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/chart.umd.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #eef2f5; font-family: 'Segoe UI', 'Roboto', 'Georgia', 'Times New Roman', serif; padding: 48px 32px; color: #1e2f3e; }

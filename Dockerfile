@@ -62,6 +62,9 @@ RUN npm install puppeteer --omit=dev 2>/dev/null || true
 # 复制前端构建产物
 COPY --from=frontend-builder /app/dist ./dist
 
+# 复制 Chart.js（本地替代CDN，避免被墙）
+COPY --from=frontend-builder /app/node_modules/chart.js/dist/chart.umd.js ./dist/chart.umd.js
+
 # 暴露端口
 EXPOSE 3000
 
