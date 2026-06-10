@@ -4,7 +4,7 @@
  * ⚠️ 严格约束：此模版的CSS、模块顺序、表格结构、图表样式全部锁定。
  * 仅 {scores}、{aiText}、{charts} 为动态数据。
  * 排版、字体、字号、颜色、间距、圆角均不可变。
- * 参考模版：docs/report-system/02-报告模版/参考模版更新.html
+ * 参考模版：docs/report-system/02-报告模版/报告模版初版.html
  */
 
 function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
@@ -77,7 +77,10 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
     .score-number-lg { font-size: 1.5rem; }
   }
   .action-table td:first-child { white-space: nowrap; }
+  .action-table td, .action-table th { font-size: 0.85rem; }
   .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #1e4663; border-left: 3px solid #eab308; padding-left: 12px; }
+  .radar-canvas-wrapper { display: flex; justify-content: center; margin: 10px 0; }
+  canvas#leadershipRadarChart { max-width: 400px; max-height: 400px; width: 100%; height: auto; }
 </style>
 </head>
 <body>
@@ -88,14 +91,14 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
   <div class="info-section">
     <div class="info-line"><span class="badge">报告编号：${reportId}</span> &nbsp;&nbsp;<span class="badge">测评对象：${userName}</span></div>
     <div class="info-line">测评日期：${reportDate}</div>
-    <div class="info-line" style="margin-top:16px; font-weight:500;">测评工具：LASI领导风格问卷 + 16PF精选版（创造力潜质/心理健康/管理潜能） + 创造力障碍测试，综合权重：领导风格30% | 人格特质40% | 创造力障碍30%</div>
+    <div class="info-line" style="margin-top:16px; font-weight:500;">测评工具：LASI领导风格问卷 + 16PF精选版（创造力潜质/心理健康/管理潜能） + 创造力障碍测试，综合权重：领导风格30% | 16PF人格特质40% | 创造力障碍30%</div>
   </div>
 
   <!-- ===== 综合得分概览 ===== -->
   <div class="score-row">
     <div class="score-block"><div class="score-number-lg">${scores.totalScore}</div><div class="score-label">综合发展指数</div></div>
     <div class="score-block"><div class="score-number-lg">${breakdown.leadership}<span style="font-size:1rem;">/30</span></div><div class="score-label">领导风格</div></div>
-    <div class="score-block"><div class="score-number-lg">${breakdown.personality}<span style="font-size:1rem;">/40</span></div><div class="score-label">人格特质</div></div>
+    <div class="score-block"><div class="score-number-lg">${breakdown.personality}<span style="font-size:1rem;">/40</span></div><div class="score-label">16PF人格特质</div></div>
     <div class="score-block"><div class="score-number-lg">${breakdown.creativityBarrier}<span style="font-size:1rem;">/30</span></div><div class="score-label">创造力障碍</div></div>
   </div>
 
@@ -124,9 +127,11 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
   </table>
 
   <div class="graph-card">
-    <div class="graph-title">领导风格强度分布（满分：指令型7/教练型12/支持型12/授权型12）</div>
-    ${charts.leadershipBar}
-    <div class="small-meta">${l.dominantStyle}突出，情境适应性${scores.adaptabilityLevel}；可适度强化各项风格以扩展领导弹性</div>
+    <div class="graph-title">领导风格雷达图：相对强度百分比（满分标准化对比）</div>
+    <div class="radar-canvas-wrapper">
+      <canvas id="leadershipRadarChart" width="400" height="400" style="max-width:100%; height:auto;"></canvas>
+    </div>
+    <div class="small-meta">各风格维度基于满分换算为百分比：指令型(${l.s1}/${7}≈${Math.round(l.s1/7*100)}%)、教练型(${l.s2}/${12}≈${Math.round(l.s2/12*100)}%)、支持型(${l.s3}/${12}=${Math.round(l.s3/12*100)}%)、授权型(${l.s4}/${12}=${Math.round(l.s4/12*100)}%)；${l.dominantStyle}突出，情境适应性${scores.adaptabilityLevel}</div>
   </div>
 
   <div class="insight-box">
@@ -134,21 +139,21 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
     ${aiText.leadershipInterpretation ? `<p>${aiText.leadershipInterpretation.replace(/\n/g, '</p><p>')}</p>` : '<p>暂无解读</p>'}
   </div>
 
-  <!-- ===== 三、人格特质 ===== -->
-  <h2>三、人格特质</h2>
+  <!-- ===== 三、16PF人格测验 ===== -->
+  <h2>三、16PF人格测验</h2>
   <h3>核心维度得分及评价</h3>
   <table>
-    <thead><tr><th>人格维度</th><th>得分(满分10)</th><th>标准分(1-10)</th><th>评价等级</th><th>子维度权重</th></tr></thead>
+    <thead><tr><th>16PF核心维度</th><th>得分(满分10)</th><th>标准分(1-10)</th><th>评价等级</th><th>子维度权重</th></tr></thead>
     <tbody>
       <tr><td>创造力潜质</td><td>${p.creativityPotential.raw}</td><td>${p.creativityPotential.standard}</td><td>${p.creativityPotential.level}</td><td>40%</td></tr>
       <tr><td>心理健康</td><td>${p.mentalHealth.raw}</td><td>${p.mentalHealth.standard}</td><td>${p.mentalHealth.level}</td><td>30%</td></tr>
       <tr><td>管理潜能</td><td>${p.managementPotential.raw}</td><td>${p.managementPotential.standard}</td><td>${p.managementPotential.level}</td><td>30%</td></tr>
-      <tr><td><strong>人格特质总分</strong></td><td colspan="4"><strong>${breakdown.personality} / 40</strong></td></tr>
+      <tr><td><strong>16PF人格测验总分</strong></td><td colspan="4"><strong>${breakdown.personality} / 40</strong></td></tr>
     </tbody>
   </table>
 
   <div class="graph-card">
-    <div class="graph-title">人格特质核心维度得分（满分10）</div>
+    <div class="graph-title">16PF核心维度得分（满分10）</div>
     <div class="horizontal-bar-container">
       ${personalityBarHtml}
     </div>
@@ -170,7 +175,7 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
   </div>
 
   <div class="insight-box">
-    <div class="card-title">人格特质综合结论</div>
+    <div class="card-title">16PF人格测验综合结论</div>
     ${aiText.personalityInterpretation ? `<p>${aiText.personalityInterpretation.replace(/\n/g, '</p><p>')}</p>` : '<p>暂无综合结论</p>'}
   </div>
 
@@ -225,9 +230,9 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
     <thead><tr><th>测评模块</th><th>加权得分</th><th>满分</th><th>权重</th><th>实际贡献</th></tr></thead>
     <tbody>
       <tr><td>领导风格</td><td>${breakdown.leadership}</td><td>30</td><td>30%</td><td>${breakdown.leadership}</td></tr>
-      <tr><td>人格特质（16PF精选）</td><td>${breakdown.personality}</td><td>40</td><td>40%</td><td>${breakdown.personality}</td></tr>
+      <tr><td>16PF人格特质（16PF精选版）</td><td>${breakdown.personality}</td><td>40</td><td>40%</td><td>${breakdown.personality}</td></tr>
       <tr><td>创造力障碍抵抗</td><td>${breakdown.creativityBarrier}</td><td>30</td><td>30%</td><td>${breakdown.creativityBarrier}</td></tr>
-      <tr><td><strong>综合总分</strong></td><td colspan="3"><strong>100</strong></td><td><strong>${scores.totalScore}</strong></td></tr>
+      <tr><td><strong>综合总分</strong></td><td><strong>${scores.totalScore}</strong></td><td><strong>100</strong></td><td>—</td><td><strong>${scores.totalScore}</strong></td></tr>
     </tbody>
   </table>
   <div class="progress-container"><div class="progress-fill" style="width:${scores.totalScore}%;"></div></div>
@@ -279,23 +284,53 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
 
 <script>
 (function(){
-  var canvas = document.getElementById('leadershipBarChart');
+  var canvas = document.getElementById('leadershipRadarChart');
   if (canvas && window.Chart) {
+    var rawScores = [${l.s1}, ${l.s2}, ${l.s3}, ${l.s4}];
+    var maxScores = [7, 12, 12, 12];
+    var percentScores = rawScores.map(function(v, i) { return (v / maxScores[i]) * 100; });
     new Chart(canvas.getContext('2d'), {
-      type: 'bar',
+      type: 'radar',
       data: {
         labels: ['指令型 (S1)', '教练型 (S2)', '支持型 (S3)', '授权型 (S4)'],
         datasets: [{
-          label: '风格强度得分',
-          data: [${l.s1}, ${l.s2}, ${l.s3}, ${l.s4}],
-          backgroundColor: '#5f8aa8',
-          borderRadius: 4,
+          label: '风格强度百分比 (%)',
+          data: percentScores,
+          backgroundColor: 'rgba(44, 95, 138, 0.2)',
+          borderColor: '#2c5f8a',
+          borderWidth: 2,
+          pointBackgroundColor: '#eab308',
+          pointBorderColor: '#1e4663',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.1
         }]
       },
       options: {
         responsive: true,
-        scales: { y: { beginAtZero: true, max: 13, title: { display: true, text: '得分' } } },
-        plugins: { legend: { position: 'top' } }
+        maintainAspectRatio: true,
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { stepSize: 20, callback: function(v) { return v + '%'; }, backdropColor: 'transparent' },
+            grid: { color: '#e2e8f0' },
+            angleLines: { color: '#e2e8f0' },
+            pointLabels: { font: { size: 11, weight: '500' }, color: '#1e4663' }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var i = ctx.dataIndex;
+                return ['指令型 (S1)', '教练型 (S2)', '支持型 (S3)', '授权型 (S4)'][i] + ': ' + percentScores[i].toFixed(1) + '%  (原始分 ' + rawScores[i] + '/' + maxScores[i] + ')';
+              }
+            }
+          },
+          legend: { position: 'top', labels: { font: { size: 11 } } }
+        }
       }
     });
   }

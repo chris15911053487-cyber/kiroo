@@ -157,7 +157,7 @@ async function callAIForText(scores, userName) {
 
 /**
  * 构建发送给AI的严格Prompt
- * 参照：docs/report-system/03-提示词/提示词更新.json
+ * 参照：docs/report-system/03-提示词/提示词初版.md
  * ⚠️ 此prompt严格控制AI输出内容和格式，排版/字体/图表/颜色由代码模板接管
  */
 function buildAIPrompt(scores, userName) {
