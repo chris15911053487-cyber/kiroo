@@ -334,7 +334,7 @@ export default function AdminDashboard() {
                 type="text"
                 value={filterKeyword}
                 onChange={e => setFilterKeyword(e.target.value)}
-                placeholder="昵称/手机号"
+                placeholder="姓名/手机号"
                 className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-indigo-400 outline-none w-36"
               />
             </div>

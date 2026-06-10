@@ -22,7 +22,7 @@ export default function ProfilePage() {
         localStorage.setItem('token', data.token)
       }
       updateUser({ nickname: data.nickname || nickname })
-      setMessage({ type: 'success', text: '昵称修改成功' })
+      setMessage({ type: 'success', text: '姓名修改成功' })
     } catch (err: unknown) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : '修改失败' })
     }
@@ -78,7 +78,7 @@ export default function ProfilePage() {
 
         {/* Edit Nickname */}
         <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-          <h3 className="font-semibold text-gray-800 mb-4">修改昵称</h3>
+          <h3 className="font-semibold text-gray-800 mb-4">修改姓名</h3>
           <form onSubmit={handleUpdateNickname} className="flex gap-3">
             <input
               type="text"
