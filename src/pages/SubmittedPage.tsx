@@ -55,8 +55,8 @@ export default function SubmittedPage() {
         {status === 'submitting' && (
           <>
             <div className="text-6xl mb-6 animate-spin">⏳</div>
-            <h1 className="text-xl font-bold text-[#1a1a2e] mb-3">正在提交测评数据</h1>
-            <p className="text-gray-400 text-sm">请稍候，正在保存你的测评结果…</p>
+            <h1 className="text-xl font-bold text-[#1a1a2e] mb-3">正在生成报告</h1>
+            <p className="text-gray-400 text-sm">请稍候，系统正在处理你的测评数据…</p>
           </>
         )}
 
