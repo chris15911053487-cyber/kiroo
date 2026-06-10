@@ -33,8 +33,14 @@ export default function RegisterPage() {
     setError('')
     setLoading(true)
 
+    if (!nickname.trim()) {
+      setError('请填写真实姓名')
+      setLoading(false)
+      return
+    }
+
     try {
-      const data = await authService.register(phone, password, nickname || undefined)
+      const data = await authService.register(phone, password, nickname.trim())
       login(data.token, data.user)
       navigate('/select', { replace: true })
     } catch (err: unknown) {
@@ -92,13 +98,14 @@ export default function RegisterPage() {
               />
             </div>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">昵称（可选）</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">真实姓名 <span className="text-red-400">*</span></label>
               <input
                 type="text"
                 maxLength={50}
+                required
                 value={nickname}
                 onChange={e => setNickname(e.target.value)}
-                placeholder="给自己取个名字吧"
+                placeholder="请输入真实姓名"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 outline-none transition-all text-sm"
               />
             </div>
