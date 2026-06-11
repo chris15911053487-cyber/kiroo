@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext'
 import { reportService, type ReportDetail } from '../services/reportService'
 import { GaugeChart, RadarChart, BarChart, PieChart, HexagonChart } from '../components/charts'
 import LoadingSpinner from '../components/LoadingSpinner'
-import { QUESTIONNAIRE_PRIORITY } from '../types'
 
 // ==================== 兰大专属报告类型 ====================
 
@@ -127,11 +126,6 @@ function parseReportData(content: string | null): StructuredReport | null {
   } catch {
     return null
   }
-}
-
-function getQuestionnaireName(qid: string): string {
-  const q = QUESTIONNAIRE_PRIORITY.find(q => q.id === qid)
-  return q?.name || qid
 }
 
 // ==================== Section Components ====================

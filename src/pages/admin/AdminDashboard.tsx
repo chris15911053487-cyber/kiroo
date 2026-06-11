@@ -30,6 +30,7 @@ interface ReportItem {
   reviewComment: string | null
   reviewedAt: string | null
   createdAt: string
+  createdAtDisplay?: string
   nickname: string
   phone: string
   orderedQuestionnaires: string[]
@@ -42,6 +43,7 @@ interface RankingItem {
   bestScore: number
   assessmentCount: number
   latestAssessmentDate: string
+  latestAssessmentDisplay?: string
 }
 
 interface ReportDetail {
@@ -58,6 +60,7 @@ interface ReportDetail {
   reviewComment: string | null
   reviewedAt: string | null
   createdAt: string
+  createdAtDisplay?: string
   nickname: string
   phone: string
   orderedQuestionnaires: string[]

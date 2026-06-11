@@ -25,6 +25,7 @@ export interface ReportListItem {
   comprehensiveScore: number
   reviewStatus: 'pending' | 'approved' | 'rejected'
   createdAt: string
+  createdAtDisplay?: string
   questionnairesCompleted: string[]
 }
 
