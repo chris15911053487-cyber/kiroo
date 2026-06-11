@@ -620,7 +620,7 @@ export default function AdminDashboard() {
                         title="报告预览"
                         className="w-full border border-gray-200 rounded-lg"
                         style={{ height: '70vh', minHeight: '600px' }}
-                        sandbox="allow-same-origin"
+                        sandbox="allow-same-origin allow-scripts"
                       />
                     ) : previewMode === 'html' && !detailReport.reportHtml ? (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
