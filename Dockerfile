@@ -55,6 +55,9 @@ RUN npm ci --omit=dev
 # 复制后端源代码
 COPY server/ ./
 
+# SQLite 数据持久化目录
+RUN mkdir -p /app/data
+
 # 安装 puppeteer（使用系统 Chromium，跳过下载）
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN npm install puppeteer --omit=dev 2>/dev/null || true

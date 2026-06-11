@@ -1,7 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'kiroo.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data', 'kiroo.db');
+
+// Ensure data directory exists
+const dataDir = path.dirname(DB_PATH);
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
 let db = null;
 let pool = null;
