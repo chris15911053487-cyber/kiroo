@@ -781,7 +781,7 @@ export default function ReportPage() {
             title="综合测评报告"
             className="w-full border-0 bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
             style={{ height: '80vh', minHeight: '800px' }}
-            sandbox="allow-same-origin"
+            sandbox="allow-same-origin allow-scripts"
           />
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
             <button

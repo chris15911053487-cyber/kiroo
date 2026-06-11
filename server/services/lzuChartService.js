@@ -85,7 +85,7 @@ function renderLeadershipRadar(s1, s2, s3, s4) {
   const mean = values.reduce((a, b) => a + b) / values.length;
   const std = Math.sqrt(values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length).toFixed(1);
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 390" width="100%" height="auto" style="max-width:400px;">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 390" width="100%" style="max-width:400px;">
   <defs>
     <linearGradient id="radarGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="${COLORS.accent}" stop-opacity="0.25"/>
@@ -130,7 +130,7 @@ function renderLeadershipBar(s1, s2, s3, s4) {
     bars += `<text x="36" y="${y + 4}" text-anchor="end" font-size="8" fill="${COLORS.muted}">${Math.round(maxVal * i / 4)}</text>\n`;
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="auto">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%">
   <rect width="400" height="240" fill="#fff"/>
   ${bars}
   <text x="200" y="18" text-anchor="middle" font-size="11" fill="${COLORS.label}" font-weight="600">领导风格强度分布</text>
@@ -169,7 +169,7 @@ function renderHorizontalBar(labels, values, maxValues, colors) {
     }
   });
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 ${totalH}" width="100%" height="auto">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 ${totalH}" width="100%">
   <rect width="400" height="${totalH}" fill="#fff"/>
   <text x="200" y="22" text-anchor="middle" font-size="11" fill="${COLORS.muted}">虚线为 50% 参考线</text>
   ${bars}
@@ -246,7 +246,7 @@ function renderScoreGauge(score, label, grade) {
   const currentGrade = grade || '';
   const gradeColor = currentGrade === '卓越型' ? '#10b981' : currentGrade === '进取型' ? '#eab308' : currentGrade === '成长型' ? '#60a5fa' : '#9ca3af';
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="auto">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%">
   <rect width="400" height="240" fill="#fff"/>
   ${segmentPaths}
   ${ticks}
