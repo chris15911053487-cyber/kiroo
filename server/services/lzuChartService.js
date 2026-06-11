@@ -56,19 +56,20 @@ function renderLeadershipRadar(s1, s2, s3, s4) {
     return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
   }).join(' ');
 
-  // 数据点 + 百分比标签
+  // 数据点 + 分数标签
   let dots = '';
+  const rawLabels = [`${s1}/7`, `${s2}/12`, `${s3}/12`, `${s4}/12`];
   angles.forEach((a, i) => {
     const r = radius * (Math.max(values[i], 2) / 100);
     const x = (cx + r * Math.cos(a)).toFixed(1);
     const y = (cy + r * Math.sin(a)).toFixed(1);
     // 数据点
     dots += `<circle cx="${x}" cy="${y}" r="4" fill="#eab308" stroke="#1e4663" stroke-width="2"/>\n`;
-    // 百分比标签（稍微外移）
+    // 分数标签（稍微外移）
     const lr = r + 16;
     const lx = (cx + lr * Math.cos(a)).toFixed(1);
     const ly = (cy + lr * Math.sin(a)).toFixed(1);
-    dots += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="600" fill="#1e4663">${Math.round(values[i])}%</text>\n`;
+    dots += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="#1e4663">${rawLabels[i]}</text>\n`;
   });
 
   // 轴标签
@@ -98,7 +99,7 @@ function renderLeadershipRadar(s1, s2, s3, s4) {
   <polygon points="${dataPoints}" fill="url(#radarGrad)" stroke="${COLORS.accent}" stroke-width="2.5"/>
   ${dots}
   ${labelText}
-  <text x="${cx}" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="${COLORS.label}">领导风格雷达图：相对强度百分比</text>
+  <text x="${cx}" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="${COLORS.label}">领导风格雷达图</text>
   <text x="${cx}" y="38" text-anchor="middle" font-size="9" fill="${COLORS.muted}">情境适应性标准差=${std} · ${std < 1.5 ? '强' : std < 3.0 ? '一般' : '需提升'} · 原始分 S1=${s1}/7 S2=${s2}/12 S3=${s3}/12 S4=${s4}/12</text>
 </svg>`;
 }
