@@ -122,7 +122,27 @@ interface StructuredReport {
 function parseReportData(content: string | null): StructuredReport | null {
   if (!content) return null
   try {
-    return JSON.parse(content) as StructuredReport
+    const raw = JSON.parse(content)
+    // 补全缺失字段，防止 .length 等操作报错
+    return {
+      userName: raw.userName || '测评用户',
+      reportDate: raw.reportDate || '',
+      reportId: raw.reportId || '',
+      comprehensiveScore: raw.comprehensiveScore || 0,
+      coreEvaluation: raw.coreEvaluation || '',
+      coreAdvantages: raw.coreAdvantages || [],
+      personalityAnalysis: raw.personalityAnalysis || null,
+      leadershipAnalysis: raw.leadershipAnalysis || null,
+      temperamentAnalysis: raw.temperamentAnalysis || null,
+      mbtiAnalysis: raw.mbtiAnalysis || null,
+      sixteenPFAnalysis: raw.sixteenPFAnalysis || null,
+      creativityAnalysis: raw.creativityAnalysis || null,
+      hollandAnalysis: raw.hollandAnalysis || null,
+      careerSuggestions: raw.careerSuggestions || [],
+      improvementSuggestions: raw.improvementSuggestions || [],
+      teamRole: raw.teamRole || { primary: '', secondary: '', description: '' },
+      summary: raw.summary || '',
+    }
   } catch {
     return null
   }
@@ -855,7 +875,7 @@ export default function ReportPage() {
           {lzuData.creativityBarrierAnalysis && <LZUCreativityBarrierSection data={lzuData.creativityBarrierAnalysis} />}
 
           {/* 职业建议 */}
-          {lzuData.careerSuggestions.length > 0 && <LZUCareerSection suggestions={lzuData.careerSuggestions} />}
+          {(lzuData.careerSuggestions?.length ?? 0) > 0 && <LZUCareerSection suggestions={lzuData.careerSuggestions} />}
 
           {/* 能力提升计划 */}
           {lzuData.improvementPlan && <LZUImprovementPlanSection plan={lzuData.improvementPlan} />}

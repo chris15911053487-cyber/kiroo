@@ -226,7 +226,7 @@ export function LZUCreativityBarrierSection({ data }: { data: LZUCreativityBarri
           <p className="text-sm text-orange-700"><span className="font-bold">主要障碍类型：</span>{data.primaryBarrierType}</p>
         </div>
       )}
-      {data.suggestions.length > 0 && (
+      {(data.suggestions?.length ?? 0) > 0 && (
         <div className="mb-3">
           <p className="text-xs text-gray-500 mb-2">突破建议：</p>
           <ul className="space-y-1">
@@ -255,7 +255,7 @@ export function LZUImprovementPlanSection({ plan }: { plan: LZUImprovementPlan }
         <span className="w-1.5 h-5 rounded-full bg-emerald-500" />能力提升计划
       </h2>
       <div className="space-y-3">
-        {sections.filter(s => s.items.length > 0).map((s, i) => (
+        {sections.filter(s => (s.items?.length ?? 0) > 0).map((s, i) => (
           <div key={i} className={`border-l-4 rounded-r-xl p-4 ${s.color}`}>
             <h3 className="font-bold text-sm text-[#1a1a2e] mb-2">{s.title}</h3>
             <ul className="space-y-1">
@@ -304,7 +304,7 @@ export function LZUReportSummary({ evaluation, advantages, summary }: {
           <span className="w-1.5 h-5 rounded-full bg-indigo-500" />核心评价
         </h2>
         <p className="text-sm text-gray-600 leading-relaxed mb-4">{evaluation}</p>
-        {advantages.length > 0 && (
+        {(advantages?.length ?? 0) > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {advantages.map((a, i) => (
               <div key={i} className="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100/50">
