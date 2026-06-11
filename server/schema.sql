@@ -109,4 +109,4 @@ CREATE INDEX IF NOT EXISTS idx_report_status ON comprehensive_reports(review_sta
 
 -- 插入默认管理员 (密码: admin123)
 INSERT OR IGNORE INTO admins (username, password_hash, role)
-VALUES ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'super_admin');
+VALUES ('admin', '$2b$10$N07.AIugRBr4sGYJx84PxeQePL.gK9pX2dC7J5r5ymAPHVRW5RPoe', 'super_admin');
