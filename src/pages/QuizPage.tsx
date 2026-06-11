@@ -292,7 +292,7 @@ export default function QuizPage() {
               disabled={isSubmitting || !selectedOptionId}
               className="flex-[2] py-3.5 px-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white font-bold text-sm shadow-[0_4px_15px_rgba(99,102,241,0.3)] transition-all duration-150 disabled:opacity-50"
             >
-              {isSubmitting ? '提交中…' : '提交答卷'}
+              {isSubmitting ? '正在生成报告…' : '提交答卷'}
             </button>
           )}
         </div>

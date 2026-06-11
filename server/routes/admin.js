@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getPool } = require('../db');
 const pool = getPool();
+const { toChinaISO, toChinaShort } = require('../utils/timeUtils');
 const adminAuthMiddleware = require('../middleware/adminAuth');
 
 const router = express.Router();
@@ -75,6 +76,36 @@ router.get('/stats', adminAuthMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Admin stats error:', err);
     res.status(500).json({ error: '获取统计数据失败' });
+  }
+});
+
+// GET /api/admin/ranking - 综合分数排名
+router.get('/ranking', adminAuthMiddleware, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+         u.id AS userId,
+         u.nickname,
+         u.phone,
+         MAX(cr.comprehensive_score) AS bestScore,
+         (SELECT COUNT(*) FROM assessment_records ar WHERE ar.user_id = u.id) AS assessmentCount,
+         MAX(cr.created_at) AS latestAssessmentDate
+       FROM comprehensive_reports cr
+       JOIN users u ON u.id = cr.user_id
+       GROUP BY u.id
+       ORDER BY bestScore DESC`
+    );
+
+    const ranking = rows.map(r => ({
+      ...r,
+      latestAssessmentDate: r.latestAssessmentDate ? toChinaISO(r.latestAssessmentDate) : null,
+      latestAssessmentDisplay: r.latestAssessmentDate ? toChinaShort(r.latestAssessmentDate) : null,
+    }));
+
+    res.json({ ranking });
+  } catch (err) {
+    console.error('Admin ranking error:', err);
+    res.status(500).json({ error: '获取排名数据失败' });
   }
 });
 
@@ -212,7 +243,7 @@ router.get('/assessments/export', adminAuthMiddleware, async (req, res) => {
       params
     );
 
-    const headers = ['ID', '昵称', '手机号', '测评名称', '测评结果', 'AI报告摘要', '测评时间'];
+    const headers = ['ID', '姓名', '手机号', '测评名称', '测评结果', 'AI报告摘要', '测评时间'];
     const csvRows = [headers.map(h => `"${h}"`).join(',')];
 
     for (const r of rows) {
@@ -296,6 +327,9 @@ router.get('/reports', adminAuthMiddleware, async (req, res) => {
 
     const reports = rows.map(r => ({
       ...r,
+      createdAt: toChinaISO(r.createdAt),
+      createdAtDisplay: toChinaShort(r.createdAt),
+      reviewedAt: r.reviewedAt ? toChinaISO(r.reviewedAt) : null,
       orderedQuestionnaires: typeof r.orderedQuestionnaires === 'string'
         ? JSON.parse(r.orderedQuestionnaires) : r.orderedQuestionnaires,
     }));
@@ -337,6 +371,10 @@ router.get('/reports/:id', adminAuthMiddleware, async (req, res) => {
     }
 
     const report = rows[0];
+    const dbCreatedAt = report.createdAt; // 保存原始 UTC 值
+    report.createdAt = toChinaISO(dbCreatedAt);
+    report.createdAtDisplay = toChinaShort(dbCreatedAt);
+    if (report.reviewedAt) report.reviewedAt = toChinaISO(report.reviewedAt);
     // Parse JSON fields
     ['questionnairesCompleted', 'scoreSummary', 'orderedQuestionnaires', 'selectedQuestionnaires'].forEach(field => {
       if (report[field] && typeof report[field] === 'string') {
@@ -488,26 +526,26 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
     // 精准计分
     const scores = lzuScoring.calculateLZUComprehensiveScore(scoreSummary);
 
-    // 调用AI + 组装模版 + 生成DOCX
+    // 调用AI + 组装模版 + 生成PDF
     const result = await generateReport({
       scores,
       userName,
       sessionId: report.sessionId,
     });
 
-    // 更新数据库：存储HTML预览 + DOCX路径
+    // 更新数据库：存储HTML预览 + PDF路径
     await pool.query(
       `UPDATE comprehensive_reports
        SET report_html = ?, docx_path = ?, updated_at = datetime('now')
        WHERE id = ?`,
-      [result.html, result.docxPath, req.params.id]
+      [result.html, result.pdfPath, req.params.id]
     );
 
     res.json({
       message: '报告生成成功',
       reportId: report.id,
       previewAvailable: true,
-      docxPath: result.docxPath,
+      pdfPath: result.pdfPath,
     });
   } catch (err) {
     console.error('Generate report error:', err);
@@ -542,7 +580,7 @@ router.get('/reports/:id/preview', adminAuthMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/admin/reports/:id/download - 下载DOCX文件
+// GET /api/admin/reports/:id/download - 下载PDF文件
 router.get('/reports/:id/download', adminAuthMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -570,9 +608,9 @@ router.get('/reports/:id/download', adminAuthMiddleware, async (req, res) => {
 
     const ext = path.extname(absolutePath).toLowerCase();
     const filename = `人才测评报告_${req.params.id}${ext}`;
-    const mimeType = ext === '.docx'
-      ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      : 'application/msword';
+    const mimeType = ext === '.pdf'
+      ? 'application/pdf'
+      : 'text/html';
     res.setHeader('Content-Type', mimeType);
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
     res.sendFile(absolutePath);

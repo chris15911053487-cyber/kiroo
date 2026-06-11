@@ -2,6 +2,7 @@ const express = require('express');
 const { getPool } = require('../db');
 const pool = getPool();
 const authMiddleware = require('../middleware/auth');
+const { toChinaISO, toChinaShort } = require('../utils/timeUtils');
 
 const router = express.Router();
 
@@ -21,6 +22,8 @@ router.get('/', authMiddleware, async (req, res) => {
 
     const reports = rows.map(r => ({
       ...r,
+      createdAt: toChinaISO(r.createdAt),
+      createdAtDisplay: toChinaShort(r.createdAt),
       questionnairesCompleted: typeof r.questionnairesCompleted === 'string'
         ? JSON.parse(r.questionnairesCompleted) : r.questionnairesCompleted,
     }));
@@ -57,14 +60,10 @@ router.get('/:id', authMiddleware, async (req, res) => {
     }
 
     const report = rows[0];
-
-    // 审核未通过时隐藏报告内容
-    if (report.reviewStatus !== 'approved') {
-      report.reportContent = null;
-      report.reportHtml = null;
-      report.docxPath = null;
-      report.scoreSummary = null;
-    }
+    const dbCreatedAt = report.createdAt; // 保存原始 UTC 值
+    report.createdAt = toChinaISO(dbCreatedAt);
+    report.createdAtDisplay = toChinaShort(dbCreatedAt);
+    if (report.reviewedAt) report.reviewedAt = toChinaISO(report.reviewedAt);
 
     // Parse JSON fields
     if (report.questionnairesCompleted && typeof report.questionnairesCompleted === 'string') {
@@ -103,12 +102,7 @@ router.get('/:id/pdf', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: '无权下载此报告' });
     }
 
-    // 只有审核通过的报告才能下载
-    if (report.review_status !== 'approved') {
-      return res.status(400).json({ error: '报告尚未通过审核，无法下载' });
-    }
-
-    // 优先使用新格式 .doc 文件
+    // 优先使用生成的PDF文件
     if (report.docx_path) {
       const fs = require('fs');
       const path = require('path');
@@ -117,9 +111,9 @@ router.get('/:id/pdf', authMiddleware, async (req, res) => {
       if (fs.existsSync(absolutePath)) {
         const ext = path.extname(absolutePath).toLowerCase();
         const filename = `人才测评报告_${req.params.id}${ext}`;
-        const mimeType = ext === '.docx'
-          ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          : 'application/msword';
+        const mimeType = ext === '.pdf'
+          ? 'application/pdf'
+          : 'text/html';
         res.setHeader('Content-Type', mimeType);
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
         return res.sendFile(absolutePath);

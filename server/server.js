@@ -231,6 +231,12 @@ async function start() {
   app.use('/api/reports', reportRoutes);
   app.use('/api/admin', adminRoutes);
 
+  // 为报告HTML模板提供 Chart.js（雷达图渲染需要）
+  app.get('/chart.umd.js', (req, res) => {
+    const chartPath = path.join(__dirname, '..', 'node_modules', 'chart.js', 'dist', 'chart.umd.js');
+    res.sendFile(chartPath);
+  });
+
   // 托管前端静态文件（兼容本地开发 server/dist 和 Docker /app/dist）
   const distPath = fs.existsSync(path.join(__dirname, 'dist'))
     ? path.join(__dirname, 'dist')

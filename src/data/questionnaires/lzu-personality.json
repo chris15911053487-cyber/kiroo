@@ -1,6 +1,6 @@
 {
   "id": "lzu-personality",
-  "name": "16PF人格测验（精选版）",
+  "name": "16PF人格测验",
   "category": "lzu-personality",
   "description": "基于卡特尔16PF理论，选取与职业发展相关的3个核心维度（创造力潜质、心理健康水平、管理潜能），共15道题目。本测验为兰州大学管理学院研究生职业发展测评定制。",
   "enabled": true,

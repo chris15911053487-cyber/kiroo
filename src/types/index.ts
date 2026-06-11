@@ -99,8 +99,8 @@ export const LZU_QUESTIONNAIRE_PRIORITY: Array<{
   questions: number
   estimatedMinutes: number
 }> = [
-  { id: 'lzu-leadership',  name: '领导风格问卷（LASI）',      questions: 12, estimatedMinutes: 15 },
-  { id: 'lzu-personality', name: '16PF人格测验（精选版）',    questions: 15, estimatedMinutes: 20 },
+  { id: 'lzu-leadership',  name: '领导风格问卷',      questions: 12, estimatedMinutes: 15 },
+  { id: 'lzu-personality', name: '16PF人格测验',    questions: 15, estimatedMinutes: 20 },
   { id: 'lzu-creativity',  name: '创造力障碍测试',            questions: 12, estimatedMinutes: 15 },
 ]
 

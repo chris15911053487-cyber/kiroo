@@ -243,9 +243,9 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
       console.log(`[LZU Score] Total=${comprehensiveScore}, Grade=${lzuComprehensive.grade}, Breakdown:`, lzuComprehensive.breakdown);
     }
 
-    // ========== Step 2: AI生成 + 固定模版组装 + DOCX ==========
+    // ========== Step 2: AI生成 + HTML组装 + PDF输出 ==========
     let reportHtml = null;
-    let docxPath = null;
+    let pdfPath = null;
     let reportContent = null;
 
     if (USE_LZU && lzuComprehensive) {
@@ -257,8 +257,8 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
           sessionId: session.id,
         });
         reportHtml = result.html;
-        docxPath = result.docxPath;
-        console.log(`[LZU Gen] Report generated, docx: ${docxPath}`);
+        pdfPath = result.pdfPath;
+        console.log(`[LZU Gen] Report generated, PDF: ${pdfPath}`);
       } catch (genErr) {
         console.error('[LZU Gen] Generation error:', genErr.message);
         // 降级：存储分数快照
@@ -310,7 +310,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
         JSON.stringify(scoreSummary),
         reportContent,
         reportHtml,
-        docxPath,
+        pdfPath,
         comprehensiveScore,
       ]
     );

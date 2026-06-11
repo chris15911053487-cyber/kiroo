@@ -446,7 +446,7 @@ function LZULeadershipSection({ data }: { data: LZULeadershipAnalysis }) {
     <div className="bg-white border border-black/[0.04] rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] mb-6">
       <h2 className="text-lg font-bold text-[#1a1a2e] mb-4 flex items-center gap-2">
         <span className="w-1.5 h-5 rounded-full bg-amber-500" />
-        领导风格分析（LASI）
+        领导风格分析
       </h2>
 
       <BarChart data={barData} height={200} color="#F59E0B" />
@@ -478,7 +478,7 @@ function LZUPersonalitySection({ data }: { data: LZUPersonalityAnalysis }) {
     <div className="bg-white border border-black/[0.04] rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] mb-6">
       <h2 className="text-lg font-bold text-[#1a1a2e] mb-4 flex items-center gap-2">
         <span className="w-1.5 h-5 rounded-full bg-violet-500" />
-        人格特质分析（16PF精选版）
+        人格特质分析（16PF）
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
@@ -715,14 +715,6 @@ export default function ReportPage() {
     loadReport()
   }, [id, user])
 
-  // 审核轮询
-  useEffect(() => {
-    if (report && report.reviewStatus === 'pending') {
-      const timer = setTimeout(loadReport, 5000)
-      return () => clearTimeout(timer)
-    }
-  }, [report])
-
   async function loadReport() {
     try {
       const data = await reportService.getDetail(Number(id))
@@ -757,64 +749,7 @@ export default function ReportPage() {
     )
   }
 
-  // ============ Pending ============
-  if (report.reviewStatus === 'pending') {
-    return (
-      <div className="min-h-screen bg-[#fafafa]">
-        <header className="bg-white border-b border-black/[0.04]">
-          <div className="flex items-center gap-3 px-6 h-14 max-w-4xl mx-auto">
-            <Link to="/history" className="text-gray-400 hover:text-gray-600 text-sm">← 返回</Link>
-            <h1 className="text-sm font-bold text-[#1a1a2e]">综合报告</h1>
-          </div>
-        </header>
-        <main className="px-6 py-10 max-w-2xl mx-auto text-center">
-          <div className="bg-white border border-black/[0.04] rounded-2xl p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="text-5xl mb-4">⏳</div>
-            <h2 className="text-lg font-bold text-[#1a1a2e] mb-2">报告审核中</h2>
-            <p className="text-gray-400 text-sm mb-4">你的综合报告已提交，正在等待专家审核</p>
-            <div className="bg-gray-50 rounded-xl p-4 text-left">
-              <p className="text-xs font-bold text-gray-500 mb-2">已完成的问卷：</p>
-              <div className="flex flex-wrap gap-2">
-                {report.questionnairesCompleted.map((qid: string) => (
-                  <span key={qid} className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                    ✓ {getQuestionnaireName(qid)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  // ============ Rejected ============
-  if (report.reviewStatus === 'rejected') {
-    return (
-      <div className="min-h-screen bg-[#fafafa]">
-        <header className="bg-white border-b border-black/[0.04]">
-          <div className="flex items-center gap-3 px-6 h-14 max-w-4xl mx-auto">
-            <Link to="/history" className="text-gray-400 hover:text-gray-600 text-sm">← 返回</Link>
-            <h1 className="text-sm font-bold text-[#1a1a2e]">综合报告</h1>
-          </div>
-        </header>
-        <main className="px-6 py-10 max-w-2xl mx-auto text-center">
-          <div className="bg-white border border-black/[0.04] rounded-2xl p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="text-5xl mb-4">📝</div>
-            <h2 className="text-lg font-bold text-[#1a1a2e] mb-2">报告正在修订中</h2>
-            <p className="text-gray-400 text-sm">专家正在对您的报告进行修订优化，请耐心等待</p>
-            {report.reviewComment && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-4">
-                <p className="text-amber-700 text-sm">{report.reviewComment}</p>
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  // ============ Approved - Full Report ============
+  // ============ Report Content ============
   // 优先使用标准化HTML报告
   if (report.reportHtml) {
     return (
@@ -844,7 +779,7 @@ export default function ReportPage() {
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')
                   a.href = url
-                  a.download = `人才测评报告_${report.id}.docx`
+                  a.download = `人才测评报告_${report.id}.pdf`
                   a.click()
                   URL.revokeObjectURL(url)
                 }).catch(() => alert('下载失败'))

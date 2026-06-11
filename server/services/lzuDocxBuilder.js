@@ -14,6 +14,7 @@ const {
   PageBreak, TableOfContents, ShadingType,
 } = require('docx');
 const { renderLeadershipRadar, renderLeadershipBar, renderHorizontalBar } = require('./lzuChartService');
+const { nowChinaDate } = require('../utils/timeUtils');
 
 const REPORTS_DIR = path.join(__dirname, '..', 'reports');
 if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
@@ -173,8 +174,9 @@ function chartCaption(text) {
 
 async function buildDocx({ scores, aiText, userName, sessionId }) {
   const now = new Date();
-  const reportDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
-  const reportId = `LZU-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(sessionId).padStart(3, '0')}`;
+  const chinaNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const reportDate = nowChinaDate();
+  const reportId = `LZU-${chinaNow.getUTCFullYear()}${String(chinaNow.getUTCMonth() + 1).padStart(2, '0')}${String(chinaNow.getUTCDate()).padStart(2, '0')}-${String(sessionId).padStart(3, '0')}`;
 
   const l = scores.leadership;
   const p = scores.personality;
@@ -216,7 +218,7 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   children.push(para(`测评对象：${userName}`, { alignment: AlignmentType.CENTER }));
   children.push(para(`测评日期：${reportDate}`, { alignment: AlignmentType.CENTER }));
   children.push(new Paragraph({ spacing: { after: 200 } }));
-  children.push(para('本次评估使用领导风格量表（LASI）、16PF人格测验（精选版）和创造力障碍测试三工具组合，按预设权重计算综合得分。计分权重为总分100 = 领导风格(30) + 人格特质(40) + 创造力(30)。', { alignment: AlignmentType.CENTER }));
+  children.push(para('本次评估使用领导风格问卷、16PF人格测验和创造力障碍测试三工具组合，按预设权重计算综合得分。计分权重为总分100 = 领导风格(30) + 人格特质(40) + 创造力(30)。', { alignment: AlignmentType.CENTER }));
 
   children.push(new Paragraph({ children: [new PageBreak()] }));
 
@@ -238,18 +240,12 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   children.push(boldPara(`综合得分进度：${'▓'.repeat(filledBars)}${'░'.repeat(emptyBars)} ${scores.totalScore}%`));
   children.push(boldPara(`${scores.grade} · ${scores.gradeDescription}`));
 
-  // ===== 一、总体画像 =====
-  children.push(heading2('一、总体画像'));
-  children.push(makeTable(
-    ['维度', '概况'],
-    [
-      ['突出优势', aiText.profileAdvantages || '根据测评数据自动生成'],
-      ['优先发展项', aiText.profileDevelopments || '根据测评数据自动生成'],
-      ['领导风格', `${l.dominantStyle}为主，情境适应性${scores.adaptabilityLevel}（指数: ${scores.adaptabilityIndex}）`],
-      ['目标定位关键差异', '从"个人执行"到"团队引领"；从"单一技能"到"多维管理能力"'],
-    ],
-    [22, 78]
-  ));
+  // ===== 整体综合结论 =====
+  children.push(heading2('整体综合结论'));
+  children.push(insightBox(aiText.overallPortrait || `综合得分${scores.totalScore}分（${scores.grade}），具备良好发展潜力。`));
+  if (aiText.coreStrengths) {
+    children.push(insightBox(aiText.coreStrengths));
+  }
 
   // ===== 二、领导风格分析 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
@@ -298,7 +294,7 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   ));
 
   children.push(heading3('领导风格综合结论'));
-  children.push(insightBox(aiText.leadershipInterpretation || '暂无解读'));
+  children.push(insightBox(aiText.leadershipConclusion || aiText.leadershipStrength || '暂无解读'));
 
   // ===== 三、人格特质分析 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
@@ -320,15 +316,15 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   // 逐维度解读
   children.push(heading3('维度解读与行为锚定'));
   children.push(heading3('创造力潜质'));
-  children.push(insightBox(aiText.personality_creativity || aiText.personalityInterpretation || '暂无解读'));
+  children.push(insightBox(aiText.personalityCreativity || '暂无解读'));
   children.push(heading3('心理健康'));
-  children.push(insightBox(aiText.personality_mentalHealth || '暂无解读'));
+  children.push(insightBox(aiText.personalityMentalHealth || '暂无解读'));
   children.push(heading3('管理潜能'));
-  children.push(insightBox(aiText.personality_managementPotential || '暂无解读'));
+  children.push(insightBox(aiText.personalityManagement || '暂无解读'));
 
-  if (aiText.personalityInterpretation) {
+  if (aiText.personalityConclusion) {
     children.push(heading3('人格特质综合结论'));
-    children.push(insightBox(aiText.personalityInterpretation));
+    children.push(insightBox(aiText.personalityConclusion));
   }
 
   // 交叉验证表
@@ -370,20 +366,20 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
 
   children.push(heading3('障碍类型详细解读'));
   children.push(heading3('心理障碍'));
-  children.push(insightBox(aiText.barrier_psychological || aiText.barrierInterpretation || '暂无解读'));
+  children.push(insightBox(aiText.barrierPsychological || '暂无解读'));
   children.push(heading3('认知障碍'));
-  children.push(insightBox(aiText.barrier_cognitive || '暂无解读'));
+  children.push(insightBox(aiText.barrierCognitive || '暂无解读'));
   children.push(heading3('环境与资源障碍'));
-  children.push(insightBox(aiText.barrier_environmental || '暂无解读'));
+  children.push(insightBox(aiText.barrierEnvironmental || '暂无解读'));
 
-  if (aiText.barrierInterpretation) {
+  if (aiText.barrierConclusion) {
     children.push(heading3('创造力障碍综合结论'));
-    children.push(insightBox(aiText.barrierInterpretation));
+    children.push(insightBox(aiText.barrierConclusion));
   }
 
-  if (aiText.barrierSuggestions) {
+  if (aiText.keyActions) {
     children.push(heading3('突破建议'));
-    children.push(insightBox(aiText.barrierSuggestions));
+    children.push(insightBox(aiText.keyActions));
   }
 
   // ===== 五、综合评分汇总 =====
@@ -392,8 +388,8 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   children.push(makeTable(
     ['测评模块', '加权得分', '满分', '占比'],
     [
-      ['领导风格（LASI）', String(bd.leadership), '30', '30%'],
-      ['人格特质（16PF精选版）', String(bd.personality), '40', '40%'],
+      ['领导风格', String(bd.leadership), '30', '30%'],
+      ['人格特质（16PF）', String(bd.personality), '40', '40%'],
       ['创造力障碍', String(bd.creativityBarrier), '30', '30%'],
       ['综合总分', String(scores.totalScore), '100', `${scores.grade}`],
     ],
@@ -401,35 +397,24 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
   ));
 
   children.push(heading3('综合诊断'));
-  children.push(insightBox(aiText.comprehensiveDiagnosis || `综合总分${scores.totalScore}/100，等级"${scores.grade}"。`));
+  children.push(insightBox(aiText.scoreGrade || `综合总分${scores.totalScore}/100，等级"${scores.grade}"。`));
   children.push(boldPara(`分级判定：${scores.totalScore}分 → 「${scores.grade}」区间。${scores.gradeDescription}`));
 
-  // ===== 六、能力提升计划 =====
-  children.push(heading2('六、能力提升计划'));
-  if (aiText.improvementPlan) {
-    children.push(insightBox(aiText.improvementPlan));
+  // ===== 六、职业发展建议与方向定位 =====
+  children.push(heading2('六、职业发展建议与方向定位'));
+  if (aiText.careerPositions) {
+    children.push(heading3('适合岗位类别'));
+    children.push(insightBox(aiText.careerPositions));
+  }
+  if (aiText.growthPath) {
+    children.push(heading3('阶段性成长路径'));
+    children.push(insightBox(aiText.growthPath));
   }
 
-  // ===== 七、职业发展建议 =====
-  children.push(heading2('七、职业发展建议'));
-  if (aiText.careerSuggestions) {
-    children.push(insightBox(aiText.careerSuggestions));
-  }
-
-  // ===== 八、整体综合结论 =====
+  // ===== 最终建议 =====
   children.push(new Paragraph({ children: [new PageBreak()] }));
-  children.push(heading2('八、整体综合结论'));
-
-  children.push(heading3('核心评价'));
-  children.push(insightBox(aiText.coreEvaluation || '暂无核心评价'));
-
-  if (aiText.coreAdvantages) {
-    children.push(heading3('核心优势'));
-    children.push(insightBox(aiText.coreAdvantages));
-  }
-
-  children.push(heading3('总结与展望'));
-  children.push(insightBox(aiText.summary || '暂无总结'));
+  children.push(heading2('最终建议与寄语'));
+  children.push(insightBox(aiText.finalAdvice || '暂无总结'));
 
   // ===== 页脚 =====
   children.push(new Paragraph({ spacing: { before: 600 } }));
@@ -438,7 +423,7 @@ async function buildDocx({ scores, aiText, userName, sessionId }) {
     spacing: { before: 200 },
     border: { top: { style: BorderStyle.SINGLE, size: 1, color: 'E2EDF2' } },
     children: [new TextRun({
-      text: `本报告依据兰州大学管理学院职业发展测评系统生成（LASI + 16PF精选版 + 创造力障碍测试），权重与解读符合测评手册标准。结果用于职业规划参考，建议每6-12个月复测追踪发展成效。`,
+      text: `本报告依据兰州大学管理学院职业发展测评系统生成（领导风格问卷 + 16PF人格测验 + 创造力障碍测试），权重与解读符合测评手册标准。结果用于职业规划参考，建议每6-12个月复测追踪发展成效。`,
       size: 15,
       font: FONT,
       color: COLOR_MUTED,

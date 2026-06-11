@@ -32,7 +32,7 @@ export default function SubmittedPage() {
         // AI正在生成...
         setStatus('generating')
 
-        // 后端已完成所有处理（含AI生成+模版组装+DOCX）
+        // 后端已完成所有处理（含AI生成+模版组装+PDF）
         if (submitResult.reportId) {
           setReportId(submitResult.reportId)
         }
@@ -79,25 +79,16 @@ export default function SubmittedPage() {
             <div className="text-6xl mb-6">✅</div>
             <h1 className="text-2xl font-bold text-[#1a1a2e] mb-3">所有测评已完成！</h1>
             <p className="text-gray-400 text-sm mb-2">
-              你的综合报告已生成并提交审核
+              你的综合报告已生成，可直接查看
             </p>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 mb-8">
-              <div className="flex items-center justify-center gap-2 text-amber-700">
-                <span className="text-xl">📋</span>
-                <span className="font-medium text-sm">等待管理员审核</span>
-              </div>
-              <p className="text-amber-600 text-xs mt-2">
-                审核通过后，你可以在「我的报告」中查看和下载Word格式的完整报告
-              </p>
-            </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 mt-6">
               {reportId && (
                 <Link
                   to={`/report/${reportId}`}
                   className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-bold text-base shadow-[0_4px_20px_rgba(99,102,241,0.3)] text-center hover:from-indigo-600 hover:to-violet-600 transition-all"
                 >
-                  查看报告状态
+                  查看报告
                 </Link>
               )}
               <Link

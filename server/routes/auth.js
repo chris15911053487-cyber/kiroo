@@ -17,6 +17,9 @@ router.post('/register', async (req, res) => {
   if (!password || password.length < 6) {
     return res.status(400).json({ error: '密码至少6位' });
   }
+  if (!nickname || nickname.trim().length === 0 || nickname.length > 50) {
+    return res.status(400).json({ error: '姓名不能为空且不超过50字' });
+  }
 
   const conn = await pool.getConnection();
   try {
@@ -35,7 +38,7 @@ router.post('/register', async (req, res) => {
     // Create user
     const [userResult] = await conn.query(
       'INSERT INTO users (nickname, phone) VALUES (?, ?)',
-      [nickname || '测评用户', phone]
+      [nickname || '用户', phone]
     );
     const userId = userResult.insertId;
 
@@ -53,11 +56,11 @@ router.post('/register', async (req, res) => {
     await conn.commit();
 
     // Generate token
-    const token = jwt.sign({ id: userId, nickname: nickname || '测评用户' }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: userId, nickname: nickname || '用户' }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
       token,
-      user: { id: userId, nickname: nickname || '测评用户', phone },
+      user: { id: userId, nickname: nickname || '用户', phone },
     });
   } catch (err) {
     await conn.rollback();
@@ -205,7 +208,7 @@ router.post('/login/phone', async (req, res) => {
 
       const [userResult] = await conn.query(
         'INSERT INTO users (nickname, phone) VALUES (?, ?)',
-        ['测评用户', phone]
+        ['用户', phone]
       );
       const userId = userResult.insertId;
 
@@ -225,7 +228,7 @@ router.post('/login/phone', async (req, res) => {
 
       await conn.commit();
 
-      user = { id: userId, nickname: '测评用户', phone };
+      user = { id: userId, nickname: '用户', phone };
     }
 
     const token = jwt.sign({ id: user.id, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -304,7 +307,7 @@ router.post('/update-nickname', authMiddleware, async (req, res) => {
   const { nickname } = req.body;
 
   if (!nickname || nickname.trim().length === 0 || nickname.length > 50) {
-    return res.status(400).json({ error: '昵称不能为空且不超过50字' });
+    return res.status(400).json({ error: '姓名不能为空且不超过50字' });
   }
 
   try {
@@ -312,10 +315,10 @@ router.post('/update-nickname', authMiddleware, async (req, res) => {
 
     const token = jwt.sign({ id: req.user.id, nickname: nickname.trim() }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ message: '昵称修改成功', token, nickname: nickname.trim() });
+    res.json({ message: '姓名修改成功', token, nickname: nickname.trim() });
   } catch (err) {
     console.error('Update nickname error:', err);
-    res.status(500).json({ error: '修改昵称失败' });
+    res.status(500).json({ error: '修改姓名失败' });
   }
 });
 

@@ -22,12 +22,9 @@ export default function HistoryPage() {
   }
 
   function formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleString('zh-CN', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+    if (!dateStr) return ''
+    // 优先用后端返回的中国时间显示字符串
+    return dateStr
   }
 
   function getStatusBadge(status: string) {
@@ -108,7 +105,7 @@ export default function HistoryPage() {
                     <h3 className="font-bold text-[#1a1a2e] text-sm">综合测评报告</h3>
                     {getStatusBadge(report.reviewStatus)}
                   </div>
-                  <span className="text-gray-400 text-xs">{formatDate(report.createdAt)}</span>
+                  <span className="text-gray-400 text-xs">{formatDate(report.createdAtDisplay || report.createdAt)}</span>
                 </div>
 
                 {/* 综合得分 */}
@@ -134,21 +131,9 @@ export default function HistoryPage() {
                 </div>
 
                 {/* 状态提示 */}
-                {report.reviewStatus === 'pending' && (
-                  <p className="text-amber-600 text-xs mt-3 flex items-center gap-1">
-                    <span>⏳</span> 等待专家审核
-                  </p>
-                )}
-                {report.reviewStatus === 'rejected' && (
-                  <p className="text-red-500 text-xs mt-3 flex items-center gap-1">
-                    <span>📝</span> 报告修订中
-                  </p>
-                )}
-                {report.reviewStatus === 'approved' && (
-                  <p className="text-green-600 text-xs mt-3 flex items-center gap-1">
-                    <span>✅</span> 点击查看完整报告 →
-                  </p>
-                )}
+                <p className="text-indigo-500 text-xs mt-3 flex items-center gap-1">
+                  <span>📄</span> 点击查看完整报告 →
+                </p>
               </Link>
             ))}
           </div>

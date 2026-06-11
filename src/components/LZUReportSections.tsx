@@ -129,7 +129,7 @@ export function LZULeadershipSection({ data }: { data: LZULeadershipAnalysis }) 
   return (
     <div className="bg-white border border-black/[0.04] rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] mb-6">
       <h2 className="text-lg font-bold text-[#1a1a2e] mb-4 flex items-center gap-2">
-        <span className="w-1.5 h-5 rounded-full bg-amber-500" />领导风格分析（LASI）
+        <span className="w-1.5 h-5 rounded-full bg-amber-500" />领导风格分析
       </h2>
       <BarChart data={barData} height={200} color="#F59E0B" />
       <div className="mt-4 flex flex-wrap items-center gap-4">
@@ -156,7 +156,7 @@ export function LZUPersonalitySection({ data }: { data: LZUPersonalityAnalysis }
   return (
     <div className="bg-white border border-black/[0.04] rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] mb-6">
       <h2 className="text-lg font-bold text-[#1a1a2e] mb-4 flex items-center gap-2">
-        <span className="w-1.5 h-5 rounded-full bg-violet-500" />人格特质分析（16PF精选版）
+        <span className="w-1.5 h-5 rounded-full bg-violet-500" />人格特质分析（16PF）
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         {dims.map((dim, i) => {

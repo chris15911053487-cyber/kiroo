@@ -1,6 +1,6 @@
 {
   "id": "lzu-leadership",
-  "name": "领导风格问卷（LASI）",
+  "name": "领导风格问卷",
   "category": "lzu-leadership",
   "description": "基于情境领导理论，通过12个管理情境评估您在指令型（S1）、教练型（S2）、支持型（S3）和授权型（S4）四种领导风格上的倾向。本测验为兰州大学管理学院研究生职业发展测评定制。",
   "enabled": true,

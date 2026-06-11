@@ -35,6 +35,15 @@ interface ReportItem {
   orderedQuestionnaires: string[]
 }
 
+interface RankingItem {
+  userId: number
+  nickname: string
+  phone: string | null
+  bestScore: number
+  assessmentCount: number
+  latestAssessmentDate: string
+}
+
 interface ReportDetail {
   id: number
   sessionId: number
@@ -71,6 +80,13 @@ function adminHeaders(): Record<string, string> {
     : { 'Content-Type': 'application/json' }
 }
 
+function getGrade(score: number): { label: string; color: string; bgColor: string } {
+  if (score >= 90) return { label: '卓越型', color: 'text-purple-700', bgColor: 'bg-purple-100' }
+  if (score >= 75) return { label: '进取型', color: 'text-blue-700', bgColor: 'bg-blue-100' }
+  if (score >= 60) return { label: '成长型', color: 'text-green-700', bgColor: 'bg-green-100' }
+  return { label: '待发展型', color: 'text-amber-700', bgColor: 'bg-amber-100' }
+}
+
 // ==================== Component ====================
 
 export default function AdminDashboard() {
@@ -92,8 +108,12 @@ export default function AdminDashboard() {
   const [generateLoading, setGenerateLoading] = useState<number | null>(null) // track which report is generating
   const [previewMode, setPreviewMode] = useState<'json' | 'html'>('html') // prefer HTML preview
 
-  // Tab: 'reports' | 'assessments' | 'users'
-  const [activeTab, setActiveTab] = useState<'reports' | 'assessments' | 'users'>('reports')
+  // Ranking
+  const [ranking, setRanking] = useState<RankingItem[]>([])
+  const [rankingLoading, setRankingLoading] = useState(false)
+
+  // Tab: 'reports' | 'ranking' | 'assessments' | 'users'
+  const [activeTab, setActiveTab] = useState<'reports' | 'ranking' | 'assessments' | 'users'>('reports')
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token')
@@ -104,6 +124,13 @@ export default function AdminDashboard() {
     loadStats()
     loadReports(1)
   }, [])
+
+  // 懒加载排名数据
+  useEffect(() => {
+    if (activeTab === 'ranking' && ranking.length === 0) {
+      loadRanking()
+    }
+  }, [activeTab])
 
   async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
     const res = await fetch(url, {
@@ -145,6 +172,15 @@ export default function AdminDashboard() {
       setPage(p)
     } catch { /* handled */ }
     finally { setLoading(false) }
+  }
+
+  async function loadRanking() {
+    setRankingLoading(true)
+    try {
+      const data = await apiFetch<{ ranking: RankingItem[] }>('/api/admin/ranking')
+      setRanking(data.ranking)
+    } catch { /* handled */ }
+    finally { setRankingLoading(false) }
   }
 
   async function loadDetail(id: number) {
@@ -192,7 +228,7 @@ export default function AdminDashboard() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `人才测评报告_${id}.docx`
+      a.download = `人才测评报告_${id}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     }).catch(err => alert('下载失败：' + err.message))
@@ -255,6 +291,14 @@ export default function AdminDashboard() {
                 综合报告
               </button>
               <button
+                onClick={() => setActiveTab('ranking')}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  activeTab === 'ranking' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                综合排名
+              </button>
+              <button
                 onClick={() => setActiveTab('assessments')}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   activeTab === 'assessments' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
@@ -312,7 +356,8 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Filters */}
+        {/* Filters — only for reports tab */}
+        {activeTab === 'reports' && (<>
         <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
           <div className="flex flex-wrap gap-3 items-end">
             <div>
@@ -404,7 +449,7 @@ export default function AdminDashboard() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-400 text-xs">
-                        {new Date(r.createdAt).toLocaleString('zh-CN')}
+                        {r.createdAtDisplay || (r.createdAt ? new Date(r.createdAt).toLocaleString('zh-CN') : '')}
                       </td>
                       <td className="px-4 py-3">
                         <button
@@ -445,6 +490,82 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+        </>)}
+
+        {/* Ranking Table */}
+        {activeTab === 'ranking' && (
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-center px-4 py-3 font-medium text-gray-600 w-16">排名</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">用户</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">手机号</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-600">综合得分</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-600">等级</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-600">测评次数</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">最近测评</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rankingLoading ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-10 text-gray-400">加载中…</td>
+                    </tr>
+                  ) : ranking.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-10 text-gray-400">暂无排名数据</td>
+                    </tr>
+                  ) : (
+                    ranking.map((item, index) => {
+                      const grade = getGrade(item.bestScore)
+                      return (
+                        <tr key={item.userId} className="border-b hover:bg-gray-50">
+                          <td className="px-4 py-3 text-center">
+                            {index < 3 ? (
+                              <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-white ${
+                                index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-600'
+                              }`}>
+                                {index + 1}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 font-medium">{index + 1}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-800">{item.nickname}</td>
+                          <td className="px-4 py-3 text-gray-500">{item.phone || '-'}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                              {item.bestScore}分
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${grade.color} ${grade.bgColor}`}>
+                              {grade.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-500">{item.assessmentCount}次</td>
+                          <td className="px-4 py-3 text-gray-400 text-xs">
+                            {item.latestAssessmentDisplay
+                              || (item.latestAssessmentDate
+                                ? new Date(item.latestAssessmentDate).toLocaleString('zh-CN')
+                                : '-')}
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {!rankingLoading && ranking.length > 0 && (
+              <div className="px-4 py-3 border-t text-xs text-gray-400">
+                共 {ranking.length} 位用户参与排名
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Detail Modal */}
@@ -463,7 +584,7 @@ export default function AdminDashboard() {
                   <div>
                     <h2 className="text-lg font-bold text-gray-800">综合报告详情</h2>
                     <p className="text-sm text-gray-400 mt-0.5">
-                      {detailReport.nickname} · {detailReport.phone || '无手机号'} · {new Date(detailReport.createdAt).toLocaleString('zh-CN')}
+                      {detailReport.nickname} · {detailReport.phone || '无手机号'} · {detailReport.createdAtDisplay || (detailReport.createdAt ? new Date(detailReport.createdAt).toLocaleString('zh-CN') : '')}
                     </p>
                   </div>
                   <button onClick={closeDetail} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
@@ -619,7 +740,7 @@ export default function AdminDashboard() {
                         onClick={() => handleDownload(detailReport.id)}
                         className="px-3 py-1.5 rounded-lg bg-indigo-500 text-white text-xs font-medium hover:bg-indigo-600"
                       >
-                        📥 下载DOCX
+                        📥 下载PDF
                       </button>
                     )}
                     <button
