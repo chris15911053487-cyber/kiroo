@@ -251,11 +251,12 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
     if (USE_LZU && lzuComprehensive) {
       try {
         const { generateReport } = require('../services/lzuReportGenerator');
-        const result = await generateReport({
+        const { enqueue } = require('../services/queueService');
+        const result = await enqueue(() => generateReport({
           scores: lzuComprehensive,
           userName,
           sessionId: session.id,
-        });
+        }));
         reportHtml = result.html;
         pdfPath = result.pdfPath;
         console.log(`[LZU Gen] Report generated, PDF: ${pdfPath}`);

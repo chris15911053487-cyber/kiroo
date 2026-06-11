@@ -496,6 +496,7 @@ router.post('/reports/:id/reject', adminAuthMiddleware, async (req, res) => {
 
 const lzuScoring = require('../services/lzuScoringService');
 const { generateReport } = require('../services/lzuReportGenerator');
+const queueService = require('../services/queueService');
 
 // POST /api/admin/reports/:id/generate - 触发AI生成标准化报告
 router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
@@ -526,12 +527,12 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
     // 精准计分
     const scores = lzuScoring.calculateLZUComprehensiveScore(scoreSummary);
 
-    // 调用AI + 组装模版 + 生成PDF
-    const result = await generateReport({
+    // 调用AI + 组装模版 + 生成PDF（通过队列限流）
+    const result = await queueService.enqueue(() => generateReport({
       scores,
       userName,
       sessionId: report.sessionId,
-    });
+    }));
 
     // 更新数据库：存储HTML预览 + PDF路径
     await pool.query(
@@ -551,6 +552,11 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
     console.error('Generate report error:', err);
     res.status(500).json({ error: '报告生成失败: ' + err.message });
   }
+});
+
+// GET /api/admin/queue-status - 查看报告生成队列状态
+router.get('/queue-status', adminAuthMiddleware, (req, res) => {
+  res.json(queueService.getStatus());
 });
 
 // GET /api/admin/reports/:id/preview - 获取HTML预览
