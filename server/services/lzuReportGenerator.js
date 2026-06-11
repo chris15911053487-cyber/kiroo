@@ -353,25 +353,35 @@ async function buildPDF(html, sessionId) {
   const puppeteer = puppeteerModule.default || puppeteerModule;
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
+    // 整体超时 20 秒，避免阻塞报告生成
+    const pdfTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('PDF generation timed out')), 20000)
+    );
 
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
-    });
+    const buildTask = (async () => {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        protocolTimeout: 30000,
+      });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
 
-    const filename = `report_${sessionId}_${Date.now()}.pdf`;
-    const filepath = path.join(REPORTS_DIR, filename);
-    fs.writeFileSync(filepath, pdfBuffer);
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
+      });
 
-    console.log(`[PDF] Generated: ${filepath}`);
-    return { path: filepath, filename, buffer: Buffer.from(pdfBuffer) };
+      const filename = `report_${sessionId}_${Date.now()}.pdf`;
+      const filepath = path.join(REPORTS_DIR, filename);
+      fs.writeFileSync(filepath, pdfBuffer);
+
+      console.log(`[PDF] Generated: ${filepath}`);
+      return { path: filepath, filename, buffer: Buffer.from(pdfBuffer) };
+    })();
+
+    return await Promise.race([buildTask, pdfTimeout]);
   } catch (err) {
     console.error('[PDF] Puppeteer error, falling back to HTML file:', err.message);
     // 降级：保存HTML为文件（浏览器可直接打开）
