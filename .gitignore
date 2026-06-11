@@ -19,6 +19,7 @@ Thumbs.db
 
 # Database
 server/kiroo.db
+server/data/
 
 # Generated reports
 server/reports/
