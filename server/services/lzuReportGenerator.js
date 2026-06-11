@@ -349,7 +349,8 @@ function buildFallbackText(scores, userName) {
  * 优势：SVG图表由浏览器原生渲染，零转换损失，图表完整
  */
 async function buildPDF(html, sessionId) {
-  const puppeteer = require('puppeteer');
+  const puppeteerModule = await import('puppeteer');
+  const puppeteer = puppeteerModule.default || puppeteerModule;
   let browser;
   try {
     browser = await puppeteer.launch({
