@@ -28,21 +28,6 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 # 时区设置为北京时间
 ENV TZ=Asia/Shanghai
 
-# Puppeteer 需要的系统依赖
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    font-noto-cjk \
-    tzdata
-
-# 设置 Chromium 路径供 puppeteer 使用
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-
 # npm 国内镜像
 RUN npm config set registry https://registry.npmmirror.com
 
@@ -57,10 +42,6 @@ COPY server/ ./
 
 # SQLite 数据持久化目录
 RUN mkdir -p /app/data
-
-# 安装 puppeteer（使用系统 Chromium，跳过下载）
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-RUN npm install puppeteer --omit=dev 2>/dev/null || true
 
 # 复制前端构建产物
 COPY --from=frontend-builder /app/dist ./dist

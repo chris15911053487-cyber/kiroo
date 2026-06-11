@@ -345,58 +345,6 @@ function buildFallbackText(scores, userName) {
 }
 
 /**
- * 通过Puppeteer将已生成的HTML渲染为PDF
- * 优势：SVG图表由浏览器原生渲染，零转换损失，图表完整
- */
-async function buildPDF(html, sessionId) {
-  const puppeteerModule = await import('puppeteer');
-  const puppeteer = puppeteerModule.default || puppeteerModule;
-  let browser;
-  try {
-    // 整体超时 20 秒，避免阻塞报告生成
-    const pdfTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('PDF generation timed out')), 20000)
-    );
-
-    const buildTask = (async () => {
-      browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        protocolTimeout: 30000,
-      });
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
-
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
-      });
-
-      const filename = `report_${sessionId}_${Date.now()}.pdf`;
-      const filepath = path.join(REPORTS_DIR, filename);
-      fs.writeFileSync(filepath, pdfBuffer);
-
-      console.log(`[PDF] Generated: ${filepath}`);
-      return { path: filepath, filename, buffer: Buffer.from(pdfBuffer) };
-    })();
-
-    return await Promise.race([buildTask, pdfTimeout]);
-  } catch (err) {
-    console.error('[PDF] Puppeteer error, falling back to HTML file:', err.message);
-    // 降级：保存HTML为文件（浏览器可直接打开）
-    const filename = `report_${sessionId}_${Date.now()}.html`;
-    const filepath = path.join(REPORTS_DIR, filename);
-    fs.writeFileSync(filepath, html, 'utf-8');
-    return { path: filepath, filename, buffer: Buffer.from(html, 'utf-8') };
-  } finally {
-    if (browser) {
-      try { await browser.close(); } catch { /* ignore */ }
-    }
-  }
-}
-
-/**
  * 主入口：生成完整报告
  */
 async function generateReport({ scores, userName, sessionId }) {
@@ -430,13 +378,16 @@ async function generateReport({ scores, userName, sessionId }) {
     sessionId: sessionId || 0,
   });
 
-  // 5. 通过Puppeteer将HTML渲染为PDF（SVG图表原生渲染，质量更高）
-  const pdfResult = await buildPDF(html, sessionId || 0);
+  // 保存HTML为文件（后续可转为PDF）
+  const filename = `report_${sessionId || 0}_${Date.now()}.html`;
+  const filepath = path.join(REPORTS_DIR, filename);
+  fs.writeFileSync(filepath, html, 'utf-8');
+  console.log(`[Report] HTML saved: ${filepath}`);
 
   return {
     html,
-    pdfPath: pdfResult.path,
-    pdfBuffer: pdfResult.buffer,
+    pdfPath: filepath,
+    pdfBuffer: Buffer.from(html, 'utf-8'),
     aiText,
     chartsGenerated: true,
   };
