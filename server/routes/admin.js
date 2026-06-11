@@ -17,10 +17,18 @@ router.post('/login', async (req, res) => {
   }
 
   try {
+    console.log('[Admin Login] username:', username, 'password length:', password.length);
     const [rows] = await pool.query(
       'SELECT id, username, password_hash, role FROM admins WHERE username = ?',
       [username]
     );
+    console.log('[Admin Login] rows found:', rows.length);
+    if (rows.length > 0) {
+      console.log('[Admin Login] stored_hash:', rows[0].password_hash.substring(0, 20) + '...');
+      const bcrypt = require('bcryptjs');
+      const testMatch = bcrypt.compareSync(password, rows[0].password_hash);
+      console.log('[Admin Login] bcrypt match:', testMatch);
+    }
 
     if (rows.length === 0) {
       return res.status(401).json({ error: '用户名或密码错误' });
