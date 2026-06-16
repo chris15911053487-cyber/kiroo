@@ -147,4 +147,54 @@ router.get('/:id/pdf', authMiddleware, async (req, res) => {
   }
 });
 
+// POST /api/reports/mids-f2/generate — 生成 MIDS-F2 独立报告
+router.post('/mids-f2/generate', authMiddleware, async (req, res) => {
+  try {
+    const { dimensionScores, userName } = req.body;
+
+    if (!dimensionScores || typeof dimensionScores !== 'object') {
+      return res.status(400).json({ error: '缺少 dimensionScores 参数' });
+    }
+
+    // 计算 MIDS-F2 结果
+    const { computeMidsF2 } = require('../services/midsF2ScoringService');
+    const midsF2Result = computeMidsF2(dimensionScores);
+
+    const { generateMidsF2Report } = require('../services/midsF2ReportService');
+    const reportData = await generateMidsF2Report({
+      dimensionScores,
+      midsF2Result,
+      userName: userName || '测评用户',
+    });
+
+    // 保存到 comprehensive_reports 表
+    const pool = getPool();
+    const sessionId = req.body.sessionId || 0;
+    const [result] = await pool.query(
+      `INSERT INTO comprehensive_reports
+       (session_id, user_id, questionnaires_completed, score_summary, report_content, report_html,
+        comprehensive_score, review_status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'), datetime('now'))`,
+      [
+        sessionId,
+        req.user.id,
+        JSON.stringify(['mids-f2']),
+        JSON.stringify({ 'mids-f2': { dimensionScores, type: 'likert' } }),
+        JSON.stringify(reportData),
+        null,
+        reportData.comprehensiveScore,
+      ]
+    );
+
+    // 返回报告 ID 供前端跳转
+    res.json({
+      reportId: result.insertId,
+      report: reportData,
+    });
+  } catch (err) {
+    console.error('[MIDS-F2] Report generation error:', err);
+    res.status(500).json({ error: '报告生成失败' });
+  }
+});
+
 module.exports = router;
