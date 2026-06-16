@@ -1,0 +1,319 @@
+{
+  "id": "mids-f2",
+  "name": "家族二代多维创新力量表",
+  "category": "family-business",
+  "description": "本量表包含5个一级维度共23个条目，评估家族企业二代的创新力与接班潜力。",
+  "enabled": true,
+  "createdAt": "2026-06-16T00:00:00Z",
+  "questions": [
+    {
+      "id": "m1",
+      "sequence": 1,
+      "dimension": "strategic_breakthrough",
+      "text": "我能敏锐地发现父辈产业中与新技术结合的空白点（如数字化、AI应用）。",
+      "options": [
+        {"id": "m1-a", "text": "完全不符合", "score": 1},
+        {"id": "m1-b", "text": "不太符合", "score": 2},
+        {"id": "m1-c", "text": "不确定", "score": 3},
+        {"id": "m1-d", "text": "比较符合", "score": 4},
+        {"id": "m1-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m2",
+      "sequence": 2,
+      "dimension": "strategic_breakthrough",
+      "text": "面对行业周期波动，我更倾向于「逆周期布局」而非「收缩过冬」。",
+      "options": [
+        {"id": "m2-a", "text": "完全不符合", "score": 1},
+        {"id": "m2-b", "text": "不太符合", "score": 2},
+        {"id": "m2-c", "text": "不确定", "score": 3},
+        {"id": "m2-d", "text": "比较符合", "score": 4},
+        {"id": "m2-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m3",
+      "sequence": 3,
+      "dimension": "strategic_breakthrough",
+      "text": "我敢于质疑企业现有的商业模式，即使它在过去很成功。",
+      "options": [
+        {"id": "m3-a", "text": "完全不符合", "score": 1},
+        {"id": "m3-b", "text": "不太符合", "score": 2},
+        {"id": "m3-c", "text": "不确定", "score": 3},
+        {"id": "m3-d", "text": "比较符合", "score": 4},
+        {"id": "m3-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m4",
+      "sequence": 4,
+      "dimension": "strategic_breakthrough",
+      "text": "我擅长将抽象的宏观趋势（如双碳、ESG）转化为企业具体的执行动作。",
+      "options": [
+        {"id": "m4-a", "text": "完全不符合", "score": 1},
+        {"id": "m4-b", "text": "不太符合", "score": 2},
+        {"id": "m4-c", "text": "不确定", "score": 3},
+        {"id": "m4-d", "text": "比较符合", "score": 4},
+        {"id": "m4-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m5",
+      "sequence": 5,
+      "dimension": "strategic_breakthrough",
+      "text": "我认为「跨界打劫」（进入新赛道）是比「内部改良」更有效的创新。",
+      "options": [
+        {"id": "m5-a", "text": "完全不符合", "score": 1},
+        {"id": "m5-b", "text": "不太符合", "score": 2},
+        {"id": "m5-c", "text": "不确定", "score": 3},
+        {"id": "m5-d", "text": "比较符合", "score": 4},
+        {"id": "m5-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m6",
+      "sequence": 6,
+      "dimension": "execution_disruption",
+      "text": "我擅长引入数字化工具（如ERP、数据中台）来推翻低效的原有流程。",
+      "options": [
+        {"id": "m6-a", "text": "完全不符合", "score": 1},
+        {"id": "m6-b", "text": "不太符合", "score": 2},
+        {"id": "m6-c", "text": "不确定", "score": 3},
+        {"id": "m6-d", "text": "比较符合", "score": 4},
+        {"id": "m6-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m7",
+      "sequence": 7,
+      "dimension": "execution_disruption",
+      "text": "当直觉与数据冲突时，我会无条件选择相信数据并调整决策。",
+      "options": [
+        {"id": "m7-a", "text": "完全不符合", "score": 1},
+        {"id": "m7-b", "text": "不太符合", "score": 2},
+        {"id": "m7-c", "text": "不确定", "score": 3},
+        {"id": "m7-d", "text": "比较符合", "score": 4},
+        {"id": "m7-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m8",
+      "sequence": 8,
+      "dimension": "execution_disruption",
+      "text": "我经常在团队中带头试用最新的效率工具（如AI、协同软件）。",
+      "options": [
+        {"id": "m8-a", "text": "完全不符合", "score": 1},
+        {"id": "m8-b", "text": "不太符合", "score": 2},
+        {"id": "m8-c", "text": "不确定", "score": 3},
+        {"id": "m8-d", "text": "比较符合", "score": 4},
+        {"id": "m8-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m9",
+      "sequence": 9,
+      "dimension": "execution_disruption",
+      "text": "我习惯将复杂的产品参数或服务流程进行「通俗化/标准化」改造，以扩大市场。",
+      "options": [
+        {"id": "m9-a", "text": "完全不符合", "score": 1},
+        {"id": "m9-b", "text": "不太符合", "score": 2},
+        {"id": "m9-c", "text": "不确定", "score": 3},
+        {"id": "m9-d", "text": "比较符合", "score": 4},
+        {"id": "m9-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m10",
+      "sequence": 10,
+      "dimension": "execution_disruption",
+      "text": "我推崇「小步快跑、快速迭代」的试错机制，而非追求一步到位的完美。",
+      "options": [
+        {"id": "m10-a", "text": "完全不符合", "score": 1},
+        {"id": "m10-b", "text": "不太符合", "score": 2},
+        {"id": "m10-c", "text": "不确定", "score": 3},
+        {"id": "m10-d", "text": "比较符合", "score": 4},
+        {"id": "m10-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m11",
+      "sequence": 11,
+      "dimension": "resource_integration",
+      "text": "我能够将国外的先进理念或技术，因地制宜地嫁接到家族的本土业务中。",
+      "options": [
+        {"id": "m11-a", "text": "完全不符合", "score": 1},
+        {"id": "m11-b", "text": "不太符合", "score": 2},
+        {"id": "m11-c", "text": "不确定", "score": 3},
+        {"id": "m11-d", "text": "比较符合", "score": 4},
+        {"id": "m11-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m12",
+      "sequence": 12,
+      "dimension": "resource_integration",
+      "text": "我善于利用资本手段（如并购、融资）来解决业务发展瓶颈，而非仅靠利润滚动。",
+      "options": [
+        {"id": "m12-a", "text": "完全不符合", "score": 1},
+        {"id": "m12-b", "text": "不太符合", "score": 2},
+        {"id": "m12-c", "text": "不确定", "score": 3},
+        {"id": "m12-d", "text": "比较符合", "score": 4},
+        {"id": "m12-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m13",
+      "sequence": 13,
+      "dimension": "resource_integration",
+      "text": "我倾向于引入外部职业经理人来制衡或激励家族旧部。",
+      "options": [
+        {"id": "m13-a", "text": "完全不符合", "score": 1},
+        {"id": "m13-b", "text": "不太符合", "score": 2},
+        {"id": "m13-c", "text": "不确定", "score": 3},
+        {"id": "m13-d", "text": "比较符合", "score": 4},
+        {"id": "m13-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m14",
+      "sequence": 14,
+      "dimension": "resource_integration",
+      "text": "我擅长挖掘「老臣」们虽未言明但客观存在的痛点，并以此推动改革。",
+      "options": [
+        {"id": "m14-a", "text": "完全不符合", "score": 1},
+        {"id": "m14-b", "text": "不太符合", "score": 2},
+        {"id": "m14-c", "text": "不确定", "score": 3},
+        {"id": "m14-d", "text": "比较符合", "score": 4},
+        {"id": "m14-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m15",
+      "sequence": 15,
+      "dimension": "adversity_quotient",
+      "text": "当我提出的创新方案被父辈否决时，我会寻找迂回方式再次尝试，而非放弃。",
+      "options": [
+        {"id": "m15-a", "text": "完全不符合", "score": 1},
+        {"id": "m15-b", "text": "不太符合", "score": 2},
+        {"id": "m15-c", "text": "不确定", "score": 3},
+        {"id": "m15-d", "text": "比较符合", "score": 4},
+        {"id": "m15-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m16",
+      "sequence": 16,
+      "dimension": "adversity_quotient",
+      "text": "我能接受为了长远的创新，暂时牺牲短期的财务收益。",
+      "options": [
+        {"id": "m16-a", "text": "完全不符合", "score": 1},
+        {"id": "m16-b", "text": "不太符合", "score": 2},
+        {"id": "m16-c", "text": "不确定", "score": 3},
+        {"id": "m16-d", "text": "比较符合", "score": 4},
+        {"id": "m16-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m17",
+      "sequence": 17,
+      "dimension": "adversity_quotient",
+      "text": "在处理「家族亲情」与「企业制度」冲突时，我能做到理性决策。",
+      "options": [
+        {"id": "m17-a", "text": "完全不符合", "score": 1},
+        {"id": "m17-b", "text": "不太符合", "score": 2},
+        {"id": "m17-c", "text": "不确定", "score": 3},
+        {"id": "m17-d", "text": "比较符合", "score": 4},
+        {"id": "m17-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m18",
+      "sequence": 18,
+      "dimension": "adversity_quotient",
+      "text": "面对创业/就业的不确定性带来的孤独感，我依然能保持较高的工作投入度。",
+      "options": [
+        {"id": "m18-a", "text": "完全不符合", "score": 1},
+        {"id": "m18-b", "text": "不太符合", "score": 2},
+        {"id": "m18-c", "text": "不确定", "score": 3},
+        {"id": "m18-d", "text": "比较符合", "score": 4},
+        {"id": "m18-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m19",
+      "sequence": 19,
+      "dimension": "adversity_quotient",
+      "text": "我能放下「二代」身段，从最基层或最苦的岗位开始验证我的想法。",
+      "options": [
+        {"id": "m19-a", "text": "完全不符合", "score": 1},
+        {"id": "m19-b", "text": "不太符合", "score": 2},
+        {"id": "m19-c", "text": "不确定", "score": 3},
+        {"id": "m19-d", "text": "比较符合", "score": 4},
+        {"id": "m19-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m20",
+      "sequence": 20,
+      "dimension": "ethics_vision",
+      "text": "我在设计创新业务时，会优先考虑是否符合社会责任或环保要求。",
+      "options": [
+        {"id": "m20-a", "text": "完全不符合", "score": 1},
+        {"id": "m20-b", "text": "不太符合", "score": 2},
+        {"id": "m20-c", "text": "不确定", "score": 3},
+        {"id": "m20-d", "text": "比较符合", "score": 4},
+        {"id": "m20-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m21",
+      "sequence": 21,
+      "dimension": "ethics_vision",
+      "text": "我关注企业的品牌声誉和价值观输出，胜过短期的价格战胜利。",
+      "options": [
+        {"id": "m21-a", "text": "完全不符合", "score": 1},
+        {"id": "m21-b", "text": "不太符合", "score": 2},
+        {"id": "m21-c", "text": "不确定", "score": 3},
+        {"id": "m21-d", "text": "比较符合", "score": 4},
+        {"id": "m21-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m22",
+      "sequence": 22,
+      "dimension": "ethics_vision",
+      "text": "我愿意分享创新带来的红利，建立合伙人机制而非纯粹的雇佣关系。",
+      "options": [
+        {"id": "m22-a", "text": "完全不符合", "score": 1},
+        {"id": "m22-b", "text": "不太符合", "score": 2},
+        {"id": "m22-c", "text": "不确定", "score": 3},
+        {"id": "m22-d", "text": "比较符合", "score": 4},
+        {"id": "m22-e", "text": "完全符合", "score": 5}
+      ]
+    },
+    {
+      "id": "m23",
+      "sequence": 23,
+      "dimension": "ethics_vision",
+      "text": "我认为企业存在的价值是解决社会问题，而不仅是积累财富。",
+      "options": [
+        {"id": "m23-a", "text": "完全不符合", "score": 1},
+        {"id": "m23-b", "text": "不太符合", "score": 2},
+        {"id": "m23-c", "text": "不确定", "score": 3},
+        {"id": "m23-d", "text": "比较符合", "score": 4},
+        {"id": "m23-e", "text": "完全符合", "score": 5}
+      ]
+    }
+  ],
+  "scoring_rule": {
+    "type": "likert",
+    "dimensions": [
+      {"key": "strategic_breakthrough", "name": "战略破局力", "itemCount": 5},
+      {"key": "execution_disruption", "name": "执行颠覆力", "itemCount": 5},
+      {"key": "resource_integration", "name": "资源整合力", "itemCount": 4},
+      {"key": "adversity_quotient", "name": "逆商与灰度", "itemCount": 5},
+      {"key": "ethics_vision", "name": "伦理与格局", "itemCount": 4}
+    ]
+  }
+}
