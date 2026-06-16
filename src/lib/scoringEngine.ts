@@ -93,10 +93,10 @@ export function compute(
 
     // 累加每个问题的选中选项分值
     for (const q of questionnaire.questions) {
-      const selectedOption = q.options.find(o => o.id === answers[q.id])
-      const dim = (q as any).dimension as string | undefined
-      if (selectedOption?.score !== undefined && dim && dimensionScores[dim] !== undefined) {
-        dimensionScores[dim] += selectedOption.score
+      const opt = q.options.find(o => o.id === answers[q.id])
+      const dim: string = (q as any).dimension ?? ''
+      if (opt?.score != null && dim && dimensionScores[dim] !== undefined) {
+        dimensionScores[dim] += opt!.score!
         dimensionCounts[dim] += 1
       }
     }

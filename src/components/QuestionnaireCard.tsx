@@ -18,6 +18,7 @@ const CATEGORY_LABELS: Record<QuestionnaireCategory, string> = {
   'lzu-leadership': '领导风格',
   'lzu-personality': '人格测试',
   'lzu-creativity': '创造力',
+  'family-business': '家族企业',
 }
 
 const CATEGORY_ICONS: Record<QuestionnaireCategory, string> = {
@@ -33,6 +34,7 @@ const CATEGORY_ICONS: Record<QuestionnaireCategory, string> = {
   'lzu-leadership': '👑',
   'lzu-personality': '🧠',
   'lzu-creativity': '💡',
+  'family-business': '🏢',
 }
 
 const CATEGORY_ICON_BG: Record<QuestionnaireCategory, string> = {
@@ -48,6 +50,7 @@ const CATEGORY_ICON_BG: Record<QuestionnaireCategory, string> = {
   'lzu-leadership': 'bg-gradient-to-br from-amber-50 to-yellow-50',
   'lzu-personality': 'bg-gradient-to-br from-violet-50 to-purple-50',
   'lzu-creativity': 'bg-gradient-to-br from-yellow-50 to-orange-50',
+  'family-business': 'bg-gradient-to-br from-sky-50 to-blue-50',
 }
 
 const CATEGORY_BADGE: Record<QuestionnaireCategory, string> = {
@@ -63,6 +66,7 @@ const CATEGORY_BADGE: Record<QuestionnaireCategory, string> = {
   'lzu-leadership': 'bg-amber-50 text-amber-600',
   'lzu-personality': 'bg-violet-50 text-violet-600',
   'lzu-creativity': 'bg-orange-50 text-orange-600',
+  'family-business': 'bg-sky-50 text-sky-600',
 }
 
 /** 估算答题时间（每题约 30 秒） */
