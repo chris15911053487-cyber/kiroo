@@ -581,7 +581,14 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
         );
         result = { html: null, pdfPath: null };
       } else {
-        return res.status(400).json({ error: 'MIDS-F2 报告缺少维度得分数据，请确认已完成答题后重新提交' });
+        // 诊断：输出实际找到的数据结构
+        const scoreKeys = Object.keys(scoreSummary);
+        const midsRaw = JSON.stringify(scoreSummary['mids-f2'] || null).substring(0, 300);
+        console.error('[MIDS-F2 Regenerate] FAILED — score_summary keys:', scoreKeys);
+        console.error('[MIDS-F2 Regenerate] score_summary[mids-f2]:', midsRaw);
+        return res.status(400).json({
+          error: `MIDS-F2 报告缺少维度得分数据。score_summary 键: [${scoreKeys.join(', ')}]; mids-f2 内容: ${midsRaw}`,
+        });
       }
     } else {
       // 原有 LZU / 通用报告生成
