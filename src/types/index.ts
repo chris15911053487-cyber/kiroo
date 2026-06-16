@@ -13,18 +13,21 @@ export type QuestionnaireCategory =
   | 'lzu-leadership'
   | 'lzu-personality'
   | 'lzu-creativity'
+  | 'family-business'
 
 export interface Option {
   id: string
   text: string
   scores?: Record<string, number>
   category?: string
+  score?: number  // likert 计分类型的单一分值 (1-5)
 }
 
 export interface Question {
   id: string
   sequence: number
   text: string
+  dimension?: string  // likert 计分类型的维度标识
   options: Option[]
 }
 
@@ -34,6 +37,7 @@ export interface DimensionDefinition {
   min?: number
   max?: number
   description?: string
+  itemCount?: number  // likert 计分类型的维度条目数
 }
 
 export interface CategoryDefinition {
@@ -42,7 +46,7 @@ export interface CategoryDefinition {
   description?: string
 }
 
-export type ScoringRuleType = 'additive' | 'categorical'
+export type ScoringRuleType = 'additive' | 'categorical' | 'likert'
 
 export interface ScoringRule {
   type: ScoringRuleType
@@ -87,6 +91,7 @@ export const QUESTIONNAIRE_PRIORITY: Array<{
   { id: '16pf',         name: '卡氏十六种人格因素测验',  questions: 187, estimatedMinutes: 30 },
   { id: 'creativity',   name: '创造力障碍测评',         questions: 37,  estimatedMinutes: 6  },
   { id: 'holland',      name: '霍兰德职业兴趣测试',     questions: 90,  estimatedMinutes: 15 },
+  { id: 'mids-f2',    name: '家族二代多维创新力量表', questions: 23,  estimatedMinutes: 4  },
 ]
 
 export const PRIORITY_ORDER = QUESTIONNAIRE_PRIORITY.map(q => q.id)
