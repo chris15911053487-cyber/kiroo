@@ -504,7 +504,8 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
     // 获取报告基本数据
     const [rows] = await pool.query(
       `SELECT cr.id, cr.session_id AS sessionId, cr.user_id AS userId,
-              cr.score_summary AS scoreSummary, cr.report_content AS reportContent
+              cr.score_summary AS scoreSummary, cr.report_content AS reportContent,
+              cr.questionnaires_completed AS questionnairesCompleted
        FROM comprehensive_reports cr
        WHERE cr.id = ?`,
       [req.params.id]
@@ -524,29 +525,65 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
     );
     const userName = userRows.length > 0 ? userRows[0].nickname : '测评用户';
 
-    // 精准计分
-    const scores = lzuScoring.calculateLZUComprehensiveScore(scoreSummary);
+    // 检测是否为 MIDS-F2 报告
+    const completedIds = typeof report.questionnairesCompleted === 'string'
+      ? JSON.parse(report.questionnairesCompleted || '[]')
+      : (report.questionnairesCompleted || []);
+    const isMidsF2 = completedIds.length === 1 && completedIds[0] === 'mids-f2';
 
-    // 调用AI + 组装模版 + 生成PDF（通过队列限流）
-    const result = await queueService.enqueue(() => generateReport({
-      scores,
-      userName,
-      sessionId: report.sessionId,
-    }));
+    let result;
+    let reportHtml = null;
+    let pdfPath = null;
 
-    // 更新数据库：存储HTML预览 + PDF路径
-    await pool.query(
-      `UPDATE comprehensive_reports
-       SET report_html = ?, docx_path = ?, updated_at = datetime('now')
-       WHERE id = ?`,
-      [result.html, result.pdfPath, req.params.id]
-    );
+    if (isMidsF2) {
+      // MIDS-F2 报告生成
+      const midsScore = scoreSummary['mids-f2'];
+      if (midsScore?.dimensionScores) {
+        const { computeMidsF2 } = require('../services/midsF2ScoringService');
+        const { generateMidsF2Report } = require('../services/midsF2ReportService');
+        const midsResult = computeMidsF2(midsScore.dimensionScores);
+        const midsReport = await queueService.enqueue(() => generateMidsF2Report({
+          dimensionScores: midsScore.dimensionScores,
+          midsF2Result: midsResult,
+          userName,
+        }));
+        // MIDS-F2 报告：存储 JSON 到 report_content，由前端 React 组件渲染
+        reportHtml = null;
+        await pool.query(
+          `UPDATE comprehensive_reports
+           SET report_content = ?, report_html = NULL, docx_path = NULL,
+               comprehensive_score = ?, updated_at = datetime('now')
+           WHERE id = ?`,
+          [JSON.stringify(midsReport), midsReport.comprehensiveScore, req.params.id]
+        );
+        result = { html: null, pdfPath: null };
+      } else {
+        return res.status(400).json({ error: 'MIDS-F2 报告缺少维度得分数据' });
+      }
+    } else {
+      // 原有 LZU / 通用报告生成
+      const scores = lzuScoring.calculateLZUComprehensiveScore(scoreSummary);
+      result = await queueService.enqueue(() => generateReport({
+        scores,
+        userName,
+        sessionId: report.sessionId,
+      }));
+      reportHtml = result.html;
+      pdfPath = result.pdfPath;
+
+      await pool.query(
+        `UPDATE comprehensive_reports
+         SET report_html = ?, docx_path = ?, updated_at = datetime('now')
+         WHERE id = ?`,
+        [result.html, result.pdfPath, req.params.id]
+      );
+    }
 
     res.json({
       message: '报告生成成功',
       reportId: report.id,
-      previewAvailable: true,
-      pdfPath: result.pdfPath,
+      previewAvailable: !!reportHtml,
+      pdfPath: pdfPath,
     });
   } catch (err) {
     console.error('Generate report error:', err);
