@@ -75,7 +75,7 @@ router.get('/current', authMiddleware, async (req, res) => {
     const [rows] = await pool.query(
       `SELECT id, selected_questionnaires, ordered_questionnaires, current_index, status, created_at, updated_at
        FROM assessment_sessions
-       WHERE user_id = ? AND status = 'in_progress'
+       WHERE user_id = ? AND status IN ('in_progress', 'completed')
        ORDER BY updated_at DESC LIMIT 1`,
       [req.user.id]
     );
@@ -177,7 +177,7 @@ router.post('/:id/answers', authMiddleware, async (req, res) => {
     }
 
     const session = sessions[0];
-    if (session.status !== 'in_progress') {
+    if (session.status !== 'in_progress' && session.status !== 'completed') {
       return res.status(400).json({ error: '该会话已结束' });
     }
 
@@ -334,7 +334,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
         _note: 'AI生成失败，需管理员重新生成',
       };
       reportContent = JSON.stringify(scoreSnapshot);
-    } else {
+    } else if (lzuComprehensive) {
       reportContent = JSON.stringify({
         _generated: true,
         comprehensiveScore,

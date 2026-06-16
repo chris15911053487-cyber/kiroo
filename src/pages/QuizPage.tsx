@@ -30,8 +30,13 @@ export default function QuizPage() {
 
     sessionService.getById(Number(sessionId))
       .then(data => {
-        if (!data.session || data.session.status !== 'in_progress') {
+        if (!data.session || (data.session.status !== 'in_progress' && data.session.status !== 'completed')) {
           navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })
+          return
+        }
+        // 已完成答题但未提交，直接跳转提交
+        if (data.session.status === 'completed') {
+          navigate(`/quiz/${data.session.id}/transition`, { replace: true })
           return
         }
         setSession(data.session)
