@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS assessment_sessions (
   selected_questionnaires TEXT NOT NULL,
   ordered_questionnaires TEXT NOT NULL,
   current_index INTEGER DEFAULT 0,
-  status TEXT CHECK(status IN ('in_progress', 'completed', 'submitted', 'approved', 'rejected')) DEFAULT 'in_progress',
+  status TEXT CHECK(status IN ('in_progress', 'completed', 'submitted', 'approved', 'rejected', 'cancelled')) DEFAULT 'in_progress',
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now')),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

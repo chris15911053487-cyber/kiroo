@@ -88,4 +88,11 @@ export const sessionService = {
       method: 'POST',
     })
   },
+
+  /** 放弃进行中的测评会话 */
+  cancel(sessionId: number) {
+    return request<{ message: string }>(`/${sessionId}`, {
+      method: 'DELETE',
+    })
+  },
 }

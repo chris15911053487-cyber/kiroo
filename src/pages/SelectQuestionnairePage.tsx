@@ -139,6 +139,22 @@ export default function SelectQuestionnairePage() {
     }
   }
 
+  async function handleAbandon() {
+    if (!existingSessionId) return
+    if (!confirm('确定要放弃当前测评吗？已答题目将不会保存。')) return
+
+    setSubmitting(true)
+    try {
+      await sessionService.cancel(existingSessionId)
+      setHasExistingSession(false)
+      setExistingSessionId(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '取消测评失败')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   // 兰大模式：显示自动初始化loading
   if (IS_LZU_MODE) {
     if (authLoading || checkingSession) {
@@ -238,15 +254,20 @@ export default function SelectQuestionnairePage() {
             <p className="text-amber-600 text-sm mb-4">
               上次测评进度已保存，您可以继续完成剩余问卷。
             </p>
-            <button
-              onClick={handleContinue}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-[0_4px_15px_rgba(245,158,11,0.3)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.4)] transition-all"
-            >
-              继续上次测评 →
-            </button>
-            <p className="text-amber-400 text-xs mt-3">
-              如需重新选择问卷，请先完成或等待当前会话过期
-            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={handleContinue}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-[0_4px_15px_rgba(245,158,11,0.3)] hover:shadow-[0_6px_20px_rgba(245,158,11,0.4)] transition-all"
+              >
+                继续上次测评 →
+              </button>
+              <button
+                onClick={handleAbandon}
+                className="px-6 py-3 rounded-xl border border-red-200 bg-white text-red-500 font-semibold text-sm hover:bg-red-50 transition-all"
+              >
+                放弃并退出
+              </button>
+            </div>
           </div>
         )}
 

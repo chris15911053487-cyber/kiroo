@@ -126,6 +126,35 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// DELETE /api/sessions/:id — 放弃进行中的测评会话
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, status FROM assessment_sessions WHERE id = ? AND user_id = ?',
+      [req.params.id, req.user.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '会话不存在' });
+    }
+
+    if (rows[0].status !== 'in_progress') {
+      return res.status(400).json({ error: '只能放弃进行中的测评' });
+    }
+
+    // 改为 cancelled 状态而非删除（保留记录）
+    await pool.query(
+      'UPDATE assessment_sessions SET status = ? WHERE id = ?',
+      ['cancelled', req.params.id]
+    );
+
+    res.json({ message: '测评已取消' });
+  } catch (err) {
+    console.error('Cancel session error:', err);
+    res.status(500).json({ error: '取消测评失败' });
+  }
+});
+
 // POST /api/sessions/:id/answers - 提交单个问卷的答案（存档点）
 router.post('/:id/answers', authMiddleware, async (req, res) => {
   const { questionnaireId, questionnaireName, answers, scoreResult } = req.body;
