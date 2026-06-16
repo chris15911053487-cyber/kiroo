@@ -7,7 +7,7 @@ const router = express.Router();
 
 // 问卷优先级排序（与服务端保持一致）
 const DEFAULT_QUESTIONNAIRE_PRIORITY_ORDER = [
-  'leadership', 'temperament', 'big5', 'mbti', '16pf', 'creativity', 'holland'
+  'leadership', 'temperament', 'big5', 'mbti', '16pf', 'creativity', 'holland', 'mids-f2'
 ];
 
 // 兰大测评优先级排序
@@ -266,8 +266,31 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
       }
     }
 
+    // MIDS-F2 独立报告生成（非兰大模式 + 仅完成 mids-f2）
+    if (!USE_LZU && questionnairesCompleted.length === 1 && questionnairesCompleted[0] === 'mids-f2') {
+      try {
+        const midsScore = scoreSummary['mids-f2'];
+        if (midsScore?.dimensionScores) {
+          const { computeMidsF2 } = require('../services/midsF2ScoringService');
+          const { generateMidsF2Report } = require('../services/midsF2ReportService');
+          const midsResult = computeMidsF2(midsScore.dimensionScores);
+          const midsReport = await generateMidsF2Report({
+            dimensionScores: midsScore.dimensionScores,
+            midsF2Result: midsResult,
+            userName,
+          });
+          reportContent = JSON.stringify(midsReport);
+          comprehensiveScore = midsReport.comprehensiveScore;
+          reportHtml = null;  // MIDS-F2 报告由前端 React 组件渲染
+          console.log(`[MIDS-F2 Gen] Report generated, score=${comprehensiveScore}, path=${midsResult.decisionPath}`);
+        }
+      } catch (midsErr) {
+        console.error('[MIDS-F2 Gen] Generation error:', midsErr.message);
+      }
+    }
+
     // 降级：如果AI生成失败，存储分数快照
-    if (!reportHtml) {
+    if (!reportHtml && !reportContent) {
       const now = new Date();
       const scoreSnapshot = {
         userName,

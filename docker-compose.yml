@@ -7,7 +7,10 @@ version: '3.8'
 services:
   # ---- Node.js 应用 ----
   app:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_LZU_MODE: "${LZU_MODE:-false}"
     container_name: kiroo-app
     restart: unless-stopped
     ports:
@@ -18,7 +21,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-      - LZU_MODE=${LZU_MODE:-true}
+      - LZU_MODE=${LZU_MODE:-false}
       - SMS_ENABLED=false
     volumes:
       - app_data:/app/data
