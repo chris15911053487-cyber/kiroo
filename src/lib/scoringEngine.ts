@@ -50,34 +50,36 @@ export function compute(
   }
 
   // Step 3: Categorical scoring
-  const frequencies: Record<string, number> = {}
+  if (questionnaire.scoring_rule.type === 'categorical') {
+    const frequencies: Record<string, number> = {}
 
-  for (const q of questionnaire.questions) {
-    const selectedOption = q.options.find(o => o.id === answers[q.id])
-    if (selectedOption?.category) {
-      frequencies[selectedOption.category] = (frequencies[selectedOption.category] ?? 0) + 1
+    for (const q of questionnaire.questions) {
+      const selectedOption = q.options.find(o => o.id === answers[q.id])
+      if (selectedOption?.category) {
+        frequencies[selectedOption.category] = (frequencies[selectedOption.category] ?? 0) + 1
+      }
     }
-  }
 
-  // Find the category with highest frequency;
-  // tie-break: use the category with the smallest index in scoring_rule.categories
-  let categoryResult = ''
-  let maxFreq = -1
+    // Find the category with highest frequency;
+    // tie-break: use the category with the smallest index in scoring_rule.categories
+    let categoryResult = ''
+    let maxFreq = -1
 
-  for (const catDef of questionnaire.scoring_rule.categories ?? []) {
-    const freq = frequencies[catDef.key] ?? 0
-    if (freq > maxFreq) {
-      maxFreq = freq
-      categoryResult = catDef.key
+    for (const catDef of questionnaire.scoring_rule.categories ?? []) {
+      const freq = frequencies[catDef.key] ?? 0
+      if (freq > maxFreq) {
+        maxFreq = freq
+        categoryResult = catDef.key
+      }
     }
-  }
 
-  return {
-    questionnaireId: questionnaire.id,
-    type: 'categorical',
-    categoryResult,
-    categoryFrequencies: frequencies,
-    answeredAt: new Date().toISOString(),
+    return {
+      questionnaireId: questionnaire.id,
+      type: 'categorical',
+      categoryResult,
+      categoryFrequencies: frequencies,
+      answeredAt: new Date().toISOString(),
+    }
   }
 
   // Step 4: Likert scoring — 每个条目独立 Likert 1-5 分，按维度计算均分
@@ -115,4 +117,7 @@ export function compute(
       answeredAt: new Date().toISOString(),
     }
   }
+
+  // Fallback: unknown scoring rule type
+  return { message: '不支持的计分类型' }
 }
