@@ -13,9 +13,10 @@ const VALID_CATEGORIES: QuestionnaireCategory[] = [
   'lzu-leadership',
   'lzu-personality',
   'lzu-creativity',
+  'family-business',
 ]
 
-const VALID_SCORING_RULE_TYPES: ScoringRuleType[] = ['additive', 'categorical']
+const VALID_SCORING_RULE_TYPES: ScoringRuleType[] = ['additive', 'categorical', 'likert']
 
 /**
  * Validates a raw unknown object as a Questionnaire.
