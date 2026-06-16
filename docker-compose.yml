@@ -10,7 +10,7 @@ services:
     build:
       context: .
       args:
-        VITE_LZU_MODE: "${LZU_MODE:-false}"
+        VITE_LZU_MODE: "false"
     container_name: kiroo-app
     restart: unless-stopped
     ports:
@@ -21,7 +21,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-      - LZU_MODE=${LZU_MODE:-false}
+      - LZU_MODE=false
       - SMS_ENABLED=false
     volumes:
       - app_data:/app/data
