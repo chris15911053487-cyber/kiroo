@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { reportService, type ReportDetail } from '../services/reportService'
 import { GaugeChart, RadarChart, BarChart, PieChart, HexagonChart } from '../components/charts'
 import LoadingSpinner from '../components/LoadingSpinner'
+import MidsF2ReportPage from './MidsF2ReportPage'
 
 // ==================== 兰大专属报告类型 ====================
 
@@ -420,6 +421,10 @@ function HollandSection({ data }: { data: HollandAnalysis }) {
 
 // ==================== LZU-Specific Section Components ====================
 
+function isMidsF2Report(data: any): boolean {
+  return data?.reportType === 'mids-f2' || data?.midsF2Result !== undefined
+}
+
 function isLZUReport(data: StructuredReport | LZUStructuredReport): data is LZUStructuredReport {
   return 'grade' in data && 'leadershipAnalysis' in data && 's1Score' in (data as any).leadershipAnalysis
 }
@@ -833,6 +838,22 @@ export default function ReportPage() {
           </div>
         </main>
       </div>
+    )
+  }
+
+  // 检测是否为 MIDS-F2 格式报告
+  if (reportData && isMidsF2Report(reportData)) {
+    const midsData = reportData as any
+    const dimensionScores = midsData.scoreSummary?.['mids-f2']?.dimensionScores
+      || midsData.midsF2Scores
+      || {}
+
+    return (
+      <MidsF2ReportPage
+        scoreResult={dimensionScores}
+        aiReport={midsData}
+        reportId={report?.id}
+      />
     )
   }
 
