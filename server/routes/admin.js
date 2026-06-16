@@ -537,7 +537,30 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
 
     if (isMidsF2) {
       // MIDS-F2 报告生成
-      const midsScore = scoreSummary['mids-f2'];
+      let midsScore = scoreSummary['mids-f2'];
+
+      // 降级：如果 score_summary 结构不对，从 assessment_records 重新读取
+      if (!midsScore?.dimensionScores) {
+        console.log('[MIDS-F2 Regenerate] score_summary 缺少维度数据，从 assessment_records 回读');
+        const [records] = await pool.query(
+          `SELECT questionnaire_id, score_result FROM assessment_records WHERE session_id = ?`,
+          [report.sessionId]
+        );
+        for (const r of records) {
+          if (r.questionnaire_id === 'mids-f2') {
+            const parsed = typeof r.score_result === 'string' ? JSON.parse(r.score_result) : r.score_result;
+            if (parsed?.dimensionScores) {
+              midsScore = parsed;
+              // 同步修复 score_summary
+              scoreSummary['mids-f2'] = parsed;
+            }
+            break;
+          }
+        }
+      }
+
+      console.log('[MIDS-F2 Regenerate] midsScore keys:', midsScore ? Object.keys(midsScore) : 'null');
+
       if (midsScore?.dimensionScores) {
         const { computeMidsF2 } = require('../services/midsF2ScoringService');
         const { generateMidsF2Report } = require('../services/midsF2ReportService');
@@ -558,7 +581,7 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
         );
         result = { html: null, pdfPath: null };
       } else {
-        return res.status(400).json({ error: 'MIDS-F2 报告缺少维度得分数据' });
+        return res.status(400).json({ error: 'MIDS-F2 报告缺少维度得分数据，请确认已完成答题后重新提交' });
       }
     } else {
       // 原有 LZU / 通用报告生成
