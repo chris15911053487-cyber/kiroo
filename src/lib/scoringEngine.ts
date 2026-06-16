@@ -79,4 +79,40 @@ export function compute(
     categoryFrequencies: frequencies,
     answeredAt: new Date().toISOString(),
   }
+
+  // Step 4: Likert scoring — 每个条目独立 Likert 1-5 分，按维度计算均分
+  if (questionnaire.scoring_rule.type === 'likert') {
+    const dimensionScores: Record<string, number> = {}
+    const dimensionCounts: Record<string, number> = {}
+
+    // 初始化所有维度
+    for (const dim of questionnaire.scoring_rule.dimensions ?? []) {
+      dimensionScores[dim.key] = 0
+      dimensionCounts[dim.key] = 0
+    }
+
+    // 累加每个问题的选中选项分值
+    for (const q of questionnaire.questions) {
+      const selectedOption = q.options.find(o => o.id === answers[q.id])
+      const dim = (q as any).dimension as string | undefined
+      if (selectedOption?.score !== undefined && dim && dimensionScores[dim] !== undefined) {
+        dimensionScores[dim] += selectedOption.score
+        dimensionCounts[dim] += 1
+      }
+    }
+
+    // 计算均分（保留两位小数）
+    for (const key of Object.keys(dimensionScores)) {
+      if (dimensionCounts[key] > 0) {
+        dimensionScores[key] = Math.round((dimensionScores[key] / dimensionCounts[key]) * 100) / 100
+      }
+    }
+
+    return {
+      questionnaireId: questionnaire.id,
+      type: 'likert' as any,
+      dimensionScores,
+      answeredAt: new Date().toISOString(),
+    }
+  }
 }
