@@ -18,6 +18,7 @@ import ProfilePage from './pages/ProfilePage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import BottomNav from './components/BottomNav'
+import MidsF2Landing from './pages/MidsF2Landing'
 import NotFoundPage from './pages/NotFoundPage'
 
 function AppInitializer() {
@@ -56,6 +57,9 @@ export default function App() {
             {/* 管理后台 */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+            {/* MIDS-F2 公开直达链接 */}
+            <Route path="/assess/mids-f2" element={<MidsF2Landing />} />
 
             {/* 404 */}
             <Route path="*" element={<NotFoundPage />} />
