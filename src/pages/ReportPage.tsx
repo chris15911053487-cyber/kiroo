@@ -120,11 +120,17 @@ interface StructuredReport {
 
 // ==================== Helpers ====================
 
-function parseReportData(content: string | null): StructuredReport | null {
+function parseReportData(content: string | null): any {
   if (!content) return null
   try {
     const raw = JSON.parse(content)
-    // 补全缺失字段，防止 .length 等操作报错
+
+    // MIDS-F2 报告：直接返回原始 JSON，不做字段裁剪
+    if (raw.reportType === 'mids-f2' || raw.midsF2Result) {
+      return raw
+    }
+
+    // LZU / 通用报告：补全缺失字段，防止 .length 等操作报错
     return {
       userName: raw.userName || '测评用户',
       reportDate: raw.reportDate || '',
@@ -844,8 +850,9 @@ export default function ReportPage() {
   // 检测是否为 MIDS-F2 格式报告
   if (reportData && isMidsF2Report(reportData)) {
     const midsData = reportData as any
-    const dimensionScores = midsData.scoreSummary?.['mids-f2']?.dimensionScores
+    const dimensionScores = midsData.midsF2Result?.dimensionAverages
       || midsData.midsF2Scores
+      || midsData.scoreSummary?.['mids-f2']?.dimensionScores
       || {}
 
     return (

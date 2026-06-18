@@ -1,4 +1,6 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const { getPool } = require('../db');
 const pool = getPool();
 const authMiddleware = require('../middleware/auth');
@@ -18,6 +20,51 @@ const LZU_QUESTIONNAIRE_PRIORITY_ORDER = [
 // 根据环境变量选择排序方案
 const USE_LZU = process.env.LZU_MODE === 'true';
 const QUESTIONNAIRE_PRIORITY_ORDER = USE_LZU ? LZU_QUESTIONNAIRE_PRIORITY_ORDER : DEFAULT_QUESTIONNAIRE_PRIORITY_ORDER;
+
+// ==================== 辅助函数：从原始答案构建条目级分数 ====================
+
+/**
+ * Docker: COPY server/ ./  →  /app/routes/session.js  →  ../src/  →  /app/src/
+ * Local: server/routes/session.js  →  ../../src/  →  project/src/
+ */
+function resolveProjectPath(...segments) {
+  const dockerPath = path.join(__dirname, '..', ...segments);
+  if (fs.existsSync(dockerPath)) return dockerPath;
+  const localPath = path.join(__dirname, '..', '..', ...segments);
+  return localPath;
+}
+
+let _cachedMidsF2Questionnaire = null;
+
+function loadMidsF2Questionnaire() {
+  if (_cachedMidsF2Questionnaire) return _cachedMidsF2Questionnaire;
+  try {
+    const qPath = resolveProjectPath('src', 'data', 'questionnaires', 'mids-f2.json');
+    if (fs.existsSync(qPath)) {
+      _cachedMidsF2Questionnaire = JSON.parse(fs.readFileSync(qPath, 'utf-8'));
+      console.log('[MIDS-F2] 问卷 JSON 加载成功:', qPath);
+    } else {
+      console.warn('[MIDS-F2] 问卷 JSON 不存在:', qPath);
+    }
+  } catch (err) {
+    console.warn('[MIDS-F2] 加载问卷 JSON 失败:', err.message);
+  }
+  return _cachedMidsF2Questionnaire;
+}
+
+function buildEntryScores(answers, questionnaire) {
+  if (!answers || !questionnaire?.questions) return [];
+  return questionnaire.questions.map(q => {
+    const selectedOptionId = answers[q.id];
+    const opt = q.options?.find(o => o.id === selectedOptionId);
+    return {
+      dimension: q.dimension || '',
+      sequence: q.sequence,
+      text: q.text,
+      score: opt?.score ?? 0,
+    };
+  });
+}
 
 // POST /api/sessions - 创建测评会话
 router.post('/', authMiddleware, async (req, res) => {
@@ -238,9 +285,9 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
 
     const session = sessions[0];
 
-    // 获取该session所有已保存的测评记录
+    // 获取该session所有已保存的测评记录（含原始答案，用于构建条目级分数）
     const [records] = await conn.query(
-      `SELECT questionnaire_id, questionnaire_name, score_result
+      `SELECT questionnaire_id, questionnaire_name, answers, score_result
        FROM assessment_records
        WHERE session_id = ? AND user_id = ?
        ORDER BY id ASC`,
@@ -304,15 +351,25 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
           const { computeMidsF2 } = require('../services/midsF2ScoringService');
           const { generateMidsF2Report } = require('../services/midsF2ReportService');
           const midsResult = computeMidsF2(midsScore.dimensionScores);
+
+          // 构建条目级分数（从原始答案 + 问卷 JSON）
+          const questionnaire = loadMidsF2Questionnaire();
+          const midsRecord = records.find(r => r.questionnaire_id === 'mids-f2');
+          const rawAnswers = midsRecord?.answers
+            ? (typeof midsRecord.answers === 'string' ? JSON.parse(midsRecord.answers) : midsRecord.answers)
+            : {};
+          const entryScores = buildEntryScores(rawAnswers, questionnaire);
+
           const midsReport = await generateMidsF2Report({
             dimensionScores: midsScore.dimensionScores,
             midsF2Result: midsResult,
             userName,
+            entryScores: entryScores.length > 0 ? entryScores : undefined,
           });
           reportContent = JSON.stringify(midsReport);
           comprehensiveScore = midsReport.comprehensiveScore;
           reportHtml = null;  // MIDS-F2 报告由前端 React 组件渲染
-          console.log(`[MIDS-F2 Gen] Report generated, score=${comprehensiveScore}, path=${midsResult.decisionPath}`);
+          console.log(`[MIDS-F2 Gen] Report generated, score=${comprehensiveScore}, path=${midsResult.decisionPath}, entries=${entryScores.length}`);
         }
       } catch (midsErr) {
         console.error('[MIDS-F2 Gen] Generation error:', midsErr.message);

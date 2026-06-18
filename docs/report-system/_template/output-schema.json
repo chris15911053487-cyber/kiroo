@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "_comment": "⚠️ 模板文件。定义 AI 应该输出的 JSON 结构。复制后按你的题库修改。",
+  "_usage": "修改 prompt.md 中的 JSON 结构定义时，同步更新此 Schema。",
+  "title": "{{题库名称}} AI Report Output",
+  "description": "AI 返回的报告 JSON 结构",
+  "type": "object",
+  "required": ["comprehensiveScore", "coreEvaluation"],
+  "properties": {
+    "comprehensiveScore": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "综合总分"
+    },
+    "coreEvaluation": {
+      "type": "string",
+      "minLength": 50,
+      "maxLength": 300,
+      "description": "核心评价"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 50,
+      "maxLength": 250,
+      "description": "整体总结"
+    }
+  }
+}

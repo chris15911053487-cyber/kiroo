@@ -1,4 +1,6 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getPool } = require('../db');
@@ -7,6 +9,48 @@ const { toChinaISO, toChinaShort } = require('../utils/timeUtils');
 const adminAuthMiddleware = require('../middleware/adminAuth');
 
 const router = express.Router();
+
+// ==================== 辅助函数：加载问卷 + 构建条目级分数 ====================
+
+/**
+ * Docker: COPY server/ ./  →  /app/routes/admin.js  →  ../src/  →  /app/src/
+ * Local: server/routes/admin.js  →  ../../src/  →  project/src/
+ */
+function resolveProjectPath(...segments) {
+  const dockerPath = path.join(__dirname, '..', ...segments);
+  if (fs.existsSync(dockerPath)) return dockerPath;
+  const localPath = path.join(__dirname, '..', '..', ...segments);
+  return localPath;
+}
+
+let _cachedMidsF2Questionnaire = null;
+
+function loadMidsF2Questionnaire() {
+  if (_cachedMidsF2Questionnaire) return _cachedMidsF2Questionnaire;
+  try {
+    const qPath = resolveProjectPath('src', 'data', 'questionnaires', 'mids-f2.json');
+    if (fs.existsSync(qPath)) {
+      _cachedMidsF2Questionnaire = JSON.parse(fs.readFileSync(qPath, 'utf-8'));
+    }
+  } catch (err) {
+    console.warn('[Admin MIDS-F2] 加载问卷 JSON 失败:', err.message);
+  }
+  return _cachedMidsF2Questionnaire;
+}
+
+function buildEntryScores(answers, questionnaire) {
+  if (!answers || !questionnaire?.questions) return [];
+  return questionnaire.questions.map(q => {
+    const selectedOptionId = answers[q.id];
+    const opt = q.options?.find(o => o.id === selectedOptionId);
+    return {
+      dimension: q.dimension || '',
+      sequence: q.sequence,
+      text: q.text,
+      score: opt?.score ?? 0,
+    };
+  });
+}
 
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
@@ -543,7 +587,7 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
       if (!midsScore?.dimensionScores) {
         console.log('[MIDS-F2 Regenerate] score_summary 缺少维度数据，从 assessment_records 回读');
         const [records] = await pool.query(
-          `SELECT questionnaire_id, score_result FROM assessment_records WHERE session_id = ?`,
+          `SELECT questionnaire_id, answers, score_result FROM assessment_records WHERE session_id = ?`,
           [report.sessionId]
         );
         for (const r of records) {
@@ -559,6 +603,21 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
         }
       }
 
+      // 构建条目级分数（从原始答案）
+      const questionnaire = loadMidsF2Questionnaire();
+      let entryScores = [];
+      {
+        const [answerRecords] = await pool.query(
+          `SELECT answers FROM assessment_records WHERE session_id = ? AND questionnaire_id = 'mids-f2'`,
+          [report.sessionId]
+        );
+        if (answerRecords.length > 0 && answerRecords[0].answers) {
+          const rawAnswers = typeof answerRecords[0].answers === 'string'
+            ? JSON.parse(answerRecords[0].answers) : answerRecords[0].answers;
+          entryScores = buildEntryScores(rawAnswers, questionnaire);
+        }
+      }
+
       console.log('[MIDS-F2 Regenerate] midsScore keys:', midsScore ? Object.keys(midsScore) : 'null');
 
       if (midsScore?.dimensionScores) {
@@ -569,6 +628,7 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
           dimensionScores: midsScore.dimensionScores,
           midsF2Result: midsResult,
           userName,
+          entryScores: entryScores.length > 0 ? entryScores : undefined,
         }));
         // MIDS-F2 报告：存储 JSON 到 report_content，由前端 React 组件渲染
         reportHtml = null;

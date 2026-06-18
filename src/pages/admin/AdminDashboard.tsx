@@ -10,6 +10,7 @@ import {
   LZUCareerSection,
   LZUReportSummary,
 } from '../../components/LZUReportSections'
+import MidsF2ReportPage from '../MidsF2ReportPage'
 
 // ==================== Types ====================
 
@@ -88,6 +89,16 @@ function getGrade(score: number): { label: string; color: string; bgColor: strin
   if (score >= 75) return { label: '进取型', color: 'text-blue-700', bgColor: 'bg-blue-100' }
   if (score >= 60) return { label: '成长型', color: 'text-green-700', bgColor: 'bg-green-100' }
   return { label: '待发展型', color: 'text-amber-700', bgColor: 'bg-amber-100' }
+}
+
+function isMidsF2ReportContent(reportContent: string | null): boolean {
+  if (!reportContent) return false
+  try {
+    const parsed = JSON.parse(reportContent)
+    return parsed?.reportType === 'mids-f2' || !!parsed?.midsF2Result
+  } catch {
+    return false
+  }
 }
 
 // ==================== Component ====================
@@ -609,7 +620,7 @@ export default function AdminDashboard() {
                       >
                         JSON数据
                       </button>
-                      {!detailReport.reportHtml && (
+                      {!detailReport.reportHtml && !isMidsF2ReportContent(detailReport.reportContent) && (
                         <span className="text-[10px] text-amber-500 ml-1">报告尚未生成，请先点击生成</span>
                       )}
                     </div>
@@ -622,7 +633,22 @@ export default function AdminDashboard() {
                         style={{ height: '70vh', minHeight: '600px' }}
                         sandbox="allow-same-origin allow-scripts"
                       />
-                    ) : previewMode === 'html' && !detailReport.reportHtml ? (
+                    ) : previewMode === 'html' && isMidsF2ReportContent(detailReport.reportContent) ? (() => {
+                      const midsData = JSON.parse(detailReport.reportContent)
+                      const dimensionScores = midsData.midsF2Result?.dimensionAverages
+                        || midsData.midsF2Scores
+                        || midsData.scoreSummary?.['mids-f2']?.dimensionScores
+                        || {}
+                      return (
+                        <div className="border border-gray-200 rounded-lg overflow-auto" style={{ maxHeight: '70vh' }}>
+                          <MidsF2ReportPage
+                            scoreResult={dimensionScores}
+                            aiReport={midsData}
+                            reportId={detailReport.id}
+                          />
+                        </div>
+                      )
+                    })() : previewMode === 'html' && !detailReport.reportHtml ? (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
                         <p className="text-amber-700 text-sm mb-3">⚠️ 报告尚未生成</p>
                         <p className="text-amber-600 text-xs mb-4">

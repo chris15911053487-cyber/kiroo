@@ -76,6 +76,7 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
 <title>职业发展测评报告 | 兰大版 · 精准评估与规划</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 16px; }
   body {
     background: #eef2f5;
     font-family: 'Segoe UI', 'Roboto', 'Georgia', 'Times New Roman', serif;
@@ -95,7 +96,9 @@ function buildReportHTML({ scores, aiText, charts, userName, sessionId }) {
     body { padding: 20px 12px; }
     .formal-report { padding: 24px 20px; }
   }
+  @page { size: A4; margin: 12mm; }
   @media print {
+    html { font-size: 18px; }
     body { background: white; padding: 0; margin: 0; }
     .formal-report { box-shadow: none; border: 1px solid #ccc; padding: 20px; max-width: 100%; margin: 0; border-radius: 0; }
     .graph-card, .insight-box { break-inside: avoid; page-break-inside: avoid; }
