@@ -156,6 +156,23 @@ router.post('/mids-f2/generate', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: '缺少 dimensionScores 参数' });
     }
 
+    // Fetch user education & graduation_intent for report personalization
+    const pool = getPool();
+    let userEducation = null;
+    let userGraduationIntent = null;
+    try {
+      const [userRows] = await pool.query(
+        'SELECT education, graduation_intent FROM users WHERE id = ?',
+        [req.user.id]
+      );
+      if (userRows.length > 0) {
+        userEducation = userRows[0].education;
+        userGraduationIntent = userRows[0].graduation_intent;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch user education/intent:', e.message);
+    }
+
     // 计算 MIDS-F2 结果
     const { computeMidsF2 } = require('../services/midsF2ScoringService');
     const midsF2Result = computeMidsF2(dimensionScores);
@@ -165,10 +182,14 @@ router.post('/mids-f2/generate', authMiddleware, async (req, res) => {
       dimensionScores,
       midsF2Result,
       userName: userName || '测评用户',
+      userInfo: {
+        name: userName || '测评用户',
+        education: userEducation || '未提供',
+        graduationIntention: userGraduationIntent || '未提供',
+      },
     });
 
     // 保存到 comprehensive_reports 表
-    const pool = getPool();
     const sessionId = req.body.sessionId || 0;
     const [result] = await pool.query(
       `INSERT INTO comprehensive_reports

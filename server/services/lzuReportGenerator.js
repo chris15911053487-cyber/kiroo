@@ -378,16 +378,40 @@ async function generateReport({ scores, userName, sessionId }) {
     sessionId: sessionId || 0,
   });
 
-  // 保存HTML为文件（后续可转为PDF）
-  const filename = `report_${sessionId || 0}_${Date.now()}.html`;
-  const filepath = path.join(REPORTS_DIR, filename);
-  fs.writeFileSync(filepath, html, 'utf-8');
-  console.log(`[Report] HTML saved: ${filepath}`);
+  // 保存HTML为文件（用于管理后台预览）
+  const htmlFilename = `report_${sessionId || 0}_${Date.now()}.html`;
+  const htmlFilepath = path.join(REPORTS_DIR, htmlFilename);
+  fs.writeFileSync(htmlFilepath, html, 'utf-8');
+  console.log(`[Report] HTML saved: ${htmlFilepath}`);
+
+  // 5. 用 Puppeteer 将 HTML 转为真实 PDF
+  let pdfPath = null;
+  let pdfBuffer = null;
+  try {
+    const puppeteer = require('puppeteer');
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
+      pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+      const pdfFilename = `report_${sessionId || 0}_${Date.now()}.pdf`;
+      pdfPath = path.join(REPORTS_DIR, pdfFilename);
+      fs.writeFileSync(pdfPath, pdfBuffer);
+      console.log(`[Report] PDF saved: ${pdfPath}`);
+    } finally {
+      await browser.close();
+    }
+  } catch (pdfErr) {
+    console.error('[Report] PDF generation failed, falling back to HTML:', pdfErr.message);
+    // 降级：PDF 失败时用 HTML 文件替代
+    pdfPath = htmlFilepath;
+    pdfBuffer = Buffer.from(html, 'utf-8');
+  }
 
   return {
     html,
-    pdfPath: filepath,
-    pdfBuffer: Buffer.from(html, 'utf-8'),
+    pdfPath,
+    pdfBuffer,
     aiText,
     chartsGenerated: true,
   };

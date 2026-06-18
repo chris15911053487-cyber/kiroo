@@ -53,9 +53,10 @@ export default function Navbar() {
   return (
     <nav className="bg-white border-b border-black/[0.04] sticky top-0 z-50">
       <div className="mx-auto px-4 md:px-10 h-14 flex items-center justify-between max-w-6xl">
-        <Link to="/" className="text-lg font-bold text-[#1a1a2e] hover:text-indigo-600 transition-colors flex-shrink-0">
+        {/* TODO: 后期恢复跳转主页功能时，替换为：<Link to="/" className="...">AI 测评</Link> */}
+        <span className="text-lg font-bold text-[#1a1a2e] flex-shrink-0">
           AI 测评
-        </Link>
+        </span>
 
         {/* 桌面端：完整导航 */}
         <div className="hidden md:flex items-center gap-3">

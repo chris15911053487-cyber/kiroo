@@ -139,20 +139,20 @@ export default function SelectQuestionnairePage() {
     }
   }
 
+  // TODO: 后期恢复功能时，取消注释下面的代码
   async function handleAbandon() {
-    if (!existingSessionId) return
-    if (!confirm('确定要放弃当前测评吗？已答题目将不会保存。')) return
-
-    setSubmitting(true)
-    try {
-      await sessionService.cancel(existingSessionId)
-      setHasExistingSession(false)
-      setExistingSessionId(null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '取消测评失败')
-    } finally {
-      setSubmitting(false)
-    }
+    // if (!existingSessionId) return
+    // if (!confirm('确定要放弃当前测评吗？已答题目将不会保存。')) return
+    // setSubmitting(true)
+    // try {
+    //   await sessionService.cancel(existingSessionId)
+    //   setHasExistingSession(false)
+    //   setExistingSessionId(null)
+    // } catch (err) {
+    //   setError(err instanceof Error ? err.message : '取消测评失败')
+    // } finally {
+    //   setSubmitting(false)
+    // }
   }
 
   // 兰大模式：显示自动初始化loading

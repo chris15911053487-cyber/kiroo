@@ -120,8 +120,10 @@
 
 **被测评人姓名**：{{USER_NAME}}
 **年龄**：{{AGE}}
+**学历**：{{EDUCATION}}
 **行业**：{{INDUSTRY}}
 **进入家族企业年限**：{{YEARS_IN_BUSINESS}}
+**毕业意愿**：{{GRADUATION_INTENT}}
 
 ### 各角度得分
 

@@ -250,7 +250,7 @@ router.post('/login/phone', async (req, res) => {
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, nickname, phone, created_at FROM users WHERE id = ?',
+      'SELECT id, nickname, phone, education, graduation_intent, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
     if (rows.length === 0) {
@@ -319,6 +319,48 @@ router.post('/update-nickname', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Update nickname error:', err);
     res.status(500).json({ error: '修改姓名失败' });
+  }
+});
+
+// POST /api/auth/update-profile
+router.post('/update-profile', authMiddleware, async (req, res) => {
+  const { education, graduationIntention } = req.body;
+
+  const validEducation = ['高中/中专', '大专', '本科', '硕士', '博士'];
+  const validIntent = ['自主创业', '家业继承', '企业就职'];
+
+  if (education !== undefined && !validEducation.includes(education)) {
+    return res.status(400).json({ error: '无效的学历选项' });
+  }
+  if (graduationIntention !== undefined && !validIntent.includes(graduationIntention)) {
+    return res.status(400).json({ error: '无效的毕业意愿选项' });
+  }
+
+  try {
+    const fields = [];
+    const values = [];
+    if (education !== undefined) {
+      fields.push('education = ?');
+      values.push(education);
+    }
+    if (graduationIntention !== undefined) {
+      fields.push('graduation_intent = ?');
+      values.push(graduationIntention);
+    }
+    if (fields.length === 0) {
+      return res.status(400).json({ error: '请至少提供一项要更新的信息' });
+    }
+    values.push(req.user.id);
+
+    await pool.query(
+      `UPDATE users SET ${fields.join(', ')}, updated_at = datetime('now') WHERE id = ?`,
+      values
+    );
+
+    res.json({ message: '个人信息更新成功', education, graduationIntention });
+  } catch (err) {
+    console.error('Update profile error:', err);
+    res.status(500).json({ error: '更新个人信息失败' });
   }
 });
 

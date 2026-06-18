@@ -119,8 +119,10 @@ const HARDCODED_MIDS_F2_TEMPLATE = `# MIDS-F2 测评报告生成提示词
 
 **被测评人姓名**：{{USER_NAME}}
 **年龄**：{{AGE}}
+**学历**：{{EDUCATION}}
 **行业**：{{INDUSTRY}}
 **进入家族企业年限**：{{YEARS_IN_BUSINESS}}
+**毕业意愿**：{{GRADUATION_INTENT}}
 
 ### 各角度得分
 {{DIMENSION_TABLE}}
@@ -303,8 +305,10 @@ function buildMidsF2Prompt(dimensionScores, midsF2Result, userInfo, entryScores)
   const params = {
     USER_NAME: userInfo?.name || '被测者',
     AGE: userInfo?.age || '未提供',
+    EDUCATION: userInfo?.education || '未提供',
     INDUSTRY: userInfo?.industry || '未提供',
     YEARS_IN_BUSINESS: userInfo?.yearsInBusiness || '未提供',
+    GRADUATION_INTENT: userInfo?.graduationIntention || '未提供',
     DIMENSION_TABLE: dimensionTable,
     ENTRY_TABLES: entryTables,
     SPF_TABLE: spfTable,
@@ -712,7 +716,7 @@ function buildTierSummary(dimensionScores, name) {
  * @param {Object} options.dimensionScores - 维度得分 { strategic_breakthrough, execution_disruption, ... }
  * @param {Object} options.midsF2Result - S-P-F 计算结果（来自 midsF2ScoringService.computeMidsF2）
  * @param {string} [options.userName] - 用户姓名（向后兼容，优先使用 userInfo.name）
- * @param {Object} [options.userInfo] - 用户信息 { name, age, industry, yearsInBusiness }
+ * @param {Object} [options.userInfo] - 用户信息 { name, age, education, industry, yearsInBusiness, graduationIntention }
  * @param {Array} [options.entryScores] - 条目级得分 [{ dimension, sequence, text, score }]
  */
 async function generateMidsF2Report({ dimensionScores, midsF2Result, userName, userInfo, entryScores }) {

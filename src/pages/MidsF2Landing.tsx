@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { authService } from '../services/authService'
 
 const MIDS_F2_INTRO = {
   title: '家族二代多维创新力量表',
@@ -21,42 +22,48 @@ const MIDS_F2_INTRO = {
 }
 
 export default function MidsF2Landing() {
-  const { user, token, loading } = useAuth()
+  const { user, token, loading, updateUser } = useAuth()
   const navigate = useNavigate()
-  const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
+  const [education, setEducation] = useState('')
+  const [graduationIntention, setGraduationIntention] = useState('')
+  const [savingProfile, setSavingProfile] = useState(false)
 
   useEffect(() => {
-    // 已登录 → 自动创建 MIDS-F2 会话 → 跳转答题
-    if (!loading && user && token && !creating) {
-      setCreating(true)
-      setError('')
-      createMidsF2Session(token)
-        .then(sessionId => {
-          navigate(`/quiz/${sessionId}`, { replace: true })
-        })
-        .catch(err => {
-          setError(err.message || '创建测评失败，请重试')
-          setCreating(false)
-        })
+    // 已登录 → 展示表单（预填已有的学历/毕业意愿）
+    if (!loading && user && token) {
+      if (user.education) setEducation(user.education)
+      if (user.graduationIntention) setGraduationIntention(user.graduationIntention)
     }
   }, [loading, user, token])
+
+  async function handleStartAssessment() {
+    if (!education || !graduationIntention) {
+      setError('请选择学历和毕业意愿')
+      return
+    }
+    if (!token) return
+    setSavingProfile(true)
+    setError('')
+    try {
+      // Save to backend
+      await authService.updateProfile(education, graduationIntention)
+      // Update local state
+      updateUser({ education, graduationIntention })
+      // Create session and navigate
+      const sessionId = await createMidsF2Session(token)
+      navigate(`/quiz/${sessionId}`, { replace: true })
+    } catch (err: any) {
+      setError(err.message || '保存失败，请重试')
+      setSavingProfile(false)
+    }
+  }
 
   // 加载中
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#EEF2FF] to-white flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-[#1E3A5F] border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
-
-  // 正在创建会话
-  if (creating) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#EEF2FF] to-white flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-2 border-[#1E3A5F] border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-500">正在为你准备测评...</p>
       </div>
     )
   }
@@ -106,6 +113,62 @@ export default function MidsF2Landing() {
         </div>
       </div>
 
+      {/* 学历 + 毕业意愿表单 — 仅已登录用户可见 */}
+      {user && (
+        <div className="px-6 mb-8">
+          <div className="max-w-sm mx-auto space-y-5">
+            {/* 学历 */}
+            <div>
+              <label className="block text-sm font-bold text-[#1E3A5F] mb-2">学历</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['高中/中专', '大专', '本科', '硕士', '博士'].map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setEducation(opt)}
+                    className={`py-2.5 px-3 rounded-lg text-sm font-medium border transition-colors ${
+                      education === opt
+                        ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#1E3A5F]'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* 毕业意愿 */}
+            <div>
+              <label className="block text-sm font-bold text-[#1E3A5F] mb-2">毕业意愿</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['自主创业', '家业继承', '企业就职'].map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setGraduationIntention(opt)}
+                    className={`py-2.5 px-3 rounded-lg text-sm font-medium border transition-colors ${
+                      graduationIntention === opt
+                        ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#1E3A5F]'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* 开始测评按钮 */}
+            <button
+              onClick={handleStartAssessment}
+              disabled={savingProfile || !education || !graduationIntention}
+              className="w-full py-3 bg-[#1E3A5F] text-white rounded-lg font-bold text-base hover:bg-[#152E4D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {savingProfile ? '正在准备...' : '开始测评'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 错误提示 */}
       {error && (
         <div className="px-6 mb-4">
@@ -115,23 +178,25 @@ export default function MidsF2Landing() {
         </div>
       )}
 
-      {/* 操作按钮 */}
-      <div className="px-6 pb-12">
-        <div className="flex flex-col gap-3 max-w-sm mx-auto">
-          <Link
-            to={loginUrl}
-            className="block w-full py-3 bg-[#1E3A5F] text-white text-center rounded-lg font-bold text-base hover:bg-[#152E4D] transition-colors"
-          >
-            登录 · 开始测评
-          </Link>
-          <Link
-            to={registerUrl}
-            className="block w-full py-3 bg-white text-[#1E3A5F] text-center rounded-lg font-medium text-base border border-[#1E3A5F] hover:bg-gray-50 transition-colors"
-          >
-            注册新账号
-          </Link>
+      {/* 操作按钮 — 仅未登录用户可见 */}
+      {!user && (
+        <div className="px-6 pb-12">
+          <div className="flex flex-col gap-3 max-w-sm mx-auto">
+            <Link
+              to={loginUrl}
+              className="block w-full py-3 bg-[#1E3A5F] text-white text-center rounded-lg font-bold text-base hover:bg-[#152E4D] transition-colors"
+            >
+              登录 · 开始测评
+            </Link>
+            <Link
+              to={registerUrl}
+              className="block w-full py-3 bg-white text-[#1E3A5F] text-center rounded-lg font-medium text-base border border-[#1E3A5F] hover:bg-gray-50 transition-colors"
+            >
+              注册新账号
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

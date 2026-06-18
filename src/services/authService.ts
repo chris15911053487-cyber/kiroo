@@ -54,7 +54,7 @@ export const authService = {
   },
 
   getProfile() {
-    return request<{ user: { id: number; nickname: string; phone: string; created_at: string } }>('/profile')
+    return request<{ user: { id: number; nickname: string; phone: string; education?: string; graduation_intent?: string; created_at: string } }>('/profile')
   },
 
   updatePassword(oldPassword: string, newPassword: string) {
@@ -68,6 +68,13 @@ export const authService = {
     return request<{ message: string; token: string; nickname: string }>('/update-nickname', {
       method: 'POST',
       body: JSON.stringify({ nickname }),
+    })
+  },
+
+  updateProfile(education?: string, graduationIntention?: string) {
+    return request<{ message: string; education?: string; graduationIntention?: string }>('/update-profile', {
+      method: 'POST',
+      body: JSON.stringify({ education, graduationIntention }),
     })
   },
 }

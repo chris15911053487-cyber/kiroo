@@ -310,6 +310,22 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
 
     const userName = req.user.nickname || '测评用户';
 
+    // Fetch user education & graduation_intent for MIDS-F2 report personalization
+    let userEducation = null;
+    let userGraduationIntent = null;
+    try {
+      const [userRows] = await pool.query(
+        'SELECT education, graduation_intent FROM users WHERE id = ?',
+        [req.user.id]
+      );
+      if (userRows.length > 0) {
+        userEducation = userRows[0].education;
+        userGraduationIntent = userRows[0].graduation_intent;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch user education/intent:', e.message);
+    }
+
     // ========== Step 1: 系统精准计分 ==========
     let comprehensiveScore = 75;
     let lzuComprehensive = null;
@@ -364,6 +380,11 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
             dimensionScores: midsScore.dimensionScores,
             midsF2Result: midsResult,
             userName,
+            userInfo: {
+              name: userName,
+              education: userEducation || '未提供',
+              graduationIntention: userGraduationIntent || '未提供',
+            },
             entryScores: entryScores.length > 0 ? entryScores : undefined,
           });
           reportContent = JSON.stringify(midsReport);

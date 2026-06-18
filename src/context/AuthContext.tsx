@@ -11,6 +11,8 @@ interface User {
   id: number
   nickname: string
   phone: string
+  education?: string
+  graduationIntention?: string
 }
 
 interface AuthState {

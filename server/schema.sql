@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   nickname TEXT NOT NULL DEFAULT '测评用户',
   avatar TEXT DEFAULT NULL,
   phone TEXT DEFAULT NULL,
+  education TEXT DEFAULT NULL,
+  graduation_intent TEXT DEFAULT NULL,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );

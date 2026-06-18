@@ -229,20 +229,25 @@ export default function AdminDashboard() {
   function handleDownload(id: number) {
     const token = localStorage.getItem('admin_token')
     if (!token) return
-    // 直接打开下载链接
-    const a = document.createElement('a')
-    a.href = `/api/admin/reports/${id}/download`
-    // 使用fetch方式下载（需要带token）
     fetch(`/api/admin/reports/${id}/download`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(res => {
       if (!res.ok) throw new Error('下载失败')
-      return res.blob()
-    }).then(blob => {
+      // 从 Content-Disposition 头获取文件名，或用默认名
+      const disposition = res.headers.get('Content-Disposition')
+      let filename = `人才测评报告_${id}`
+      if (disposition) {
+        const match = disposition.match(/filename\*?=(?:UTF-8'')?([^;\s]+)/)
+        if (match) {
+          filename = decodeURIComponent(match[1])
+        }
+      }
+      return res.blob().then(blob => ({ blob, filename }))
+    }).then(({ blob, filename }) => {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `人才测评报告_${id}.pdf`
+      a.download = filename
       a.click()
       URL.revokeObjectURL(url)
     }).catch(err => alert('下载失败：' + err.message))

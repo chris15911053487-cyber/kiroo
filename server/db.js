@@ -133,6 +133,14 @@ async function initDatabase() {
     db.exec('ALTER TABLE comprehensive_reports ADD COLUMN docx_path TEXT');
     console.log('[DB] Migration: added docx_path column');
   } catch (e) { /* column already exists */ }
+  try {
+    db.exec('ALTER TABLE users ADD COLUMN education TEXT DEFAULT NULL');
+    console.log('[DB] Migration: added education column to users');
+  } catch (e) { /* column already exists */ }
+  try {
+    db.exec('ALTER TABLE users ADD COLUMN graduation_intent TEXT DEFAULT NULL');
+    console.log('[DB] Migration: added graduation_intent column to users');
+  } catch (e) { /* column already exists */ }
   saveToDisk();
 
   console.log('[DB] Ready');

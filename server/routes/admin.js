@@ -741,11 +741,19 @@ router.get('/reports/:id/download', adminAuthMiddleware, async (req, res) => {
 
     const ext = path.extname(absolutePath).toLowerCase();
     const filename = `人才测评报告_${req.params.id}${ext}`;
-    const mimeType = ext === '.pdf'
-      ? 'application/pdf'
-      : 'text/html';
+
+    // 根据实际扩展名设置正确的 MIME 类型
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.doc': 'application/msword',
+      '.html': 'text/html; charset=utf-8',
+    };
+    const mimeType = mimeTypes[ext] || 'application/octet-stream';
+
     res.setHeader('Content-Type', mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+    // 使用 RFC 5987 编码支持中文文件名
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
     res.sendFile(absolutePath);
   } catch (err) {
     console.error('Download report error:', err);
