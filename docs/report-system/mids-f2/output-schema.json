@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MIDS-F2 Report Output Schema",
+  "type": "object",
+  "required": ["frameworkExplanation", "comprehensiveOverview", "dimensionInsights", "developmentSuggestions", "careerPathAnalysis", "summary"],
+  "properties": {
+    "frameworkExplanation": {
+      "type": "string",
+      "minLength": 30,
+      "maxLength": 150,
+      "description": "展览前言式开场，正向语言照见五面镜子的光芒"
+    },
+    "comprehensiveOverview": {
+      "type": "object",
+      "required": ["totalScore", "scoreLabel", "overallAssessment", "spfConclusion"],
+      "properties": {
+        "totalScore": { "type": "number", "minimum": 20, "maximum": 100 },
+        "scoreLabel": { "type": "string", "enum": ["卓越", "良好", "基础", "待开发"] },
+        "overallAssessment": {
+          "type": "string",
+          "minLength": 50,
+          "maxLength": 350,
+          "description": "五维能力画像——正向描述特质组合，用比喻收尾"
+        },
+        "spfConclusion": {
+          "type": "object",
+          "required": ["sScore", "pScore", "fScore", "decisionPath", "decisionLabel", "reasoning"],
+          "properties": {
+            "sScore": { "type": "number" },
+            "pScore": { "type": "number" },
+            "fScore": { "type": "number" },
+            "decisionPath": { "type": "string", "enum": ["leading_succession", "independent_startup", "functional_employment", "further_study"] },
+            "decisionLabel": { "type": "string" },
+            "decisionEmoji": { "type": "string" },
+            "reasoning": { "type": "string", "minLength": 30, "maxLength": 300 }
+          }
+        }
+      }
+    },
+    "dimensionInsights": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["dimensionKey", "dimensionName", "tier", "score", "level", "entryAnalysis", "coreStrength", "growthSpace", "entryHighlights", "careerInsight"],
+        "properties": {
+          "dimensionKey": { "type": "string", "enum": ["strategic_breakthrough", "execution_disruption", "resource_integration", "adversity_quotient", "ethics_vision"] },
+          "dimensionName": { "type": "string" },
+          "tier": { "type": "string", "enum": ["顶层·方向感", "中层·落地感", "底层·根基感"] },
+          "score": { "type": "number", "minimum": 1, "maximum": 5 },
+          "level": { "type": "string", "enum": ["卓越", "良好", "基础", "待开发"] },
+          "coreDefinition": { "type": "string", "minLength": 0, "maxLength": 100, "description": "（可选，向后兼容）" },
+          "entryAnalysis": {
+            "type": "array",
+            "description": "全部条目分析——AI 的评分依据",
+            "items": {
+              "type": "object",
+              "required": ["sequence", "text", "score", "comment"],
+              "properties": {
+                "sequence": { "type": "integer" },
+                "text": { "type": "string" },
+                "score": { "type": "integer", "minimum": 1, "maximum": 5 },
+                "comment": { "type": "string", "minLength": 10, "maxLength": 120, "description": "侧重正面解读该条目得分传递的信号" }
+              }
+            }
+          },
+          "coreStrength": {
+            "type": "string",
+            "minLength": 80,
+            "maxLength": 250,
+            "description": "核心优势——先写他厉害在哪，第一句粗体"
+          },
+          "growthSpace": {
+            "type": "string",
+            "minLength": 80,
+            "maxLength": 250,
+            "description": "成长空间——哪里还能长，用'待激活/待释放/只差契机'等正向框架"
+          },
+          "entryHighlights": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 3,
+            "description": "条目亮点——选2-3条最高分或最有亮点的条目",
+            "items": {
+              "type": "object",
+              "required": ["sequence", "text", "score", "highlight"],
+              "properties": {
+                "sequence": { "type": "integer" },
+                "text": { "type": "string" },
+                "score": { "type": "integer", "minimum": 1, "maximum": 5 },
+                "highlight": { "type": "string", "minLength": 15, "maxLength": 100, "description": "用正向语言解释这个得分意味着什么天赋或潜力" }
+              }
+            }
+          },
+          "careerInsight": {
+            "type": "string",
+            "minLength": 50,
+            "maxLength": 200,
+            "description": "职业启示——基于此维度画像，什么类型的历练能最快激活潜能"
+          },
+          "analysis": { "type": "string", "minLength": 0, "maxLength": 500, "description": "（向后兼容旧版，新报告不使用）" },
+          "impactOnSuccession": { "type": "string", "minLength": 0, "maxLength": 300, "description": "（向后兼容旧版，新报告不使用）" }
+        }
+      }
+    },
+    "developmentSuggestions": {
+      "type": "object",
+      "required": ["integratedJudgment", "developmentDirection", "capabilityImprovements", "stakeholderAdvice"],
+      "properties": {
+        "integratedJudgment": {
+          "type": "object",
+          "required": ["tierSummary"],
+          "properties": {
+            "tierSummary": {
+              "type": "string",
+              "minLength": 50,
+              "maxLength": 300,
+              "description": "正向总结三层结构——底盘稳固，待激活区充满想象空间"
+            },
+            "tierTable": { "type": "string", "minLength": 0, "maxLength": 200, "description": "（可选）" }
+          }
+        },
+        "developmentDirection": {
+          "type": "string",
+          "minLength": 30,
+          "maxLength": 250,
+          "description": "整体发展方向——先激活什么、再强化什么，顺序为什么重要"
+        },
+        "capabilityImprovements": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["dimensionKey", "dimensionName", "direction", "reason"],
+            "properties": {
+              "dimensionKey": { "type": "string" },
+              "dimensionName": { "type": "string" },
+              "direction": { "type": "string", "minLength": 10, "maxLength": 100, "description": "用'激活/释放/引爆'等词" },
+              "reason": { "type": "string", "minLength": 20, "maxLength": 150, "description": "这个方向如何撬动他已有的优势" }
+            }
+          }
+        },
+        "stakeholderAdvice": { "type": "string", "minLength": 30, "maxLength": 300 }
+      }
+    },
+    "careerPathAnalysis": {
+      "type": "object",
+      "required": ["corePotentialDiagnosis", "corePotentialDescription", "pathEvaluations", "roadmap", "ultimateConclusion"],
+      "properties": {
+        "corePotentialDiagnosis": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 60,
+          "description": "一句话标签，带引号。如：'待磨砺的创变型接班人'"
+        },
+        "corePotentialDescription": {
+          "type": "string",
+          "minLength": 60,
+          "maxLength": 250,
+          "description": "核心潜能解读——底层人格组合+顶层状态+终局可能性"
+        },
+        "pathEvaluations": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "三条路径适配度评估，顺序：继承→创业→就业/历练",
+          "items": {
+            "type": "object",
+            "required": ["path", "rating", "score", "basis", "risk"],
+            "properties": {
+              "path": { "type": "string", "enum": ["立即继承家业", "自主创业（外部独立）", "选择性就业 / 外部机构历练"] },
+              "rating": { "type": "string", "pattern": "^★+☆*$" },
+              "score": { "type": "integer", "minimum": 1, "maximum": 5 },
+              "basis": { "type": "string", "minLength": 40, "maxLength": 250, "description": "基于报告数据的适配依据" },
+              "risk": { "type": "string", "minLength": 20, "maxLength": 120, "description": "核心风险提示" }
+            }
+          }
+        },
+        "roadmap": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "三阶段发展路线图",
+          "items": {
+            "type": "object",
+            "required": ["phase", "timeline", "title", "goal"],
+            "properties": {
+              "phase": { "type": "string", "enum": ["第一阶段", "第二阶段", "第三阶段"] },
+              "timeline": { "type": "string" },
+              "title": { "type": "string" },
+              "goal": { "type": "string", "minLength": 20, "maxLength": 120 },
+              "recommendation": { "type": "string", "minLength": 0, "maxLength": 150 },
+              "coreTasks": {
+                "type": "array",
+                "maxItems": 3,
+                "items": { "type": "string", "minLength": 5, "maxLength": 80 }
+              }
+            }
+          }
+        },
+        "ultimateConclusion": {
+          "type": "string",
+          "minLength": 30,
+          "maxLength": 150,
+          "description": "格言式终极结论——他能记住的一句话"
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 50,
+      "maxLength": 350,
+      "description": "最后一面镜子——温暖有力的祝福，用画面或比喻收尾"
+    }
+  }
+}

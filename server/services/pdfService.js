@@ -19,8 +19,299 @@ const BRAND_COLORS = {
 /**
  * 构建报告HTML模板
  */
+// ==================== MIDS-F2 报告 HTML 模板 ====================
+
+function renderRichText(text) {
+  if (!text) return ''
+  return String(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+}
+
+function buildMidsF2ReportHTML(data) {
+  const mids = data.midsF2Result || {}
+  const co = data.comprehensiveOverview || {}
+  const spf = co.spfConclusion || {}
+  const dimInsights = data.dimensionInsights || []
+  const dev = data.developmentSuggestions || {}
+  const cpa = data.careerPathAnalysis || {}
+
+  function gaugeSVG(score) {
+    const cx = 100, cy = 90, r = 70, startAngle = -140, endAngle = 140
+    const pct = Math.max(0, Math.min(1, (score - 20) / 80))
+    const currentAngle = startAngle + (endAngle - startAngle) * pct
+    const rad = (deg) => deg * Math.PI / 180
+    const color = score >= 80 ? '#10B981' : score >= 60 ? '#6366F1' : score >= 40 ? '#F59E0B' : '#EF4444'
+    const x1 = cx + r * Math.cos(rad(startAngle)), y1 = cy + r * Math.sin(rad(startAngle))
+    const xe = cx + r * Math.cos(rad(currentAngle)), ye = cy + r * Math.sin(rad(currentAngle))
+    return `<svg width="200" height="180" xmlns="http://www.w3.org/2000/svg">
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(rad(endAngle))} ${cy + r * Math.sin(rad(endAngle))}" fill="none" stroke="#E5E7EB" stroke-width="14" stroke-linecap="round"/>
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${xe} ${ye}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"/>
+      <text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="28" font-weight="800" fill="${color}">${score}</text>
+      <text x="${cx - 70}" y="${cy + 55}" text-anchor="middle" font-size="11" fill="#9CA3AF">20</text>
+      <text x="${cx + 70}" y="${cy + 55}" text-anchor="middle" font-size="11" fill="#9CA3AF">100</text>
+    </svg>`
+  }
+
+  function radarSVG(dims, color = '#6366F1') {
+    const cx = 130, cy = 130, maxR = 100, levels = 5, numAxes = dims.length
+    const angleStep = (2 * Math.PI) / numAxes
+    function pt(i, r) { const a = angleStep * i - Math.PI / 2; return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) } }
+    let rings = '', axes = '', poly = '', labels = ''
+    for (let l = 1; l <= levels; l++) {
+      const r = (maxR / levels) * l
+      rings += `<polygon points="${dims.map((_, i) => pt(i, r)).map(p => `${p.x},${p.y}`).join(' ')}" fill="none" stroke="#E5E7EB" stroke-width="${l === levels ? 1.5 : 0.5}"/>`
+    }
+    dims.forEach((d, i) => {
+      const ep = pt(i, maxR)
+      axes += `<line x1="${cx}" y1="${cy}" x2="${ep.x}" y2="${ep.y}" stroke="#E5E7EB" stroke-width="0.5"/>`
+      const dp = pt(i, maxR * Math.min(1, d.value / d.maxValue))
+      poly += `${i === 0 ? '' : ' '}${dp.x},${dp.y}`
+      const lp = pt(i, maxR + 22)
+      labels += `<text x="${lp.x}" y="${lp.y + 3}" text-anchor="middle" font-size="11" fill="#374151">${d.label}</text>`
+    })
+    return `<svg width="280" height="280" xmlns="http://www.w3.org/2000/svg">
+      ${rings}${axes}
+      <polygon points="${poly}" fill="${color}" fill-opacity="0.12" stroke="${color}" stroke-width="2"/>
+      ${labels}
+    </svg>`
+  }
+
+  const DIM_NAMES = { strategic_breakthrough: '战略破局力', execution_disruption: '执行颠覆力', resource_integration: '资源整合力', adversity_quotient: '逆商与灰度', ethics_vision: '伦理与格局' }
+
+  // 维度解读 — 新版优势视角结构，兼容旧版
+  const dimIdxMap = { strategic_breakthrough: 1, execution_disruption: 2, resource_integration: 3, adversity_quotient: 4, ethics_vision: 5 }
+  let dimsHTML = dimInsights.map(d => {
+    const dimIdx = dimIdxMap[d.dimensionKey] || 0
+    const dimName = d.dimensionName || DIM_NAMES[d.dimensionKey] || d.dimensionKey
+    const hasNewFields = !!d.coreStrength
+
+    // 条目得分表（全量 entryAnalysis）
+    const entries = (d.entryAnalysis || []).map(e =>
+      `<tr><td style="text-align:center">${e.sequence}</td><td>${e.text}</td><td style="text-align:center;font-weight:700">${e.score}</td><td style="font-size:12px;color:#6B7280">${e.comment || ''}</td></tr>`
+    ).join('')
+
+    // 条目亮点（新版 entryHighlights）
+    let highlightsHTML = ''
+    if (hasNewFields && d.entryHighlights?.length) {
+      highlightsHTML = `
+        <div style="margin:10px 0">
+          <p style="font-size:12px;color:#6366F1;font-weight:600;margin-bottom:4px">✦ 条目亮点</p>
+          ${d.entryHighlights.map(eh => `
+            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;font-size:13px">
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:4px;background:#D1FAE5;color:#047857;font-size:11px;font-weight:700;flex-shrink:0">${eh.score}</span>
+              <span style="color:#4B5563">${eh.text}</span>
+            </div>
+          `).join('')}
+        </div>`
+    }
+
+    // 核心优势 + 成长空间（新版），或 analysis（旧版兼容）
+    let bodyHTML = ''
+    if (hasNewFields) {
+      if (d.coreStrength) {
+        bodyHTML += `<div style="background:#EEF2FF;border:1px solid #E0E7FF;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size:12px;color:#4F46E5;font-weight:600;margin-bottom:2px">核心优势</p><p>${renderRichText(d.coreStrength)}</p></div>`
+      }
+      if (d.growthSpace) {
+        bodyHTML += `<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size:12px;color:#D97706;font-weight:600;margin-bottom:2px">成长空间</p><p>${renderRichText(d.growthSpace)}</p></div>`
+      }
+      if (d.careerInsight) {
+        bodyHTML += `<p style="margin-top:8px;font-size:13px;color:#4B5563"><strong>职业方向启示：</strong>${renderRichText(d.careerInsight)}</p>`
+      }
+    } else {
+      // 旧版兼容
+      bodyHTML += `<p>${renderRichText(d.analysis || d.interpretation || '')}</p>`
+      if (d.impactOnSuccession || d.suggestion) {
+        bodyHTML += `<p style="margin-top:8px;font-size:13px;color:#4B5563"><strong>职业方向启示：</strong>${renderRichText(d.impactOnSuccession || d.suggestion)}</p>`
+      }
+    }
+
+    return `<div class="section">
+      <h2>3.${dimIdx} ${dimName} <span class="level-tag">${d.level || ''} · ${d.score}/5</span></h2>
+      <div style="margin-bottom:6px"><span style="font-size:11px;color:#6366F1;background:#EEF2FF;padding:2px 8px;border-radius:10px">${d.tier || ''}</span></div>
+      ${bodyHTML}
+      ${hasNewFields ? highlightsHTML : ''}
+      ${entries ? `<table><thead><tr><th style="width:40px">#</th><th>条目</th><th style="width:40px">得分</th><th style="width:200px">解读</th></tr></thead><tbody>${entries}</tbody></table>` : ''}
+    </div>`
+  }).join('')
+
+  // 发展建议
+  let devHTML = ''
+  if (dev.integratedJudgment?.tierSummary) {
+    devHTML += `<div class="section"><h2>4.1 层级综合分析</h2><p>${renderRichText(dev.integratedJudgment.tierSummary)}</p></div>`
+  }
+  if (dev.developmentDirection) {
+    devHTML += `<div class="section"><h2>4.2 整体发展方向</h2><p>${renderRichText(dev.developmentDirection)}</p></div>`
+  }
+  if (dev.capabilityImprovements?.length) {
+    devHTML += `<div class="section"><h2>4.3 能力提升建议</h2>` +
+      dev.capabilityImprovements.map(ci =>
+        `<div class="career-card"><h4>${ci.dimensionName}</h4><p><strong>方向：</strong>${ci.direction}</p><p style="font-size:12px;color:#6B7280">${renderRichText(ci.reason || '')}</p></div>`
+      ).join('') + `</div>`
+  }
+  if (dev.stakeholderAdvice) {
+    devHTML += `<div class="section"><h2>4.4 利益相关者沟通建议</h2><p>${renderRichText(dev.stakeholderAdvice)}</p></div>`
+  }
+
+  // 第六章：职业发展核心潜能与路径建议
+  let careerPathHTML = ''
+  if (cpa.corePotentialDiagnosis) {
+    const pathColorMap = {
+      '立即继承家业': { bg: '#FEF2F2', border: '#FECACA', label: '低适配' },
+      '自主创业（外部独立）': { bg: '#FFFBEB', border: '#FDE68A', label: '中低适配' },
+      '选择性就业 / 外部机构历练': { bg: '#ECFDF5', border: '#A7F3D0', label: '当前最优解' },
+    }
+
+    careerPathHTML = `
+    <div class="section" style="page-break-before:always">
+      <h2>六、职业发展核心潜能与路径建议</h2>
+
+      <div style="margin-bottom:16px">
+        <h3>6.1 核心潜能诊断</h3>
+        <div style="display:inline-block;background:#EEF2FF;color:#4338CA;font-weight:700;font-size:14px;padding:6px 16px;border-radius:6px;margin:8px 0">${cpa.corePotentialDiagnosis || ''}</div>
+        ${cpa.corePotentialDescription ? `<p>${renderRichText(cpa.corePotentialDescription)}</p>` : ''}
+      </div>
+
+      ${cpa.pathEvaluations?.length ? `
+      <div style="margin-bottom:16px">
+        <h3>6.2 三大路径适配度深度评估</h3>
+        ${cpa.pathEvaluations.map(pe => {
+          const colors = pathColorMap[pe.path] || { bg: '#F9FAFB', border: '#E5E7EB', label: '' }
+          return `<div style="background:${colors.bg};border:1px solid ${colors.border};border-radius:8px;padding:12px 16px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <h4 style="font-size:14px;color:#1A1A2E;margin:0">${pe.path}</h4>
+              <div>
+                ${colors.label ? `<span style="font-size:11px;color:#6B7280;margin-right:6px">${colors.label}</span>` : ''}
+                <span style="font-size:13px;color:#F59E0B;font-weight:700;letter-spacing:2px">${pe.rating || ''}</span>
+              </div>
+            </div>
+            <table style="margin:0;font-size:12px">
+              <tr><td style="width:60px;font-weight:600;color:#6B7280">适配依据</td><td>${pe.basis || ''}</td></tr>
+              <tr><td style="width:60px;font-weight:600;color:#6B7280">风险提示</td><td style="color:#6B7280">${pe.risk || ''}</td></tr>
+            </table>
+          </div>`
+        }).join('')}
+      </div>` : ''}
+
+      ${cpa.roadmap?.length ? `
+      <div style="margin-bottom:16px">
+        <h3>6.3 终极发展路线图</h3>
+        <div style="position:relative;padding-left:24px">
+          ${cpa.roadmap.map((phase, i) => `
+            <div style="position:relative;border-left:2px solid #A5B4FC;padding:0 0 16px 20px;${i === cpa.roadmap.length - 1 ? 'border-left-color:transparent;' : ''}">
+              <div style="position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:#6366F1;border:2px solid white"></div>
+              <div style="margin-bottom:4px">
+                <span style="font-size:11px;font-weight:700;color:#4F46E5;background:#EEF2FF;padding:2px 8px;border-radius:4px">${phase.timeline || ''}</span>
+                <span style="font-size:11px;color:#9CA3AF;margin-left:6px">${phase.phase || ''}</span>
+              </div>
+              <h4 style="font-size:14px;color:#1A1A2E;margin:0 0 4px">${phase.title || ''}</h4>
+              <p style="font-size:13px;color:#4B5563;margin:0 0 4px">${phase.goal || ''}</p>
+              ${phase.recommendation ? `<p style="font-size:12px;color:#6B7280;margin:0 0 4px"><strong>推荐去向：</strong>${phase.recommendation}</p>` : ''}
+              ${phase.coreTasks?.length ? `<ul style="margin:0;padding-left:16px;font-size:12px;color:#6B7280">${phase.coreTasks.map(t => `<li style="margin-bottom:2px">${t}</li>`).join('')}</ul>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>` : ''}
+
+      ${cpa.ultimateConclusion ? `
+      <div style="text-align:center;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #A5B4FC;border-radius:10px;padding:16px 20px">
+        <p style="font-size:11px;color:#6366F1;font-weight:600;margin-bottom:4px">一句话终极结论</p>
+        <p style="font-size:16px;font-weight:700;color:#3730A3;margin:0">${cpa.ultimateConclusion}</p>
+      </div>` : ''}
+    </div>`
+  }
+
+  // 雷达图数据
+  const radarDims = ['strategic_breakthrough', 'execution_disruption', 'resource_integration', 'adversity_quotient', 'ethics_vision']
+    .map(k => ({ label: DIM_NAMES[k] || k, value: (data.midsF2Scores || mids.dimensionAverages || {})[k] || 0, maxValue: 5 }))
+
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>MIDS-F2 创新力测评报告</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; color: #1A1A2E; font-size: 16px; line-height: 1.7; }
+    .page { padding: 30px 40px; max-width: 750px; margin: 0 auto; }
+    .cover { text-align: center; background: #1E3A5F; color: white; border-radius: 12px; padding: 45px 30px; margin-bottom: 30px; }
+    .cover h1 { font-size: 22px; margin-bottom: 10px; font-weight: 700; }
+    .cover p { font-size: 13px; opacity: 0.85; margin-bottom: 3px; }
+    .section { margin-bottom: 24px; page-break-inside: avoid; }
+    .section h2 { font-size: 16px; color: #1E3A5F; border-bottom: 2px solid #CBD5E1; padding-bottom: 6px; margin-bottom: 12px; }
+    .section h3 { font-size: 14px; color: #374151; margin: 10px 0 6px; }
+    .highlight { background: #F1F5F9; border-radius: 6px; padding: 10px 14px; font-weight: 600; color: #1E3A5F; margin: 8px 0; }
+    .level-tag { font-size: 12px; font-weight: 400; color: #64748B; margin-left: 8px; }
+    .chart-center { display: flex; justify-content: center; margin: 12px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+    th, td { padding: 6px 10px; border: 1px solid #E5E7EB; text-align: left; }
+    th { background: #F9FAFB; font-weight: 600; color: #374151; }
+    .career-card { background: #F9FAFB; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; border-left: 3px solid #94A3B8; }
+    .career-card h4 { font-size: 13px; color: #1E3A5F; margin-bottom: 4px; }
+    .footer { text-align: center; font-size: 11px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
+    @page { size: A4; margin: 12mm; }
+    @media print {
+      html { font-size: 18px; }
+      body { font-size: 16px; }
+      .section { page-break-inside: avoid; }
+      h2, h3 { break-after: avoid; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="cover">
+      <h1>家族二代多维创新力量表（MIDS-F2）</h1>
+      <p>${data.userName || '测评用户'}</p>
+      <p>报告编号：MIDS-F2-${data.reportId || ''} | 等级：${co.scoreLabel || ''} | 总分：${co.totalScore || data.comprehensiveScore || 0}/100</p>
+    </div>
+
+    ${data.frameworkExplanation ? `<div class="section"><h2>一、认识你自己</h2><p>${data.frameworkExplanation}</p></div>` : ''}
+
+    <div class="section">
+      <h2>二、五维能力画像</h2>
+
+      <div class="chart-center">${gaugeSVG(co.totalScore || data.comprehensiveScore || mids.totalScore || 0)}</div>
+      <p style="text-align:center"><strong>等级：</strong>${co.scoreLabel || ''} | <strong>总分：</strong>${co.totalScore || data.comprehensiveScore || 0}/100</p>
+      ${spf.decisionPath ? `<p style="text-align:center;margin-top:4px;font-size:15px;font-weight:700;color:#64748B">${spf.decisionEmoji || ''} ${spf.decisionLabel || ''}</p>` : ''}
+
+      <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;" />
+
+      <h3>五维雷达图</h3>
+      <div class="chart-center">${radarSVG(radarDims)}</div>
+
+      ${co.overallAssessment ? `<hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;" /><p>${renderRichText(co.overallAssessment)}</p>` : ''}
+    </div>
+
+    <div class="section" style="page-break-before:always">
+      <h2>三、维度深度解读</h2>
+      ${dimsHTML}
+    </div>
+
+    ${devHTML ? `<div class="section" style="page-break-before:always"><h2>四、发展建议</h2>${devHTML}</div>` : ''}
+
+    ${data.summary ? `<div class="section"><h2>五、总结与展望</h2><p>${renderRichText(data.summary)}</p></div>` : ''}
+
+    ${careerPathHTML}
+
+    <div class="footer">
+      <p>本报告由「潜能星图」测评系统生成 | CONFIDENTIAL</p>
+    </div>
+  </div>
+</body>
+</html>`
+}
+
+// ============ 原有 LZU / 通用报告模板 ============
+
 function buildReportHTML(reportData) {
   const data = typeof reportData === 'string' ? JSON.parse(reportData) : reportData
+
+  // MIDS-F2 报告：使用专用模板
+  if (data.reportType === 'mids-f2' || data.midsF2Result) {
+    return buildMidsF2ReportHTML(data)
+  }
+
+  // ============ 原有 LZU / 通用报告模板 ============
 
   // 辅助：生成SVG仪表盘
   function buildGaugeSVG(score) {
@@ -237,7 +528,7 @@ function buildReportHTML(reportData) {
   <title>人才综合测评报告</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif; color: #1A1A2E; font-size: 13px; line-height: 1.7; }
+    body { font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif; color: #1A1A2E; font-size: 16px; line-height: 1.7; }
     .page { padding: 30px 40px; max-width: 750px; margin: 0 auto; }
     .cover { text-align: center; background: linear-gradient(135deg, #1E3A5F, #2D5A8E); color: white; border-radius: 16px; padding: 50px 30px; margin-bottom: 30px; }
     .cover h1 { font-size: 24px; margin-bottom: 12px; }
@@ -267,6 +558,14 @@ function buildReportHTML(reportData) {
     ul { padding-left: 20px; }
     li { margin-bottom: 6px; }
     .footer { text-align: center; font-size: 11px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
+    @page { size: A4; margin: 12mm; }
+    @media print {
+      html { font-size: 18px; }
+      body { font-size: 16px; }
+      .section { page-break-inside: avoid; }
+      h2, h3 { break-after: avoid; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+    }
   </style>
 </head>
 <body>
@@ -313,7 +612,7 @@ function buildReportHTML(reportData) {
     </div>` : ''}
 
     <div class="footer">
-      <p>本报告由「潜能星图」AI测评系统生成 | CONFIDENTIAL</p>
+      <p>本报告由「潜能星图」测评系统生成 | CONFIDENTIAL</p>
     </div>
   </div>
 </body>
@@ -340,20 +639,19 @@ async function generateReportPDF(reportData) {
   let browser = null
   try {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-gpu',
-        '--single-process',  // 减少内存使用
       ],
     })
 
     const page = await browser.newPage()
 
     const html = buildReportHTML(reportData)
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 })
+    await page.setContent(html, { waitUntil: 'load', timeout: 15000 })
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
