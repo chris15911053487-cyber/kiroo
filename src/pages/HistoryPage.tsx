@@ -99,48 +99,72 @@ export default function HistoryPage() {
           <div className="flex flex-col gap-4">
             <p className="text-gray-500 text-sm">共 {reports.length} 份报告</p>
 
-            {reports.map(report => (
-              <Link
-                key={report.id}
-                to={`/report/${report.id}`}
-                className="bg-white border border-black/[0.04] rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:border-indigo-200 hover:shadow-[0_4px_16px_rgba(99,102,241,0.08)] transition-all duration-200"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-[#1a1a2e] text-sm">综合测评报告</h3>
-                    {getStatusBadge(report.reviewStatus)}
+            {reports.map(report => {
+              const isApproved = report.reviewStatus === 'approved'
+              const sharedClass = "bg-white border border-black/[0.04] rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-200"
+              const cardContent = (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-[#1a1a2e] text-sm">综合测评报告</h3>
+                      {getStatusBadge(report.reviewStatus)}
+                    </div>
+                    <span className="text-gray-400 text-xs">{formatDate(report.createdAtDisplay || report.createdAt)}</span>
                   </div>
-                  <span className="text-gray-400 text-xs">{formatDate(report.createdAtDisplay || report.createdAt)}</span>
-                </div>
 
-                {/* 综合得分 */}
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-2xl font-extrabold text-indigo-600">
-                      {report.comprehensiveScore}
-                    </span>
-                    <span className="text-xs text-gray-400">分</span>
+                  {/* 综合得分 */}
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-2xl font-extrabold text-indigo-600">
+                        {report.comprehensiveScore}
+                      </span>
+                      <span className="text-xs text-gray-400">分</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* 完成的问卷 */}
-                <div className="flex flex-wrap gap-1.5">
-                  {report.questionnairesCompleted.map(qid => (
-                    <span
-                      key={qid}
-                      className="px-2 py-0.5 rounded-full bg-gray-50 text-gray-500 text-[10px] font-medium"
-                    >
-                      {getQuestionnaireName(qid)}
-                    </span>
-                  ))}
-                </div>
+                  {/* 完成的问卷 */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {report.questionnairesCompleted.map(qid => (
+                      <span
+                        key={qid}
+                        className="px-2 py-0.5 rounded-full bg-gray-50 text-gray-500 text-[10px] font-medium"
+                      >
+                        {getQuestionnaireName(qid)}
+                      </span>
+                    ))}
+                  </div>
 
-                {/* 状态提示 */}
-                <p className="text-indigo-500 text-xs mt-3 flex items-center gap-1">
-                  <span>📄</span> 点击查看完整报告 →
-                </p>
-              </Link>
-            ))}
+                  {/* 状态提示 */}
+                  {isApproved ? (
+                    <p className="text-indigo-500 text-xs mt-3 flex items-center gap-1">
+                      <span>📄</span> 点击查看完整报告 →
+                    </p>
+                  ) : (
+                    <p className="text-gray-400 text-xs mt-3 flex items-center gap-1">
+                      <span>🔒</span>
+                      {report.reviewStatus === 'pending' ? '审核通过后可查看报告详情' : '审核未通过，暂不可查看'}
+                    </p>
+                  )}
+                </>
+              )
+
+              return isApproved ? (
+                <Link
+                  key={report.id}
+                  to={`/report/${report.id}`}
+                  className={`${sharedClass} hover:border-indigo-200 hover:shadow-[0_4px_16px_rgba(99,102,241,0.08)]`}
+                >
+                  {cardContent}
+                </Link>
+              ) : (
+                <div
+                  key={report.id}
+                  className={`${sharedClass} opacity-70`}
+                >
+                  {cardContent}
+                </div>
+              )
+            })}
           </div>
         )}
       </main>
