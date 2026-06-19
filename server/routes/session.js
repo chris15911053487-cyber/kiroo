@@ -360,12 +360,13 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
     }
 
     // MIDS-F2 独立报告生成（非兰大模式 + 仅完成 mids-f2）
+    // 优化：先用本地计算生成占位报告立即入库返回，AI 生成在后台异步完成
     if (!USE_LZU && questionnairesCompleted.length === 1 && questionnairesCompleted[0] === 'mids-f2') {
       try {
         const midsScore = scoreSummary['mids-f2'];
         if (midsScore?.dimensionScores) {
           const { computeMidsF2 } = require('../services/midsF2ScoringService');
-          const { generateMidsF2Report } = require('../services/midsF2ReportService');
+          const { generateMidsF2Report, buildFallbackReport } = require('../services/midsF2ReportService');
           const midsResult = computeMidsF2(midsScore.dimensionScores);
 
           // 构建条目级分数（从原始答案 + 问卷 JSON）
@@ -376,21 +377,43 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
             : {};
           const entryScores = buildEntryScores(rawAnswers, questionnaire);
 
-          const midsReport = await generateMidsF2Report({
+          const userInfo = {
+            name: userName,
+            education: userEducation || '未提供',
+            graduationIntention: userGraduationIntent || '未提供',
+          };
+
+          // 第一步：用本地计算结果生成占位报告，立即入库（秒级响应）
+          const placeholder = buildFallbackReport(midsScore.dimensionScores, midsResult, userInfo);
+          reportContent = JSON.stringify(placeholder);
+          comprehensiveScore = midsResult.totalScore;
+          reportHtml = null;
+          console.log(`[MIDS-F2] Placeholder report ready, score=${comprehensiveScore}, path=${midsResult.decisionPath}`);
+
+          // 第二步：后台异步调用 AI 生成完整报告，完成后静默更新数据库
+          const sessionId = session.id;
+          const bgParams = {
             dimensionScores: midsScore.dimensionScores,
             midsF2Result: midsResult,
             userName,
-            userInfo: {
-              name: userName,
-              education: userEducation || '未提供',
-              graduationIntention: userGraduationIntent || '未提供',
-            },
+            userInfo,
             entryScores: entryScores.length > 0 ? entryScores : undefined,
+          };
+          generateMidsF2Report(bgParams).then(async (aiReport) => {
+            try {
+              await pool.query(
+                `UPDATE comprehensive_reports
+                 SET report_content = ?, comprehensive_score = ?, updated_at = datetime('now')
+                 WHERE session_id = ?`,
+                [JSON.stringify(aiReport), aiReport.comprehensiveScore, sessionId]
+              );
+              console.log(`[MIDS-F2] AI report updated in background, session=${sessionId}`);
+            } catch (e) {
+              console.error('[MIDS-F2] Failed to save background AI report:', e.message);
+            }
+          }).catch(err => {
+            console.error('[MIDS-F2] Background AI generation failed:', err.message);
           });
-          reportContent = JSON.stringify(midsReport);
-          comprehensiveScore = midsReport.comprehensiveScore;
-          reportHtml = null;  // MIDS-F2 报告由前端 React 组件渲染
-          console.log(`[MIDS-F2 Gen] Report generated, score=${comprehensiveScore}, path=${midsResult.decisionPath}, entries=${entryScores.length}`);
         }
       } catch (midsErr) {
         console.error('[MIDS-F2 Gen] Generation error:', midsErr.message);

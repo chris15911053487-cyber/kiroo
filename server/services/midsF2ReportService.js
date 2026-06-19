@@ -374,6 +374,9 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
 
   return {
     reportType: 'mids-f2',
+    userName: name,
+    education: userInfo?.education || '',
+    graduationIntention: userInfo?.graduationIntention || '',
     frameworkExplanation: `我们从五个角度来看你——你怎么看方向、怎么做事情、怎么撬动资源、怎么面对压力、以及你内心深处的价值观。它们拼在一起，就是你的职业肖像。`,
     comprehensiveScore: totalScore,
     comprehensiveOverview: {
@@ -738,4 +741,4 @@ async function generateMidsF2Report({ dimensionScores, midsF2Result, userName, u
   };
 }
 
-module.exports = { generateMidsF2Report };
+module.exports = { generateMidsF2Report, buildFallbackReport };
