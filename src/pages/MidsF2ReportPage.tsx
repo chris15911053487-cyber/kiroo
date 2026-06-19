@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { GaugeChart, RadarChart } from '../components/charts'
 import {
@@ -601,6 +602,12 @@ export interface MidsF2ReportPageProps {
 
 export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, userName, userEducation, userGraduationIntention }: MidsF2ReportPageProps) {
   const result = computeMidsF2(scoreResult)
+
+  // 标记 MIDS-F2 上下文，Navbar 据此为"我的测评"链接携带 ?from=mids-f2
+  useEffect(() => {
+    sessionStorage.setItem('midsf2_context', '1')
+    return () => { sessionStorage.removeItem('midsf2_context') }
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#fafafa] pb-20">

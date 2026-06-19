@@ -30,6 +30,8 @@ export default function MidsF2Landing() {
   const [savingProfile, setSavingProfile] = useState(false)
 
   useEffect(() => {
+    // 标记 MIDS-F2 上下文，Navbar 据此为"我的测评"链接携带 ?from=mids-f2
+    sessionStorage.setItem('midsf2_context', '1')
     // 已登录 → 展示表单（预填已有的学历/毕业意愿）
     if (!loading && user && token) {
       if (user.education) setEducation(user.education)

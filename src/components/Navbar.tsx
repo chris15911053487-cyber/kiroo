@@ -8,10 +8,11 @@ export default function Navbar() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // 检测是否在 MIDS-F2 上下文（路径含 mids-f2，或正在查看 MIDS-F2 报告）
+  // 检测是否在 MIDS-F2 上下文（路径含 mids-f2，或查看 MIDS-F2 报告，或 sessionStorage 标记）
   const isMidsF2Context =
     location.pathname.includes('mids-f2') ||
-    location.search.includes('from=mids-f2')
+    location.search.includes('from=mids-f2') ||
+    sessionStorage.getItem('midsf2_context') === '1'
   const historyLink = isMidsF2Context ? '/history?from=mids-f2' : '/history'
 
   function handleLogout() {
