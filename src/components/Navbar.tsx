@@ -1,11 +1,18 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+
+  // 检测是否在 MIDS-F2 上下文（路径含 mids-f2，或正在查看 MIDS-F2 报告）
+  const isMidsF2Context =
+    location.pathname.includes('mids-f2') ||
+    location.search.includes('from=mids-f2')
+  const historyLink = isMidsF2Context ? '/history?from=mids-f2' : '/history'
 
   function handleLogout() {
     logout()
@@ -25,7 +32,7 @@ export default function Navbar() {
               <p className="text-xs text-gray-400">{user?.phone}</p>
             </div>
             <Link
-              to="/history"
+              to={historyLink}
               onClick={() => setMenuOpen(false)}
               className="block px-4 py-2 text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600"
             >

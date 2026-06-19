@@ -860,6 +860,9 @@ export default function ReportPage() {
         scoreResult={dimensionScores}
         aiReport={midsData}
         reportId={report?.id}
+        userName={user?.nickname}
+        userEducation={midsData.education || ''}
+        userGraduationIntention={midsData.graduationIntention || ''}
       />
     )
   }

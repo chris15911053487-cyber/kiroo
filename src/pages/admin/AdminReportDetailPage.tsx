@@ -276,6 +276,9 @@ export default function AdminReportDetailPage() {
                       scoreResult={dimensionScores}
                       aiReport={midsData}
                       reportId={report.id}
+                      userName={report.nickname}
+                      userEducation={midsData.education || ''}
+                      userGraduationIntention={midsData.graduationIntention || ''}
                     />
                   </div>
                 )

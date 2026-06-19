@@ -594,9 +594,12 @@ export interface MidsF2ReportPageProps {
   scoreResult: Record<string, number>  // 维度均分
   aiReport?: MidsF2AIReport | null
   reportId?: number
+  userName?: string  // 兜底：旧报告 JSON 可能不含 userName
+  userEducation?: string
+  userGraduationIntention?: string
 }
 
-export default function MidsF2ReportPage({ scoreResult, aiReport, reportId }: MidsF2ReportPageProps) {
+export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, userName, userEducation, userGraduationIntention }: MidsF2ReportPageProps) {
   const result = computeMidsF2(scoreResult)
 
   return (
@@ -604,7 +607,7 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId }: Mi
       {/* Header */}
       <header className="bg-white border-b border-black/[0.04] sticky top-0 z-40">
         <div className="flex items-center justify-between px-6 h-14 max-w-3xl mx-auto">
-          <Link to="/history" className="text-gray-400 hover:text-gray-600 text-sm">← 返回</Link>
+          <Link to="/history?from=mids-f2" className="text-gray-400 hover:text-gray-600 text-sm">← 返回</Link>
           <h1 className="text-sm font-bold text-[#1a1a2e]">MIDS-F2 创新力报告</h1>
           <div className="w-12" />
         </div>
@@ -617,7 +620,14 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId }: Mi
           <p className="text-sm text-gray-400 mb-4">MIDS-F2 测评报告</p>
           {aiReport && (
             <>
-              <p className="text-lg font-bold text-[#1a1a2e]">{aiReport.userName || '测评用户'}</p>
+              <p className="text-lg font-bold text-[#1a1a2e]">{aiReport.userName || userName || '测评用户'}</p>
+              {(aiReport.education || userEducation || aiReport.graduationIntention || userGraduationIntention) && (
+                <p className="text-xs text-gray-400 mt-1">
+                  {aiReport.education || userEducation || ''}
+                  {(aiReport.education || userEducation) && (aiReport.graduationIntention || userGraduationIntention) && ' · '}
+                  {aiReport.graduationIntention || userGraduationIntention || ''}
+                </p>
+              )}
               <p className="text-xs text-gray-400 mt-1">
                 {aiReport.reportDate || ''}
                 {aiReport.reportId && <span className="ml-2">报告编号：{aiReport.reportId}</span>}
@@ -716,7 +726,7 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId }: Mi
             </button>
           )}
           <Link
-            to="/history"
+            to="/history?from=mids-f2"
             className="px-6 py-3 rounded border border-gray-300 bg-white text-gray-700 font-medium text-sm text-center hover:bg-gray-50"
           >
             我的报告列表

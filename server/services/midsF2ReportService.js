@@ -730,6 +730,9 @@ async function generateMidsF2Report({ dimensionScores, midsF2Result, userName, u
   return {
     ...report,
     reportType: 'mids-f2',
+    userName: effectiveUserInfo.name,
+    education: effectiveUserInfo.education || '',
+    graduationIntention: effectiveUserInfo.graduationIntention || '',
     midsF2Result,
     midsF2Scores: dimensionScores,
   };

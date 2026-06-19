@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { reportService, type ReportListItem } from '../services/reportService'
 import { QUESTIONNAIRE_PRIORITY } from '../types'
 
 export default function HistoryPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [reports, setReports] = useState<ReportListItem[]>([])
+
+  // 根据来源决定返回目标
+  const fromParam = searchParams.get('from')
+  const backTo = fromParam === 'mids-f2' ? '/assess/mids-f2' : '/'
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -56,7 +61,7 @@ export default function HistoryPage() {
       <header className="bg-white border-b border-black/[0.04] sticky top-0 z-40">
         <div className="flex items-center px-6 h-14 max-w-2xl mx-auto gap-3">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(backTo)}
             className="text-gray-500 hover:text-indigo-600 transition-colors text-sm flex items-center gap-1 flex-shrink-0"
           >
             <span className="text-lg leading-none">←</span>
@@ -82,7 +87,7 @@ export default function HistoryPage() {
             <div className="text-5xl mb-4">📋</div>
             <p className="text-gray-400 text-lg mb-4">暂无测评报告</p>
             <Link
-              to="/select"
+              to={fromParam === 'mids-f2' ? '/assess/mids-f2' : '/select'}
               className="inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-bold hover:from-indigo-600 hover:to-violet-600 transition-all shadow-[0_4px_15px_rgba(99,102,241,0.3)]"
             >
               开始第一次测评
