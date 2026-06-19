@@ -18,6 +18,8 @@ import ProfilePage from './pages/ProfilePage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminReportDetailPage from './pages/admin/AdminReportDetailPage'
+import UserAgreementPage from './pages/UserAgreementPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import BottomNav from './components/BottomNav'
 import MidsF2Landing from './pages/MidsF2Landing'
 import NotFoundPage from './pages/NotFoundPage'
@@ -54,6 +56,10 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
+            {/* 法律协议 */}
+            <Route path="/agreement" element={<UserAgreementPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
             {/* 管理后台 */}
             <Route path="/admin/login" element={<AdminLoginPage />} />

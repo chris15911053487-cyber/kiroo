@@ -801,4 +801,80 @@ router.get('/assessments/:id', adminAuthMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/admin/assessments/:id/detail — 含题目文本的答案详情
+router.get('/assessments/:id/detail', adminAuthMiddleware, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // 获取测评记录
+    const [rows] = await pool.query(
+      `SELECT ar.id, ar.questionnaire_id AS questionnaireId,
+              ar.questionnaire_name AS questionnaireName,
+              ar.answers, ar.score_result AS scoreResult,
+              ar.created_at AS createdAt,
+              u.nickname, u.phone
+       FROM assessment_records ar
+       JOIN users u ON u.id = ar.user_id
+       WHERE ar.id = ?`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '记录不存在' });
+    }
+
+    const record = rows[0];
+    record.createdAt = toChinaISO(record.createdAt);
+    record.createdAtDisplay = toChinaShort(record.createdAt);
+
+    const answers = typeof record.answers === 'string'
+      ? JSON.parse(record.answers) : record.answers;
+    const scoreResult = typeof record.scoreResult === 'string'
+      ? JSON.parse(record.scoreResult) : record.scoreResult;
+
+    // 加载对应问卷 JSON，展开答案→题目文本
+    let questions = [];
+    try {
+      const qPath = resolveProjectPath('src', 'data', 'questionnaires', `${record.questionnaireId}.json`);
+      if (fs.existsSync(qPath)) {
+        const questionnaire = JSON.parse(fs.readFileSync(qPath, 'utf-8'));
+        questions = (questionnaire.questions || []).map(q => {
+          const selectedOptionId = answers[q.id];
+          const selectedOption = q.options?.find(o => o.id === selectedOptionId) || null;
+          return {
+            id: q.id,
+            sequence: q.sequence || 0,
+            text: q.text,
+            selectedOption: selectedOption ? {
+              id: selectedOption.id,
+              text: selectedOption.text,
+              scores: selectedOption.scores || null,
+            } : null,
+          };
+        });
+      }
+    } catch (err) {
+      console.warn(`[Admin] 加载问卷 ${record.questionnaireId} 失败:`, err.message);
+    }
+
+    res.json({
+      id: record.id,
+      user: {
+        nickname: record.nickname,
+        phone: record.phone,
+      },
+      questionnaireId: record.questionnaireId,
+      questionnaireName: record.questionnaireName,
+      answers,
+      scoreResult,
+      questions,
+      createdAt: record.createdAt,
+      createdAtDisplay: record.createdAtDisplay,
+    });
+  } catch (err) {
+    console.error('Admin assessment detail error:', err);
+    res.status(500).json({ error: '获取测评详情失败' });
+  }
+});
+
 module.exports = router;

@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [nickname, setNickname] = useState('')
+  const [agreed, setAgreed] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -35,6 +36,11 @@ export default function RegisterPage() {
 
     if (!nickname.trim()) {
       setError('请填写真实姓名')
+      setLoading(false)
+      return
+    }
+    if (!agreed) {
+      setError('请先阅读并同意用户服务协议和隐私政策')
       setLoading(false)
       return
     }
@@ -97,7 +103,7 @@ export default function RegisterPage() {
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 outline-none transition-all text-sm"
               />
             </div>
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">真实姓名 <span className="text-red-400">*</span></label>
               <input
                 type="text"
@@ -109,6 +115,26 @@ export default function RegisterPage() {
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 outline-none transition-all text-sm"
               />
             </div>
+
+            {/* 用户协议 */}
+            <div className="mb-6">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={e => setAgreed(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                />
+                <span className="text-xs text-gray-500 leading-relaxed">
+                  我已阅读并同意{' '}
+                  <Link to="/agreement" target="_blank" className="text-purple-600 hover:text-purple-700 underline">《用户服务协议》</Link>
+                  {' '}和{' '}
+                  <Link to="/privacy" target="_blank" className="text-purple-600 hover:text-purple-700 underline">《隐私政策》</Link>
+                  ，了解个人信息收集使用范围
+                </span>
+              </label>
+            </div>
+
             <button
               type="submit"
               disabled={loading}

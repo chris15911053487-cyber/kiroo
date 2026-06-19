@@ -221,6 +221,13 @@ export default function LoginPage() {
               立即注册
             </Link>
           </p>
+
+          <p className="mt-3 text-center text-xs text-gray-400">
+            登录即表示同意{' '}
+            <Link to="/agreement" target="_blank" className="underline hover:text-gray-500">《用户服务协议》</Link>
+            {' '}和{' '}
+            <Link to="/privacy" target="_blank" className="underline hover:text-gray-500">《隐私政策》</Link>
+          </p>
         </div>
       </div>
     </div>
