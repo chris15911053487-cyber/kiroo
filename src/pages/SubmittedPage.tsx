@@ -91,7 +91,7 @@ export default function SubmittedPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-        <p className="text-gray-400">提交中…</p>
+        <p className="text-gray-400">已提交，生成报告中…预计等待 15s~60s</p>
       </div>
     )
   }
