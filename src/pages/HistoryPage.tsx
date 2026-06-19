@@ -8,9 +8,10 @@ export default function HistoryPage() {
   const [searchParams] = useSearchParams()
   const [reports, setReports] = useState<ReportListItem[]>([])
 
-  // 根据来源决定返回目标
+  // 根据来源决定返回目标：URL 参数 > sessionStorage 标记 > 默认首页
   const fromParam = searchParams.get('from')
-  const backTo = fromParam === 'mids-f2' ? '/assess/mids-f2' : '/'
+  const isMidsF2Context = fromParam === 'mids-f2' || sessionStorage.getItem('midsf2_context') === '1'
+  const backTo = isMidsF2Context ? '/assess/mids-f2' : '/'
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -87,7 +88,7 @@ export default function HistoryPage() {
             <div className="text-5xl mb-4">📋</div>
             <p className="text-gray-400 text-lg mb-4">暂无测评报告</p>
             <Link
-              to={fromParam === 'mids-f2' ? '/assess/mids-f2' : '/select'}
+              to={isMidsF2Context ? '/assess/mids-f2' : '/select'}
               className="inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-bold hover:from-indigo-600 hover:to-violet-600 transition-all shadow-[0_4px_15px_rgba(99,102,241,0.3)]"
             >
               开始第一次测评
