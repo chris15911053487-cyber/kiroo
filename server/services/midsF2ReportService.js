@@ -374,6 +374,7 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
 
   return {
     reportType: 'mids-f2',
+    _aiGenerated: false,  // 标记：非 AI 生成，后台 AI 成功后覆盖
     userName: name,
     education: userInfo?.education || '',
     graduationIntention: userInfo?.graduationIntention || '',
@@ -733,6 +734,7 @@ async function generateMidsF2Report({ dimensionScores, midsF2Result, userName, u
   return {
     ...report,
     reportType: 'mids-f2',
+    _aiGenerated: true,  // 标记：AI 成功生成
     userName: effectiveUserInfo.name,
     education: effectiveUserInfo.education || '',
     graduationIntention: effectiveUserInfo.graduationIntention || '',

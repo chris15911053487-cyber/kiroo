@@ -383,37 +383,29 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
             graduationIntention: userGraduationIntent || '未提供',
           };
 
-          // 第一步：用本地计算结果生成占位报告，立即入库（秒级响应）
-          const placeholder = buildFallbackReport(midsScore.dimensionScores, midsResult, userInfo);
-          reportContent = JSON.stringify(placeholder);
-          comprehensiveScore = midsResult.totalScore;
-          reportHtml = null;
-          console.log(`[MIDS-F2] Placeholder report ready, score=${comprehensiveScore}, path=${midsResult.decisionPath}`);
-
-          // 第二步：后台异步调用 AI 生成完整报告，完成后静默更新数据库
-          const sessionId = session.id;
-          const bgParams = {
-            dimensionScores: midsScore.dimensionScores,
-            midsF2Result: midsResult,
-            userName,
-            userInfo,
-            entryScores: entryScores.length > 0 ? entryScores : undefined,
-          };
-          generateMidsF2Report(bgParams).then(async (aiReport) => {
-            try {
-              await pool.query(
-                `UPDATE comprehensive_reports
-                 SET report_content = ?, comprehensive_score = ?, updated_at = datetime('now')
-                 WHERE session_id = ?`,
-                [JSON.stringify(aiReport), aiReport.comprehensiveScore, sessionId]
-              );
-              console.log(`[MIDS-F2] AI report updated in background, session=${sessionId}`);
-            } catch (e) {
-              console.error('[MIDS-F2] Failed to save background AI report:', e.message);
-            }
-          }).catch(err => {
-            console.error('[MIDS-F2] Background AI generation failed:', err.message);
-          });
+          // 同步调用 AI 生成报告（用户等待 15-60 秒，但确保不降级）
+          // 失败时用占位报告兜底，但标记 _aiGenerated: false 供管理员识别
+          try {
+            const aiReport = await generateMidsF2Report({
+              dimensionScores: midsScore.dimensionScores,
+              midsF2Result: midsResult,
+              userName,
+              userInfo,
+              entryScores: entryScores.length > 0 ? entryScores : undefined,
+            });
+            reportContent = JSON.stringify(aiReport);
+            comprehensiveScore = aiReport.comprehensiveScore;
+            reportHtml = null;
+            console.log(`[MIDS-F2] ✅ AI report generated, score=${comprehensiveScore}, path=${midsResult.decisionPath}`);
+          } catch (aiErr) {
+            // AI 失败：用占位兜底，管理员需手动重新生成
+            console.error(`[MIDS-F2] ❌ AI generation failed:`, aiErr.message);
+            const placeholder = buildFallbackReport(midsScore.dimensionScores, midsResult, userInfo);
+            reportContent = JSON.stringify(placeholder);
+            comprehensiveScore = midsResult.totalScore;
+            reportHtml = null;
+            console.log(`[MIDS-F2] Placeholder saved as fallback, score=${comprehensiveScore}, admin must regenerate`);
+          }
         }
       } catch (midsErr) {
         console.error('[MIDS-F2 Gen] Generation error:', midsErr.message);
