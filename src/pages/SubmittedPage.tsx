@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { sessionService } from '../services/sessionService'
+import { reportService } from '../services/reportService'
 import { useAssessment } from '../context/AssessmentContext'
 import { useAuth } from '../context/AuthContext'
 import { IS_LZU_MODE } from '../types'
+
+const POLL_INTERVAL = 5000 // 每 5 秒轮询审核状态
+const POLL_TIMEOUT = 120_000 // 最多轮询 2 分钟
 
 export default function SubmittedPage() {
   const { dispatch } = useAssessment()
@@ -13,113 +17,203 @@ export default function SubmittedPage() {
 
   const sessionId = (location.state as { sessionId?: number })?.sessionId
 
-  const [status, setStatus] = useState<'submitting' | 'generating' | 'done' | 'error'>('submitting')
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [reportId, setReportId] = useState<number | null>(null)
+  const [reviewStatus, setReviewStatus] = useState<'pending' | 'approved' | 'rejected'>('pending')
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const pollStartRef = useRef<number>(0)
 
+  // 提交 + 开始轮询
   useEffect(() => {
     if (!sessionId || !user) {
       navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })
       return
     }
 
-    async function processSubmission() {
+    let cancelled = false
+
+    async function submit() {
       try {
-        // 后端submit接口：精准计分 → AI生成标准化报告 → 存入数据库
-        setStatus('submitting')
-        const submitResult = await sessionService.submit(sessionId!)
+        const result = await sessionService.submit(sessionId!)
+        if (cancelled) return
 
-        // AI正在生成...
-        setStatus('generating')
+        dispatch({ type: 'SET_ALL_SCORES', payload: result.scoreSummary as Record<string, any> })
 
-        // 后端已完成所有处理（含AI生成+模版组装+PDF）
-        if (submitResult.reportId) {
-          setReportId(submitResult.reportId)
+        if (result.reportId) {
+          setReportId(result.reportId)
+          startPolling(result.reportId)
         }
-
-        dispatch({ type: 'SET_ALL_SCORES', payload: submitResult.scoreSummary as Record<string, any> })
-        setStatus('done')
+        setLoading(false)
       } catch (err) {
-        console.error('Submission error:', err)
-        setErrorMsg(err instanceof Error ? err.message : '处理失败，请稍后重试')
-        setStatus('error')
+        if (!cancelled) {
+          console.error('Submission error:', err)
+          setError(err instanceof Error ? err.message : '提交失败，请稍后重试')
+          setLoading(false)
+        }
       }
     }
 
-    processSubmission()
+    submit()
+
+    return () => {
+      cancelled = true
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current)
+    }
   }, [sessionId, user, navigate, dispatch])
+
+  function startPolling(rid: number) {
+    pollStartRef.current = Date.now()
+
+    pollTimerRef.current = setInterval(async () => {
+      // 超时停止轮询
+      if (Date.now() - pollStartRef.current > POLL_TIMEOUT) {
+        if (pollTimerRef.current) clearInterval(pollTimerRef.current)
+        return
+      }
+
+      try {
+        const { report } = await reportService.getDetail(rid)
+        setReviewStatus(report.reviewStatus)
+
+        // 审核通过或退回，停止轮询
+        if (report.reviewStatus === 'approved' || report.reviewStatus === 'rejected') {
+          if (pollTimerRef.current) clearInterval(pollTimerRef.current)
+        }
+      } catch {
+        // 报告尚未生成完毕，静默重试
+      }
+    }, POLL_INTERVAL)
+  }
+
+  // ==================== Loading ====================
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+        <p className="text-gray-400">提交中…</p>
+      </div>
+    )
+  }
+
+  // ==================== Error ====================
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-4 px-6 pb-20">
+        <div className="text-6xl mb-4">⚠️</div>
+        <h1 className="text-xl font-bold text-[#1a1a2e] mb-2">提交遇到问题</h1>
+        <p className="text-red-500 text-sm mb-4">{error}</p>
+        <button
+          onClick={() => navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })}
+          className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-bold"
+        >
+          返回首页
+        </button>
+      </div>
+    )
+  }
+
+  // ==================== Ready — 二维码 + 审核状态 ====================
+
+  const statusConfig = {
+    pending: {
+      icon: '⏳',
+      label: '审核中',
+      desc: '报告正在审核中，请添加微信获取通知',
+      cardBg: 'bg-amber-50 border-amber-200',
+      textColor: 'text-amber-700',
+    },
+    approved: {
+      icon: '✅',
+      label: '审核通过',
+      desc: '恭喜！你的报告已审核通过，可以查看了',
+      cardBg: 'bg-green-50 border-green-200',
+      textColor: 'text-green-700',
+    },
+    rejected: {
+      icon: '🔄',
+      label: '重新审核中',
+      desc: '报告已退回修订，请添加微信获取最新通知',
+      cardBg: 'bg-orange-50 border-orange-200',
+      textColor: 'text-orange-700',
+    },
+  }
+
+  const status = statusConfig[reviewStatus]
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center px-6 pb-20">
-      <div className="text-center max-w-sm">
-        {status === 'submitting' && (
-          <>
-            <div className="text-6xl mb-6 animate-spin">⏳</div>
-            <h1 className="text-xl font-bold text-[#1a1a2e] mb-3">正在生成报告</h1>
-            <p className="text-gray-400 text-sm">请稍候，系统正在处理你的测评数据…</p>
-          </>
-        )}
+      <div className="text-center max-w-sm w-full">
+        {/* 提交成功 */}
+        <div className="text-5xl mb-4">✅</div>
+        <h1 className="text-2xl font-bold text-[#1a1a2e] mb-2">提交成功！</h1>
+        <p className="text-gray-400 text-sm mb-8">
+          测评数据已提交，后台正在生成报告
+        </p>
 
-        {status === 'generating' && (
-          <>
-            <div className="text-6xl mb-6 animate-pulse">🧠</div>
-            <h1 className="text-xl font-bold text-[#1a1a2e] mb-3">AI正在生成综合报告</h1>
-            <p className="text-gray-400 text-sm">
-              DeepSeek正在综合分析你的多维测评数据，
-              <br />生成标准化Word格式综合报告…
-            </p>
-            <div className="mt-6 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-1.5 rounded-full animate-pulse" style={{ width: '60%' }} />
-            </div>
-          </>
-        )}
+        {/* 微信二维码 */}
+        <div className="bg-white border border-black/[0.06] rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] mb-5">
+          <img
+            src="/images/wechat-qr.jpg"
+            alt="微信二维码"
+            className="w-48 h-48 mx-auto rounded-lg object-cover"
+            onError={(e) => {
+              // 图片加载失败时显示占位
+              const el = e.currentTarget
+              el.style.display = 'none'
+              const placeholder = el.nextElementSibling as HTMLElement | null
+              if (placeholder) placeholder.style.display = 'flex'
+            }}
+          />
+          <div
+            className="w-48 h-48 mx-auto rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex-col items-center justify-center"
+            style={{ display: 'none' }}
+          >
+            <span className="text-3xl mb-1">📱</span>
+            <span className="text-xs text-gray-400">二维码图片</span>
+            <span className="text-[10px] text-gray-300 mt-0.5">/images/wechat-qr.jpg</span>
+          </div>
+          <p className="text-sm font-semibold text-[#1a1a2e] mt-3">添加微信获取报告结果</p>
+          <p className="text-xs text-gray-400 mt-1">
+            扫描二维码添加微信，审核通过后将第一时间通知你
+          </p>
+        </div>
 
-        {status === 'done' && (
-          <>
-            <div className="text-6xl mb-6">✅</div>
-            <h1 className="text-2xl font-bold text-[#1a1a2e] mb-3">所有测评已完成！</h1>
-            <p className="text-gray-400 text-sm mb-2">
-              你的综合报告已生成，可直接查看
-            </p>
+        {/* 审核状态 */}
+        <div className={`rounded-xl border px-4 py-3 mb-6 ${status.cardBg}`}>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-lg">{status.icon}</span>
+            <span className={`text-sm font-bold ${status.textColor}`}>
+              📋 审核状态：{status.label}
+            </span>
+          </div>
+          <p className={`text-xs mt-1 ${status.textColor} opacity-80`}>{status.desc}</p>
+        </div>
 
-            <div className="flex flex-col gap-3 mt-6">
-              {reportId && (
-                <Link
-                  to={`/report/${reportId}`}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-bold text-base shadow-[0_4px_20px_rgba(99,102,241,0.3)] text-center hover:from-indigo-600 hover:to-violet-600 transition-all"
-                >
-                  查看报告
-                </Link>
-              )}
-              <Link
-                to="/history"
-                className="w-full py-3.5 rounded-2xl border-2 border-black/[0.04] bg-white text-[#1a1a2e] font-semibold text-sm text-center hover:border-indigo-200 transition-all"
-              >
-                我的报告列表
-              </Link>
-              <Link
-                to={IS_LZU_MODE ? '/' : '/select'}
-                className="w-full py-3.5 rounded-2xl text-gray-400 text-sm text-center hover:text-indigo-600 transition-all"
-              >
-                返回首页
-              </Link>
-            </div>
-          </>
-        )}
-
-        {status === 'error' && (
-          <>
-            <div className="text-6xl mb-6">⚠️</div>
-            <h1 className="text-xl font-bold text-[#1a1a2e] mb-3">提交遇到问题</h1>
-            <p className="text-red-500 text-sm mb-6">{errorMsg}</p>
-            <button
-              onClick={() => navigate(IS_LZU_MODE ? '/' : '/select', { replace: true })}
-              className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-bold"
+        {/* 操作按钮 */}
+        <div className="flex flex-col gap-3">
+          {reviewStatus === 'approved' && reportId && (
+            <Link
+              to={`/report/${reportId}`}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-bold text-base shadow-[0_4px_20px_rgba(99,102,241,0.3)] text-center hover:from-indigo-600 hover:to-violet-600 transition-all"
             >
-              返回首页
-            </button>
-          </>
-        )}
+              查看报告
+            </Link>
+          )}
+          <Link
+            to="/history"
+            className="w-full py-3.5 rounded-2xl border-2 border-black/[0.04] bg-white text-[#1a1a2e] font-semibold text-sm text-center hover:border-indigo-200 transition-all"
+          >
+            我的报告列表
+          </Link>
+          <Link
+            to={IS_LZU_MODE ? '/' : '/select'}
+            className="w-full py-3.5 rounded-2xl text-gray-400 text-sm text-center hover:text-indigo-600 transition-all"
+          >
+            返回首页
+          </Link>
+        </div>
       </div>
     </div>
   )

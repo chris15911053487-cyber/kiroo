@@ -17,6 +17,7 @@ import HistoryPage from './pages/HistoryPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminReportDetailPage from './pages/admin/AdminReportDetailPage'
 import BottomNav from './components/BottomNav'
 import MidsF2Landing from './pages/MidsF2Landing'
 import NotFoundPage from './pages/NotFoundPage'
@@ -57,6 +58,7 @@ export default function App() {
             {/* 管理后台 */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/reports/:id" element={<AdminReportDetailPage />} />
 
             {/* MIDS-F2 公开直达链接 */}
             <Route path="/assess/mids-f2" element={<MidsF2Landing />} />

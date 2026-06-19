@@ -104,59 +104,26 @@ export default function QuizPage() {
     })
     setShowNoAnswerWarning(false)
 
-    // 自动进入下一题（最后一题自动提交）
+    // 最后一题只记录答案，不自动提交，等待用户点击
     if (isLastQuestion) {
-      // 短暂延迟让用户看到选中效果，然后自动提交
-      setTimeout(() => {
-        handleSubmitAfterSelect(optionId)
-      }, 300)
-    } else {
-      setTimeout(() => {
-        setCurrentIndex(prev => prev + 1)
-      }, 200)
+      return
     }
-  }
-
-  async function handleSubmitAfterSelect(optionId: string) {
-    if (isSubmitting) return
-    setSubmitError(null)
-    setIsSubmitting(true)
-
-    try {
-      // 确保最新答案在 state 中 — 用最新 optionId
-      const latestAnswers = { ...state.answers, [currentQuestion.id]: optionId }
-      const result = compute(latestAnswers, currentQuestionnaire!)
-
-      if ('message' in result) {
-        setSubmitError(result.message)
-        setIsSubmitting(false)
-        return
-      }
-
-      dispatch({ type: 'SET_SCORE_RESULT', payload: result })
-      dispatch({
-        type: 'ADD_COMPLETED_SCORE',
-        payload: { questionnaireId: currentQId, scoreResult: result },
-      })
-
-      await sessionService.saveAnswers(session!.id, {
-        questionnaireId: currentQId,
-        questionnaireName: currentQuestionnaire!.name,
-        answers: latestAnswers,
-        scoreResult: result as unknown as Record<string, unknown>,
-      })
-
-      navigate(`/quiz/${session!.id}/transition`, { replace: true })
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : '保存失败，请重试')
-    } finally {
-      setIsSubmitting(false)
-    }
+    // 非最后一题自动进入下一题
+    setTimeout(() => {
+      setCurrentIndex(prev => prev + 1)
+    }, 200)
   }
 
   function handlePrev() {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1)
+      setShowNoAnswerWarning(false)
+    }
+  }
+
+  function handleNext() {
+    if (currentIndex < totalQuestions - 1) {
+      setCurrentIndex(prev => prev + 1)
       setShowNoAnswerWarning(false)
     }
   }
@@ -171,7 +138,9 @@ export default function QuizPage() {
     setIsSubmitting(true)
 
     try {
-      const result = compute(state.answers, currentQuestionnaire!)
+      // 确保最新答案被提交
+      const latestAnswers = { ...state.answers, [currentQuestion.id]: selectedOptionId }
+      const result = compute(latestAnswers, currentQuestionnaire!)
 
       if ('message' in result) {
         setSubmitError(result.message)
@@ -189,7 +158,7 @@ export default function QuizPage() {
       await sessionService.saveAnswers(session!.id, {
         questionnaireId: currentQId,
         questionnaireName: currentQuestionnaire!.name,
-        answers: state.answers,
+        answers: latestAnswers,
         scoreResult: result as unknown as Record<string, unknown>,
       })
 
@@ -277,7 +246,7 @@ export default function QuizPage() {
         )}
       </main>
 
-      {/* Bottom navigation — 去掉"下一题"，单击选项自动跳转 */}
+      {/* Bottom navigation */}
       <div className="fixed bottom-0 left-0 right-0 md:relative bg-gradient-to-t from-[#fafafa] via-[#fafafa] to-transparent pt-6 pb-6 md:pb-0 px-6 z-30">
         <div className="max-w-xl mx-auto flex items-center gap-3">
           {currentIndex > 0 ? (
@@ -291,7 +260,7 @@ export default function QuizPage() {
             <div className="flex-1" />
           )}
 
-          {isLastQuestion && (
+          {isLastQuestion ? (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || !selectedOptionId}
@@ -299,11 +268,15 @@ export default function QuizPage() {
             >
               {isSubmitting ? '正在生成报告…' : '提交答卷'}
             </button>
+          ) : (
+            <button
+              onClick={handleNext}
+              className="flex-1 py-3.5 px-4 rounded-2xl border-2 border-indigo-200 bg-white text-indigo-600 font-semibold text-sm hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-150"
+            >
+              下一题 →
+            </button>
           )}
         </div>
-        {!isLastQuestion && (
-          <p className="text-center text-[10px] text-gray-400 mt-2">点击选项自动进入下一题</p>
-        )}
       </div>
     </div>
   )
