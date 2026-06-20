@@ -280,7 +280,7 @@ function buildMidsF2ReportHTML(data) {
     .cover { text-align: center; background: #1E3A5F; color: white; border-radius: 12px; padding: 45px 30px; margin-bottom: 30px; }
     .cover h1 { font-size: 22px; margin-bottom: 10px; font-weight: 700; }
     .cover p { font-size: 16px; opacity: 0.85; margin-bottom: 3px; }
-    .section { margin-bottom: 24px; page-break-inside: avoid; }
+    .section { margin-bottom: 24px; }
     .section h2 { font-size: 20px; color: #1E3A5F; border-bottom: 2px solid #CBD5E1; padding-bottom: 6px; margin-bottom: 12px; }
     .section h3 { font-size: 17px; color: #374151; margin: 10px 0 6px; }
     .highlight { background: #F1F5F9; border-radius: 6px; padding: 10px 14px; font-weight: 600; color: #1E3A5F; margin: 8px 0; }
@@ -294,7 +294,6 @@ function buildMidsF2ReportHTML(data) {
     .footer { text-align: center; font-size: 13px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
     @page { size: A4; margin: 12mm; }
     @media print {
-      .section { page-break-inside: avoid; }
       h2, h3 { break-after: avoid; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
     }
@@ -615,7 +614,6 @@ function buildReportHTML(reportData) {
     @media print {
       html { font-size: 18px; }
       body { font-size: 16px; }
-      .section { page-break-inside: avoid; }
       h2, h3 { break-after: avoid; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
     }
