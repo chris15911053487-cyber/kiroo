@@ -92,7 +92,7 @@ function buildMidsF2ReportHTML(data) {
 
     // 条目得分表（全量 entryAnalysis）
     const entries = (d.entryAnalysis || []).map(e =>
-      `<tr><td style="text-align:center">${e.sequence}</td><td>${e.text}</td><td style="text-align:center;font-weight:700">${e.score}</td><td style="font-size: 16px;color:#6B7280">${e.comment || ''}</td></tr>`
+      `<tr><td style="text-align:center;font-size:12px">${e.sequence}</td><td style="font-size:12px">${e.text}</td><td style="text-align:center;font-weight:700;font-size:12px">${e.score}</td><td style="font-size:12px;color:#6B7280">${e.comment || ''}</td></tr>`
     ).join('')
 
     // 条目亮点（新版 entryHighlights）
@@ -135,7 +135,7 @@ function buildMidsF2ReportHTML(data) {
       <div style="margin-bottom:6px"><span style="font-size: 16px;color:#6366F1;background:#EEF2FF;padding:2px 8px;border-radius:10px">${d.tier || ''}</span></div>
       ${bodyHTML}
       ${hasNewFields ? highlightsHTML : ''}
-      ${entries ? `<table><thead><tr><th style="width:40px">#</th><th>条目</th><th style="width:40px">得分</th><th style="width:200px">解读</th></tr></thead><tbody>${entries}</tbody></table>` : ''}
+      ${entries ? `<table><thead><tr><th style="width:40px;font-size:12px">#</th><th style="font-size:12px">条目</th><th style="width:40px;font-size:12px">得分</th><th style="width:200px;font-size:12px">解读</th></tr></thead><tbody>${entries}</tbody></table>` : ''}
     </div>`
   }).join('')
 
