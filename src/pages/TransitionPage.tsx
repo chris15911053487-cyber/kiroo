@@ -231,7 +231,7 @@ export default function TransitionPage() {
       {/* 鼓励语 */}
       <p className="text-center text-gray-400 text-sm mb-8 max-w-xs">
         {isFinished
-          ? '所有测评已完成！AI正在为你生成综合报告…'
+          ? '所有测评已完成！'
           : '继续保持，你的每一份回答都在描绘更清晰的潜能星图 ✨'
         }
       </p>
@@ -241,7 +241,7 @@ export default function TransitionPage() {
         onClick={handleContinue}
         className="w-full max-w-sm py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white font-bold text-base shadow-[0_4px_20px_rgba(99,102,241,0.3)] transition-all duration-200"
       >
-        {isFinished ? '查看结果' : nextQuestionnaire ? `继续下一个：${nextQuestionnaire.name} →` : '继续'}
+        {isFinished ? '提交生成报告' : nextQuestionnaire ? `继续下一个：${nextQuestionnaire.name} →` : '继续'}
       </button>
     </div>
   )

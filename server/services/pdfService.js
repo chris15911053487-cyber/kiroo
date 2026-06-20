@@ -42,12 +42,14 @@ function buildMidsF2ReportHTML(data) {
     const color = score >= 80 ? '#10B981' : score >= 60 ? '#6366F1' : score >= 40 ? '#F59E0B' : '#EF4444'
     const x1 = cx + r * Math.cos(rad(startAngle)), y1 = cy + r * Math.sin(rad(startAngle))
     const xe = cx + r * Math.cos(rad(currentAngle)), ye = cy + r * Math.sin(rad(currentAngle))
+    const bgLargeArc = endAngle - startAngle > 180 ? 1 : 0
+    const valLargeArc = currentAngle - startAngle > 180 ? 1 : 0
     return `<svg width="200" height="180" xmlns="http://www.w3.org/2000/svg">
-      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(rad(endAngle))} ${cy + r * Math.sin(rad(endAngle))}" fill="none" stroke="#E5E7EB" stroke-width="14" stroke-linecap="round"/>
-      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${xe} ${ye}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"/>
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 ${bgLargeArc} 1 ${cx + r * Math.cos(rad(endAngle))} ${cy + r * Math.sin(rad(endAngle))}" fill="none" stroke="#E5E7EB" stroke-width="14" stroke-linecap="round"/>
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 ${valLargeArc} 1 ${xe} ${ye}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"/>
       <text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="28" font-weight="800" fill="${color}">${score}</text>
-      <text x="${cx - 70}" y="${cy + 55}" text-anchor="middle" font-size="11" fill="#9CA3AF">20</text>
-      <text x="${cx + 70}" y="${cy + 55}" text-anchor="middle" font-size="11" fill="#9CA3AF">100</text>
+      <text x="${cx - 70}" y="${cy + 55}" text-anchor="middle" font-size="16" fill="#9CA3AF">20</text>
+      <text x="${cx + 70}" y="${cy + 55}" text-anchor="middle" font-size="16" fill="#9CA3AF">100</text>
     </svg>`
   }
 
@@ -66,7 +68,7 @@ function buildMidsF2ReportHTML(data) {
       const dp = pt(i, maxR * Math.min(1, d.value / d.maxValue))
       poly += `${i === 0 ? '' : ' '}${dp.x},${dp.y}`
       const lp = pt(i, maxR + 22)
-      labels += `<text x="${lp.x}" y="${lp.y + 3}" text-anchor="middle" font-size="11" fill="#374151">${d.label}</text>`
+      labels += `<text x="${lp.x}" y="${lp.y + 3}" text-anchor="middle" font-size="16" fill="#374151">${d.label}</text>`
     })
     return `<svg width="280" height="280" xmlns="http://www.w3.org/2000/svg">
       ${rings}${axes}
@@ -86,7 +88,7 @@ function buildMidsF2ReportHTML(data) {
 
     // 条目得分表（全量 entryAnalysis）
     const entries = (d.entryAnalysis || []).map(e =>
-      `<tr><td style="text-align:center">${e.sequence}</td><td>${e.text}</td><td style="text-align:center;font-weight:700">${e.score}</td><td style="font-size:12px;color:#6B7280">${e.comment || ''}</td></tr>`
+      `<tr><td style="text-align:center">${e.sequence}</td><td>${e.text}</td><td style="text-align:center;font-weight:700">${e.score}</td><td style="font-size: 16px;color:#6B7280">${e.comment || ''}</td></tr>`
     ).join('')
 
     // 条目亮点（新版 entryHighlights）
@@ -94,10 +96,10 @@ function buildMidsF2ReportHTML(data) {
     if (hasNewFields && d.entryHighlights?.length) {
       highlightsHTML = `
         <div style="margin:10px 0">
-          <p style="font-size:12px;color:#6366F1;font-weight:600;margin-bottom:4px">✦ 条目亮点</p>
+          <p style="font-size: 16px;color:#6366F1;font-weight:600;margin-bottom:4px">✦ 条目亮点</p>
           ${d.entryHighlights.map(eh => `
-            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;font-size:13px">
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:4px;background:#D1FAE5;color:#047857;font-size:11px;font-weight:700;flex-shrink:0">${eh.score}</span>
+            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;font-size: 16px">
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:4px;background:#D1FAE5;color:#047857;font-size: 16px;font-weight:700;flex-shrink:0">${eh.score}</span>
               <span style="color:#4B5563">${eh.text}</span>
             </div>
           `).join('')}
@@ -108,50 +110,89 @@ function buildMidsF2ReportHTML(data) {
     let bodyHTML = ''
     if (hasNewFields) {
       if (d.coreStrength) {
-        bodyHTML += `<div style="background:#EEF2FF;border:1px solid #E0E7FF;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size:12px;color:#4F46E5;font-weight:600;margin-bottom:2px">核心优势</p><p>${renderRichText(d.coreStrength)}</p></div>`
+        bodyHTML += `<div style="background:#EEF2FF;border:1px solid #E0E7FF;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#4F46E5;font-weight:700;margin-bottom:2px">◈ 您独到的地方（别人没有的）</p><p>${renderRichText(d.coreStrength)}</p></div>`
       }
       if (d.growthSpace) {
-        bodyHTML += `<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size:12px;color:#D97706;font-weight:600;margin-bottom:2px">成长空间</p><p>${renderRichText(d.growthSpace)}</p></div>`
+        bodyHTML += `<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#D97706;font-weight:700;margin-bottom:2px">◈ 您的成长空间（木桶的短板在这里）</p><p>${renderRichText(d.growthSpace)}</p></div>`
       }
       if (d.careerInsight) {
-        bodyHTML += `<p style="margin-top:8px;font-size:13px;color:#4B5563"><strong>职业方向启示：</strong>${renderRichText(d.careerInsight)}</p>`
+        bodyHTML += `<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:10px 14px;margin-top:8px"><p style="font-size: 16px;color:#6B7280;font-weight:700;margin-bottom:2px">◈ 这个维度对您的真实含义</p><p style="font-size: 16px;color:#4B5563">${renderRichText(d.careerInsight)}</p></div>`
       }
     } else {
       // 旧版兼容
       bodyHTML += `<p>${renderRichText(d.analysis || d.interpretation || '')}</p>`
       if (d.impactOnSuccession || d.suggestion) {
-        bodyHTML += `<p style="margin-top:8px;font-size:13px;color:#4B5563"><strong>职业方向启示：</strong>${renderRichText(d.impactOnSuccession || d.suggestion)}</p>`
+        bodyHTML += `<p style="margin-top:8px;font-size: 16px;color:#4B5563"><strong>职业方向启示：</strong>${renderRichText(d.impactOnSuccession || d.suggestion)}</p>`
       }
     }
 
     return `<div class="section">
       <h2>3.${dimIdx} ${dimName} <span class="level-tag">${d.level || ''} · ${d.score}/5</span></h2>
-      <div style="margin-bottom:6px"><span style="font-size:11px;color:#6366F1;background:#EEF2FF;padding:2px 8px;border-radius:10px">${d.tier || ''}</span></div>
+      <div style="margin-bottom:6px"><span style="font-size: 16px;color:#6366F1;background:#EEF2FF;padding:2px 8px;border-radius:10px">${d.tier || ''}</span></div>
       ${bodyHTML}
       ${hasNewFields ? highlightsHTML : ''}
       ${entries ? `<table><thead><tr><th style="width:40px">#</th><th>条目</th><th style="width:40px">得分</th><th style="width:200px">解读</th></tr></thead><tbody>${entries}</tbody></table>` : ''}
     </div>`
   }).join('')
 
-  // 发展建议
-  let devHTML = ''
-  if (dev.integratedJudgment?.tierSummary) {
-    devHTML += `<div class="section"><h2>4.1 层级综合分析</h2><p>${renderRichText(dev.integratedJudgment.tierSummary)}</p></div>`
-  }
-  if (dev.developmentDirection) {
-    devHTML += `<div class="section"><h2>4.2 整体发展方向</h2><p>${renderRichText(dev.developmentDirection)}</p></div>`
-  }
-  if (dev.capabilityImprovements?.length) {
-    devHTML += `<div class="section"><h2>4.3 能力提升建议</h2>` +
-      dev.capabilityImprovements.map(ci =>
-        `<div class="career-card"><h4>${ci.dimensionName}</h4><p><strong>方向：</strong>${ci.direction}</p><p style="font-size:12px;color:#6B7280">${renderRichText(ci.reason || '')}</p></div>`
-      ).join('') + `</div>`
-  }
-  if (dev.stakeholderAdvice) {
-    devHTML += `<div class="section"><h2>4.4 利益相关者沟通建议</h2><p>${renderRichText(dev.stakeholderAdvice)}</p></div>`
+  // 四、木桶原理诊断
+  const barrel = data.barrelPrinciple || {}
+  let barrelHTML = ''
+  if (barrel.longBoards?.length || barrel.shortBoards?.length) {
+    barrelHTML = `<div class="section" style="page-break-before:always"><h2>四、木桶原理诊断 · 您的核心竞争力模型</h2>`
+
+    if (barrel.longBoards?.length) {
+      barrelHTML += `<h3 style="color:#059669">您的长板（核心竞争力）</h3>
+      <table><thead><tr><th>长板</th><th style="width:60px;text-align:center">得分</th><th>核心优势描述</th></tr></thead><tbody>
+      ${barrel.longBoards.map(lb => `<tr><td style="font-weight:700">${lb.name}</td><td style="text-align:center;font-weight:700;color:#059669">${(lb.score || 0).toFixed(1)}</td><td style="font-size: 16px;color:#6B7280">${lb.description || ''}</td></tr>`).join('')}
+      </tbody></table>`
+    }
+
+    if (barrel.shortBoards?.length) {
+      barrelHTML += `<h3 style="color:#D97706;margin-top:16px">您的短板（需定向补齐）</h3>
+      <table><thead><tr><th>短板</th><th style="width:60px;text-align:center">得分</th><th>补板路径</th></tr></thead><tbody>
+      ${barrel.shortBoards.map(sb => `<tr><td style="font-weight:700">${sb.name}</td><td style="text-align:center;font-weight:700;color:#DC2626">${(sb.score || 0).toFixed(1)}</td><td style="font-size: 16px;color:#6B7280">${sb.fixPath || ''}</td></tr>`).join('')}
+      </tbody></table>`
+    }
+
+    if (barrel.coreCompetitiveness) {
+      barrelHTML += `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:12px 16px;margin-top:12px;text-align:center"><p style="font-size: 16px;color:#6366F1;font-weight:600;margin-bottom:4px">您的核心竞争力一句话总结</p><p style="font-weight:700;color:#3730A3">${barrel.coreCompetitiveness}</p></div>`
+    }
+
+    barrelHTML += `</div>`
   }
 
-  // 第六章：职业发展核心潜能与路径建议
+  // 五、发展建议
+  let devHTML = ''
+  if (dev.integratedJudgment?.tierSummary) {
+    devHTML += `<div class="section"><h2>5.1 层级综合分析</h2><p>${renderRichText(dev.integratedJudgment.tierSummary)}</p></div>`
+  }
+  if (dev.developmentDirection) {
+    devHTML += `<div class="section"><h2>5.2 整体发展方向</h2><p>${renderRichText(dev.developmentDirection)}</p></div>`
+  }
+  if (dev.capabilityImprovements?.length) {
+    devHTML += `<div class="section"><h2>5.3 能力提升建议</h2>` +
+      dev.capabilityImprovements.map(ci =>
+        `<div class="career-card"><h4>▌${ci.dimensionName} · ${ci.direction}</h4><p style="font-size: 16px;color:#6B7280">${renderRichText(ci.reason || '')}</p></div>`
+      ).join('') + `</div>`
+  }
+  // 补充建议：培训 + 孵化器
+  const supp = dev.supplementarySuggestions || {}
+  if (supp.targetedTraining || supp.talentIncubator) {
+    devHTML += `<div class="section"><h2>5.4 补充建议：职业培训与人才孵化</h2>`
+    if (supp.targetedTraining) {
+      devHTML += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#2563EB;font-weight:700;margin-bottom:2px">① 针对性职业培训（精准补短板）</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.targetedTraining)}</p></div>`
+    }
+    if (supp.talentIncubator) {
+      devHTML += `<div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:6px;padding:10px 14px"><p style="font-size: 16px;color:#7C3AED;font-weight:700;margin-bottom:2px">② 人才定制孵化器（加速成长通道）</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.talentIncubator)}</p></div>`
+    }
+    devHTML += `</div>`
+  }
+  if (dev.stakeholderAdvice) {
+    devHTML += `<div class="section"><h2>5.5 利益相关者沟通建议</h2><p>${renderRichText(dev.stakeholderAdvice)}</p></div>`
+  }
+
+  // 职业发展核心潜能与路径建议
   let careerPathHTML = ''
   if (cpa.corePotentialDiagnosis) {
     const pathColorMap = {
@@ -162,28 +203,28 @@ function buildMidsF2ReportHTML(data) {
 
     careerPathHTML = `
     <div class="section" style="page-break-before:always">
-      <h2>六、职业发展核心潜能与路径建议</h2>
+      <h2>职业发展核心潜能与路径建议</h2>
 
       <div style="margin-bottom:16px">
-        <h3>6.1 核心潜能诊断</h3>
-        <div style="display:inline-block;background:#EEF2FF;color:#4338CA;font-weight:700;font-size:14px;padding:6px 16px;border-radius:6px;margin:8px 0">${cpa.corePotentialDiagnosis || ''}</div>
+        <h3>核心潜能诊断</h3>
+        <div style="display:inline-block;background:#EEF2FF;color:#4338CA;font-weight:700;font-size: 16px;padding:6px 16px;border-radius:6px;margin:8px 0">${cpa.corePotentialDiagnosis || ''}</div>
         ${cpa.corePotentialDescription ? `<p>${renderRichText(cpa.corePotentialDescription)}</p>` : ''}
       </div>
 
       ${cpa.pathEvaluations?.length ? `
       <div style="margin-bottom:16px">
-        <h3>6.2 三大路径适配度深度评估</h3>
+        <h3>三大路径适配度深度评估</h3>
         ${cpa.pathEvaluations.map(pe => {
           const colors = pathColorMap[pe.path] || { bg: '#F9FAFB', border: '#E5E7EB', label: '' }
           return `<div style="background:${colors.bg};border:1px solid ${colors.border};border-radius:8px;padding:12px 16px;margin-bottom:10px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <h4 style="font-size:14px;color:#1A1A2E;margin:0">${pe.path}</h4>
+              <h4 style="font-size: 16px;color:#1A1A2E;margin:0">${pe.path}</h4>
               <div>
-                ${colors.label ? `<span style="font-size:11px;color:#6B7280;margin-right:6px">${colors.label}</span>` : ''}
-                <span style="font-size:13px;color:#F59E0B;font-weight:700;letter-spacing:2px">${pe.rating || ''}</span>
+                ${colors.label ? `<span style="font-size: 16px;color:#6B7280;margin-right:6px">${colors.label}</span>` : ''}
+                <span style="font-size: 16px;color:#F59E0B;font-weight:700;letter-spacing:2px">${pe.rating || ''}</span>
               </div>
             </div>
-            <table style="margin:0;font-size:12px">
+            <table style="margin:0;font-size: 16px">
               <tr><td style="width:60px;font-weight:600;color:#6B7280">适配依据</td><td>${pe.basis || ''}</td></tr>
               <tr><td style="width:60px;font-weight:600;color:#6B7280">风险提示</td><td style="color:#6B7280">${pe.risk || ''}</td></tr>
             </table>
@@ -193,19 +234,19 @@ function buildMidsF2ReportHTML(data) {
 
       ${cpa.roadmap?.length ? `
       <div style="margin-bottom:16px">
-        <h3>6.3 终极发展路线图</h3>
+        <h3>终极发展路线图（分阶段策略）</h3>
         <div style="position:relative;padding-left:24px">
           ${cpa.roadmap.map((phase, i) => `
             <div style="position:relative;border-left:2px solid #A5B4FC;padding:0 0 16px 20px;${i === cpa.roadmap.length - 1 ? 'border-left-color:transparent;' : ''}">
               <div style="position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:#6366F1;border:2px solid white"></div>
               <div style="margin-bottom:4px">
-                <span style="font-size:11px;font-weight:700;color:#4F46E5;background:#EEF2FF;padding:2px 8px;border-radius:4px">${phase.timeline || ''}</span>
-                <span style="font-size:11px;color:#9CA3AF;margin-left:6px">${phase.phase || ''}</span>
+                <span style="font-size: 16px;font-weight:700;color:#4F46E5;background:#EEF2FF;padding:2px 8px;border-radius:4px">${phase.timeline || ''}</span>
+                <span style="font-size: 16px;color:#9CA3AF;margin-left:6px">${phase.phase || ''}</span>
               </div>
-              <h4 style="font-size:14px;color:#1A1A2E;margin:0 0 4px">${phase.title || ''}</h4>
-              <p style="font-size:13px;color:#4B5563;margin:0 0 4px">${phase.goal || ''}</p>
-              ${phase.recommendation ? `<p style="font-size:12px;color:#6B7280;margin:0 0 4px"><strong>推荐去向：</strong>${phase.recommendation}</p>` : ''}
-              ${phase.coreTasks?.length ? `<ul style="margin:0;padding-left:16px;font-size:12px;color:#6B7280">${phase.coreTasks.map(t => `<li style="margin-bottom:2px">${t}</li>`).join('')}</ul>` : ''}
+              <h4 style="font-size: 16px;color:#1A1A2E;margin:0 0 4px">${phase.title || ''}</h4>
+              <p style="font-size: 16px;color:#4B5563;margin:0 0 4px">${phase.goal || ''}</p>
+              ${phase.recommendation ? `<p style="font-size: 16px;color:#6B7280;margin:0 0 4px"><strong>推荐去向：</strong>${phase.recommendation}</p>` : ''}
+              ${phase.coreTasks?.length ? `<ul style="margin:0;padding-left:16px;font-size: 16px;color:#6B7280">${phase.coreTasks.map(t => `<li style="margin-bottom:2px">${t}</li>`).join('')}</ul>` : ''}
             </div>
           `).join('')}
         </div>
@@ -213,7 +254,7 @@ function buildMidsF2ReportHTML(data) {
 
       ${cpa.ultimateConclusion ? `
       <div style="text-align:center;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #A5B4FC;border-radius:10px;padding:16px 20px">
-        <p style="font-size:11px;color:#6366F1;font-weight:600;margin-bottom:4px">一句话终极结论</p>
+        <p style="font-size: 16px;color:#6366F1;font-weight:600;margin-bottom:4px">一句话终极结论</p>
         <p style="font-size:16px;font-weight:700;color:#3730A3;margin:0">${cpa.ultimateConclusion}</p>
       </div>` : ''}
     </div>`
@@ -234,19 +275,19 @@ function buildMidsF2ReportHTML(data) {
     .page { padding: 30px 40px; max-width: 750px; margin: 0 auto; }
     .cover { text-align: center; background: #1E3A5F; color: white; border-radius: 12px; padding: 45px 30px; margin-bottom: 30px; }
     .cover h1 { font-size: 22px; margin-bottom: 10px; font-weight: 700; }
-    .cover p { font-size: 13px; opacity: 0.85; margin-bottom: 3px; }
+    .cover p { font-size: 16px; opacity: 0.85; margin-bottom: 3px; }
     .section { margin-bottom: 24px; page-break-inside: avoid; }
     .section h2 { font-size: 16px; color: #1E3A5F; border-bottom: 2px solid #CBD5E1; padding-bottom: 6px; margin-bottom: 12px; }
-    .section h3 { font-size: 14px; color: #374151; margin: 10px 0 6px; }
+    .section h3 { font-size: 16px; color: #374151; margin: 10px 0 6px; }
     .highlight { background: #F1F5F9; border-radius: 6px; padding: 10px 14px; font-weight: 600; color: #1E3A5F; margin: 8px 0; }
-    .level-tag { font-size: 12px; font-weight: 400; color: #64748B; margin-left: 8px; }
+    .level-tag { font-size: 16px; font-weight: 400; color: #64748B; margin-left: 8px; }
     .chart-center { display: flex; justify-content: center; margin: 12px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 16px; }
     th, td { padding: 6px 10px; border: 1px solid #E5E7EB; text-align: left; }
     th { background: #F9FAFB; font-weight: 600; color: #374151; }
     .career-card { background: #F9FAFB; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; border-left: 3px solid #94A3B8; }
-    .career-card h4 { font-size: 13px; color: #1E3A5F; margin-bottom: 4px; }
-    .footer { text-align: center; font-size: 11px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
+    .career-card h4 { font-size: 16px; color: #1E3A5F; margin-bottom: 4px; }
+    .footer { text-align: center; font-size: 16px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
     @page { size: A4; margin: 12mm; }
     @media print {
       html { font-size: 18px; }
@@ -262,22 +303,30 @@ function buildMidsF2ReportHTML(data) {
     <div class="cover">
       <h1>家族二代多维创新力量表（MIDS-F2）</h1>
       <p>${data.userName || '测评用户'}</p>
+      ${(data.education || data.graduationIntention) ? `<p>学历：${data.education || ''}${(data.education && data.graduationIntention) ? ' &nbsp;|&nbsp; 毕业意愿：' : ''}${data.graduationIntention || ''}</p>` : ''}
       <p>报告编号：MIDS-F2-${data.reportId || ''} | 等级：${co.scoreLabel || ''} | 总分：${co.totalScore || data.comprehensiveScore || 0}/100</p>
     </div>
 
-    ${data.frameworkExplanation ? `<div class="section"><h2>一、认识你自己</h2><p>${data.frameworkExplanation}</p></div>` : ''}
+    ${data.frameworkExplanation ? `<div class="section"><h2>一、认识你自己</h2>${data.uniqueGene ? `<div style="display:inline-block;background:#EEF2FF;color:#4338CA;font-weight:700;font-size: 16px;padding:6px 16px;border-radius:8px;margin-bottom:12px">您的独特基因：${data.uniqueGene}</div>` : ''}<p>${data.frameworkExplanation}</p></div>` : ''}
 
     <div class="section">
-      <h2>二、五维能力画像</h2>
+      <h2>二、五维雷达图解读</h2>
 
       <div class="chart-center">${gaugeSVG(co.totalScore || data.comprehensiveScore || mids.totalScore || 0)}</div>
       <p style="text-align:center"><strong>等级：</strong>${co.scoreLabel || ''} | <strong>总分：</strong>${co.totalScore || data.comprehensiveScore || 0}/100</p>
-      ${spf.decisionPath ? `<p style="text-align:center;margin-top:4px;font-size:15px;font-weight:700;color:#64748B">${spf.decisionEmoji || ''} ${spf.decisionLabel || ''}</p>` : ''}
+      ${spf.decisionPath ? `<p style="text-align:center;margin-top:4px;font-size: 16px;font-weight:700;color:#64748B">${spf.decisionEmoji || ''} ${spf.decisionLabel || ''}</p>` : ''}
 
       <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;" />
 
       <h3>五维雷达图</h3>
       <div class="chart-center">${radarSVG(radarDims)}</div>
+
+      ${data.dimensionOverview?.length ? `
+      <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;" />
+      <h3>维度速查定位</h3>
+      <table><thead><tr><th>维度</th><th style="width:60px;text-align:center">得分</th><th>定位</th></tr></thead><tbody>
+      ${data.dimensionOverview.map(dim => `<tr><td style="font-weight:600">${dim.dimensionName}</td><td style="text-align:center;font-weight:700">${dim.score.toFixed(1)}</td><td style="font-size: 16px;color:#6B7280">${dim.position}</td></tr>`).join('')}
+      </tbody></table>` : ''}
 
       ${co.overallAssessment ? `<hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;" /><p>${renderRichText(co.overallAssessment)}</p>` : ''}
     </div>
@@ -287,9 +336,11 @@ function buildMidsF2ReportHTML(data) {
       ${dimsHTML}
     </div>
 
-    ${devHTML ? `<div class="section" style="page-break-before:always"><h2>四、发展建议</h2>${devHTML}</div>` : ''}
+    ${barrelHTML}
 
-    ${data.summary ? `<div class="section"><h2>五、总结与展望</h2><p>${renderRichText(data.summary)}</p></div>` : ''}
+    ${devHTML ? `<div class="section" style="page-break-before:always"><h2>五、发展建议（个性化版）</h2>${devHTML}</div>` : ''}
+
+    ${data.summary ? `<div class="section"><h2>六、总结与展望</h2><p>${renderRichText(data.summary)}</p></div>` : ''}
 
     ${careerPathHTML}
 
@@ -326,13 +377,13 @@ function buildReportHTML(reportData) {
     const xe = cx + r * Math.cos(rad(currentAngle)), ye = cy + r * Math.sin(rad(currentAngle))
 
     return `<svg width="200" height="180" xmlns="http://www.w3.org/2000/svg">
-      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(rad(endAngle))} ${cy + r * Math.sin(rad(endAngle))}"
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 ${endAngle - startAngle > 180 ? 1 : 0} 1 ${cx + r * Math.cos(rad(endAngle))} ${cy + r * Math.sin(rad(endAngle))}"
             fill="none" stroke="#E5E7EB" stroke-width="14" stroke-linecap="round"/>
-      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${xe} ${ye}"
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 ${currentAngle - startAngle > 180 ? 1 : 0} 1 ${xe} ${ye}"
             fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"/>
       <text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="28" font-weight="800" fill="${color}">${score}</text>
-      <text x="${cx - 70}" y="${cy + 55}" text-anchor="middle" font-size="11" fill="#9CA3AF">65</text>
-      <text x="${cx + 70}" y="${cy + 55}" text-anchor="middle" font-size="11" fill="#9CA3AF">85</text>
+      <text x="${cx - 70}" y="${cy + 55}" text-anchor="middle" font-size="16" fill="#9CA3AF">65</text>
+      <text x="${cx + 70}" y="${cy + 55}" text-anchor="middle" font-size="16" fill="#9CA3AF">85</text>
     </svg>`
   }
 
@@ -361,7 +412,7 @@ function buildReportHTML(reportData) {
       const dp = getPoint(i, maxR * ratio)
       dataPoly += `${i === 0 ? '' : ' '}${dp.x},${dp.y}`
       const lp = getPoint(i, maxR + 20)
-      labels += `<text x="${lp.x}" y="${lp.y + 3}" text-anchor="middle" font-size="10" fill="#374151">${d.label}</text>`
+      labels += `<text x="${lp.x}" y="${lp.y + 3}" text-anchor="middle" font-size="16" fill="#374151">${d.label}</text>`
     })
 
     return `<svg width="260" height="260" xmlns="http://www.w3.org/2000/svg">
@@ -532,13 +583,13 @@ function buildReportHTML(reportData) {
     .page { padding: 30px 40px; max-width: 750px; margin: 0 auto; }
     .cover { text-align: center; background: linear-gradient(135deg, #1E3A5F, #2D5A8E); color: white; border-radius: 16px; padding: 50px 30px; margin-bottom: 30px; }
     .cover h1 { font-size: 24px; margin-bottom: 12px; }
-    .cover p { font-size: 13px; opacity: 0.8; margin-bottom: 4px; }
+    .cover p { font-size: 16px; opacity: 0.8; margin-bottom: 4px; }
     .section { margin-bottom: 25px; page-break-inside: avoid; }
     .section h2 { font-size: 17px; color: #1E3A5F; border-bottom: 2px solid #F4C550; padding-bottom: 6px; margin-bottom: 14px; }
-    .section h3 { font-size: 14px; color: #374151; margin: 10px 0 8px; }
+    .section h3 { font-size: 16px; color: #374151; margin: 10px 0 8px; }
     .highlight { background: #EEF2FF; border-radius: 8px; padding: 10px 14px; font-weight: 600; color: #1E3A5F; margin: 8px 0; }
     .chart-center { display: flex; justify-content: center; margin: 12px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 16px; }
     th, td { padding: 8px 10px; border: 1px solid #E5E7EB; text-align: left; }
     th { background: #F9FAFB; font-weight: 600; color: #374151; }
     .dim-name { font-weight: 600; color: #1E3A5F; }
@@ -546,18 +597,18 @@ function buildReportHTML(reportData) {
     .advantage-card { background: #EEF2FF; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid #E0E7FF; }
     .advantage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .advantage-title { font-weight: 700; color: #1E3A5F; }
-    .advantage-score { font-size: 12px; font-weight: 700; color: #6366F1; background: white; padding: 2px 10px; border-radius: 12px; }
-    .advantage-desc { font-size: 12px; color: #6B7280; }
+    .advantage-score { font-size: 16px; font-weight: 700; color: #6366F1; background: white; padding: 2px 10px; border-radius: 12px; }
+    .advantage-desc { font-size: 16px; color: #6B7280; }
     .mbti-badge { display: inline-block; font-size: 32px; font-weight: 800; color: #6366F1; background: #EEF2FF; padding: 12px 28px; border-radius: 14px; margin: 10px 0; }
     .career-card { background: #F9FAFB; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; border-left: 3px solid #F4C550; }
-    .career-card h4 { font-size: 13px; color: #1E3A5F; margin-bottom: 4px; }
-    .career-card p { font-size: 12px; color: #6B7280; }
+    .career-card h4 { font-size: 16px; color: #1E3A5F; margin-bottom: 4px; }
+    .career-card p { font-size: 16px; color: #6B7280; }
     .team-role { text-align: center; background: #EEF2FF; border-radius: 12px; padding: 16px; margin: 8px 0; }
-    .role-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; background: #6366F1; color: white; font-weight: 700; font-size: 13px; margin: 0 6px; }
+    .role-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; background: #6366F1; color: white; font-weight: 700; font-size: 16px; margin: 0 6px; }
     .role-badge.secondary { background: #A5B4FC; }
     ul { padding-left: 20px; }
     li { margin-bottom: 6px; }
-    .footer { text-align: center; font-size: 11px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
+    .footer { text-align: center; font-size: 16px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
     @page { size: A4; margin: 12mm; }
     @media print {
       html { font-size: 18px; }

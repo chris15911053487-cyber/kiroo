@@ -21,7 +21,7 @@ export default function Navbar() {
     navigate('/', { replace: true })
   }
 
-  // 登录后的菜单内容
+  // 登录后的下拉菜单（仅保留个人中心 + 退出登录）
   const userMenu = (
     <>
       {menuOpen && (
@@ -32,13 +32,6 @@ export default function Navbar() {
               <p className="text-sm font-medium text-[#1a1a2e]">{user?.nickname}</p>
               <p className="text-xs text-gray-400">{user?.phone}</p>
             </div>
-            <Link
-              to={historyLink}
-              onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2 text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600"
-            >
-              我的测评
-            </Link>
             <Link
               to="/profile"
               onClick={() => setMenuOpen(false)}
@@ -69,18 +62,26 @@ export default function Navbar() {
         {/* 桌面端：完整导航 */}
         <div className="hidden md:flex items-center gap-3">
           {user ? (
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+            <>
+              <Link
+                to={historyLink}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
               >
-                <span className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
-                  {user.nickname.charAt(0)}
-                </span>
-                <span className="text-[#1a1a2e] font-medium">{user.nickname}</span>
-              </button>
-              {userMenu}
-            </div>
+                📋 我的测评
+              </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <span className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
+                    {user.nickname.charAt(0)}
+                  </span>
+                  <span className="text-[#1a1a2e] font-medium">{user.nickname}</span>
+                </button>
+                {userMenu}
+              </div>
+            </>
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login" className="px-4 py-1.5 rounded-full text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
@@ -93,18 +94,26 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* 移动端：仅头像 + 下拉菜单 */}
+        {/* 移动端：我的测评 + 头像 + 下拉菜单 */}
         <div className="flex md:hidden items-center gap-2">
           {user ? (
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold shadow-sm"
+            <>
+              <Link
+                to={historyLink}
+                className="px-2.5 py-1 rounded-lg text-xs font-medium text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
               >
-                {user.nickname.charAt(0)}
-              </button>
-              {userMenu}
-            </div>
+                📋 我的测评
+              </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold shadow-sm"
+                >
+                  {user.nickname.charAt(0)}
+                </button>
+                {userMenu}
+              </div>
+            </>
           ) : (
             <Link
               to="/login"

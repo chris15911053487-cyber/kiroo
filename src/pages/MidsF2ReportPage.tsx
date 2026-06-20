@@ -76,8 +76,35 @@ interface MidsF2CareerPathAnalysis {
   ultimateConclusion: string
 }
 
+interface MidsF2DimensionOverview {
+  dimensionKey: string
+  dimensionName: string
+  score: number
+  position: string
+}
+
+interface MidsF2BarrelBoard {
+  name: string
+  score: number
+  description?: string
+  fixPath?: string
+}
+
+interface MidsF2BarrelPrinciple {
+  longBoards: MidsF2BarrelBoard[]
+  shortBoards: MidsF2BarrelBoard[]
+  coreCompetitiveness: string
+}
+
+interface MidsF2SupplementarySuggestions {
+  targetedTraining: string
+  talentIncubator: string
+}
+
 interface MidsF2AIReport {
+  uniqueGene?: string
   frameworkExplanation?: string
+  dimensionOverview?: MidsF2DimensionOverview[]
   comprehensiveOverview?: {
     totalScore: number
     scoreLabel: string
@@ -93,6 +120,7 @@ interface MidsF2AIReport {
     }
   }
   dimensionInsights: MidsF2AIInsight[]
+  barrelPrinciple?: MidsF2BarrelPrinciple
   developmentSuggestions?: {
     integratedJudgment?: {
       tierSummary: string
@@ -100,6 +128,7 @@ interface MidsF2AIReport {
     }
     developmentDirection?: string
     capabilityImprovements?: MidsF2CapabilityImprovement[]
+    supplementarySuggestions?: MidsF2SupplementarySuggestions
     stakeholderAdvice?: string
   }
   careerPathAnalysis?: MidsF2CareerPathAnalysis
@@ -107,6 +136,8 @@ interface MidsF2AIReport {
   userName?: string
   reportDate?: string
   reportId?: string
+  education?: string
+  graduationIntention?: string
   // backward compat
   comprehensiveScore?: number
   coreEvaluation?: string
@@ -156,7 +187,7 @@ function SubSectionHeading({ number, title, rightLabel }: {
         {title}
       </h3>
       {rightLabel && (
-        <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded shrink-0">
+        <span className="text-base font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded shrink-0">
           {rightLabel}
         </span>
       )}
@@ -167,34 +198,40 @@ function SubSectionHeading({ number, title, rightLabel }: {
 // ==================== 章节组件 ====================
 
 /** 一、认识你自己 */
-function FrameworkSection({ text }: { text: string }) {
-  if (!text) return null
+function FrameworkSection({ uniqueGene, text }: { uniqueGene?: string; text: string }) {
+  if (!text && !uniqueGene) return null
   return (
     <div>
       <ChapterHeading number="一、" title="认识你自己" />
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <RichText text={text} className="text-base text-gray-700 leading-loose" />
+        {uniqueGene && (
+          <div className="inline-block px-3 py-1.5 bg-indigo-100 text-indigo-800 font-bold text-base rounded-lg mb-4">
+            您的独特基因：{uniqueGene}
+          </div>
+        )}
+        {text && <RichText text={text} className="text-base text-gray-700 leading-loose" />}
       </div>
     </div>
   )
 }
 
-/** 二、五维能力画像 */
-function OverviewSection({ score, result, overallAssessment }: {
+/** 二、五维雷达图解读 */
+function OverviewSection({ score, result, overallAssessment, dimensionOverview }: {
   score: number
   result: MidsF2Result
   overallAssessment?: string
+  dimensionOverview?: MidsF2DimensionOverview[]
 }) {
   return (
     <div>
-      <ChapterHeading number="二、" title="五维能力画像" />
+      <ChapterHeading number="二、" title="五维雷达图解读" />
 
       <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
         {/* 综合得分 + 路径 */}
         <div className="flex flex-col items-center">
           <GaugeChart value={score} min={20} max={100} size={160} />
-          <p className="text-sm text-gray-500 mt-2">综合得分 · 满分100分</p>
-          <div className="inline-block mt-3 px-4 py-1 border border-gray-300 rounded text-sm font-bold text-gray-700">
+          <p className="text-base text-gray-500 mt-2">综合得分 · 满分100分</p>
+          <div className="inline-block mt-3 px-4 py-1 border border-gray-300 rounded text-base font-bold text-gray-700">
             {result.decisionEmoji} {result.decisionLabel}
           </div>
         </div>
@@ -208,7 +245,47 @@ function OverviewSection({ score, result, overallAssessment }: {
           <RadarChartBlock result={result} />
         </div>
 
-        {/* 五维能力画像文字 */}
+        {/* 维度速查定位表 */}
+        {dimensionOverview && dimensionOverview.length > 0 && (
+          <>
+            <div className="border-t border-gray-100" />
+            <div>
+              <h3 className="text-base font-bold text-gray-800 mb-3">维度速查定位</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-base">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 px-3 text-base text-gray-500 font-medium">维度</th>
+                      <th className="text-center py-2 px-3 text-base text-gray-500 font-medium">得分</th>
+                      <th className="text-left py-2 px-3 text-base text-gray-500 font-medium">定位</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dimensionOverview.map(dim => {
+                      const levelColor = dim.score >= 4.5 ? 'text-green-700 bg-green-50'
+                        : dim.score >= 3.5 ? 'text-blue-700 bg-blue-50'
+                        : dim.score >= 2.5 ? 'text-amber-700 bg-amber-50'
+                        : 'text-red-700 bg-red-50'
+                      return (
+                        <tr key={dim.dimensionKey} className="border-b border-gray-100 last:border-0">
+                          <td className="py-2.5 px-3 font-medium text-gray-800">{dim.dimensionName}</td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`inline-flex items-center justify-center w-10 h-6 rounded text-base font-bold ${levelColor}`}>
+                              {dim.score.toFixed(1)}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-gray-600 text-base leading-relaxed">{dim.position}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* 综合描述文字 */}
         {overallAssessment && (
           <>
             <div className="border-t border-gray-100" />
@@ -242,12 +319,98 @@ function WarningsSection({ warnings }: { warnings: string[] }) {
       <h2 className="text-base font-bold text-red-700 mb-3">⚠️ 特别警示</h2>
       <ul className="space-y-2">
         {warnings.map((w, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-gray-700 leading-relaxed">
+          <li key={i} className="flex items-start gap-2 text-base text-gray-700 leading-relaxed">
             <span className="text-red-500 mt-0.5 shrink-0">⚠</span>
             <span>{w}</span>
           </li>
         ))}
       </ul>
+    </div>
+  )
+}
+
+/** 四、木桶原理诊断 · 核心竞争力模型 */
+function BarrelPrincipleSection({ data }: { data: MidsF2BarrelPrinciple }) {
+  if (!data) return null
+  const { longBoards, shortBoards, coreCompetitiveness } = data
+  const hasContent = (longBoards && longBoards.length > 0) || (shortBoards && shortBoards.length > 0) || coreCompetitiveness
+  if (!hasContent) return null
+
+  return (
+    <div>
+      <ChapterHeading number="四、" title="木桶原理诊断 · 您的核心竞争力模型" />
+
+      <div className="space-y-4">
+        {/* 长板 */}
+        {longBoards && longBoards.length > 0 && (
+          <div className="bg-white border border-green-200 rounded-lg p-6">
+            <h3 className="text-base font-bold text-green-700 mb-3">您的长板（核心竞争力）</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-base">
+                <thead>
+                  <tr className="border-b border-green-100">
+                    <th className="text-left py-2 px-3 text-base text-green-600 font-medium">长板</th>
+                    <th className="text-center py-2 px-3 text-base text-green-600 font-medium w-16">得分</th>
+                    <th className="text-left py-2 px-3 text-base text-green-600 font-medium">核心优势描述</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {longBoards.map((lb, i) => (
+                    <tr key={i} className="border-b border-gray-100 last:border-0">
+                      <td className="py-2.5 px-3 font-bold text-gray-800">{lb.name}</td>
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="inline-flex items-center justify-center w-10 h-6 rounded bg-green-100 text-green-700 text-base font-bold">
+                          {lb.score.toFixed(1)}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-gray-600 text-base leading-relaxed">{lb.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 短板 */}
+        {shortBoards && shortBoards.length > 0 && (
+          <div className="bg-white border border-amber-200 rounded-lg p-6">
+            <h3 className="text-base font-bold text-amber-700 mb-3">您的短板（需定向补齐）</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-base">
+                <thead>
+                  <tr className="border-b border-amber-100">
+                    <th className="text-left py-2 px-3 text-base text-amber-600 font-medium">短板</th>
+                    <th className="text-center py-2 px-3 text-base text-amber-600 font-medium w-16">得分</th>
+                    <th className="text-left py-2 px-3 text-base text-amber-600 font-medium">补板路径</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shortBoards.map((sb, i) => (
+                    <tr key={i} className="border-b border-gray-100 last:border-0">
+                      <td className="py-2.5 px-3 font-bold text-gray-800">{sb.name}</td>
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="inline-flex items-center justify-center w-10 h-6 rounded bg-red-100 text-red-700 text-base font-bold">
+                          {sb.score.toFixed(1)}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-gray-600 text-base leading-relaxed">{sb.fixPath}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 核心竞争力一句话 */}
+        {coreCompetitiveness && (
+          <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-200 rounded-lg p-5 text-center">
+            <p className="text-base text-indigo-400 font-medium mb-2">您的核心竞争力一句话总结</p>
+            <p className="text-base font-bold text-indigo-800 leading-relaxed">{coreCompetitiveness}</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -293,7 +456,7 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
 
               {/* 层级标签 */}
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs text-[#1E3A5F] bg-[#EEF2F7] px-2 py-0.5 rounded font-medium">
+                <span className="text-base text-[#1E3A5F] bg-[#EEF2F7] px-2 py-0.5 rounded font-medium">
                   {insight.tier || ''}
                 </span>
               </div>
@@ -304,7 +467,7 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
                   {insight.entryAnalysis.map(entry => (
                     <span
                       key={entry.sequence}
-                      className="inline-flex items-center gap-1 text-[10px] bg-gray-50 border border-gray-200 rounded px-2 py-0.5 text-gray-600"
+                      className="inline-flex items-center gap-1 text-base bg-gray-50 border border-gray-200 rounded px-2 py-0.5 text-gray-600"
                       title={entry.comment}
                     >
                       <span className="font-bold text-gray-700">{entry.score}</span>
@@ -316,10 +479,10 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
 
               {hasNewFields ? (
                 <>
-                  {/* 新版：核心优势 → 成长空间 → 条目亮点 → 职业启示 */}
+                  {/* 新版：独到之处 → 成长空间 → 条目亮点 → 真实含义 */}
                   {insight.coreStrength && (
                     <div className="mb-4 p-4 bg-indigo-50/50 border border-indigo-100 rounded-lg">
-                      <p className="text-xs text-indigo-500 font-medium mb-1.5">核心优势</p>
+                      <p className="text-base text-indigo-500 font-bold mb-1.5">◈ 您独到的地方（别人没有的）</p>
                       <RichText
                         text={insight.coreStrength}
                         className="text-base text-gray-700 leading-loose"
@@ -329,7 +492,7 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
 
                   {insight.growthSpace && (
                     <div className="mb-4 p-4 bg-amber-50/50 border border-amber-100 rounded-lg">
-                      <p className="text-xs text-amber-600 font-medium mb-1.5">成长空间</p>
+                      <p className="text-base text-amber-600 font-bold mb-1.5">◈ 您的成长空间（木桶的短板在这里）</p>
                       <RichText
                         text={insight.growthSpace}
                         className="text-base text-gray-700 leading-loose"
@@ -339,11 +502,11 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
 
                   {insight.entryHighlights && insight.entryHighlights.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-xs text-gray-500 font-medium mb-2">条目亮点</p>
+                      <p className="text-base text-gray-500 font-medium mb-2">条目亮点</p>
                       <div className="space-y-1.5">
                         {insight.entryHighlights.map(eh => (
-                          <div key={eh.sequence} className="flex items-start gap-2 text-sm">
-                            <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-green-100 text-green-700 text-xs font-bold shrink-0 mt-0.5">
+                          <div key={eh.sequence} className="flex items-start gap-2 text-base">
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-green-100 text-green-700 text-base font-bold shrink-0 mt-0.5">
                               {eh.score}
                             </span>
                             <span className="text-gray-600">{eh.text}</span>
@@ -354,11 +517,11 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
                   )}
 
                   {insight.careerInsight && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                      <p className="text-xs text-gray-500 mb-1">职业方向启示</p>
+                    <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 border border-gray-200 rounded-lg p-4">
+                      <p className="text-base text-gray-500 font-bold mb-1">◈ 这个维度对您的真实含义</p>
                       <RichText
                         text={insight.careerInsight}
-                        className="text-sm text-gray-700 leading-relaxed"
+                        className="text-base text-gray-700 leading-relaxed"
                       />
                     </div>
                   )}
@@ -374,10 +537,10 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
                   </div>
 
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <p className="text-xs text-gray-500 mb-1">职业方向启示</p>
+                    <p className="text-base text-gray-500 mb-1">职业方向启示</p>
                     <RichText
                       text={insight.impactOnSuccession || insight.suggestion || ''}
-                      className="text-sm text-gray-700 leading-relaxed"
+                      className="text-base text-gray-700 leading-relaxed"
                     />
                   </div>
                 </>
@@ -390,30 +553,30 @@ function DimensionInsightsSection({ insights, dimensionAverages }: {
   )
 }
 
-/** 四、发展建议 */
+/** 五、发展建议（个性化版） */
 function DevelopmentSuggestionsSection({ suggestions }: {
   suggestions: NonNullable<MidsF2AIReport['developmentSuggestions']>
 }) {
   if (!suggestions) return null
-  const { integratedJudgment, developmentDirection, capabilityImprovements, stakeholderAdvice } = suggestions
+  const { integratedJudgment, developmentDirection, capabilityImprovements, supplementarySuggestions, stakeholderAdvice } = suggestions
   const hasContent = integratedJudgment?.tierSummary || developmentDirection
-    || (capabilityImprovements && capabilityImprovements.length > 0) || stakeholderAdvice
+    || (capabilityImprovements && capabilityImprovements.length > 0) || stakeholderAdvice || supplementarySuggestions
   if (!hasContent) return null
 
   let subIdx = 0
 
   return (
     <div>
-      <ChapterHeading number="四、" title="发展建议" />
+      <ChapterHeading number="五、" title="发展建议（个性化版）" />
 
       <div className="space-y-4">
         {/* 层级综合分析 */}
         {integratedJudgment?.tierSummary && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <SubSectionHeading number={`4.${++subIdx}`} title="层级综合分析" />
+            <SubSectionHeading number={`5.${++subIdx}`} title="层级综合分析" />
             <RichText text={integratedJudgment.tierSummary} className="text-base text-gray-700 leading-loose mb-3" />
             {integratedJudgment.tierTable && (
-              <p className="text-xs text-gray-500 font-mono bg-gray-50 rounded p-3">{integratedJudgment.tierTable}</p>
+              <p className="text-base text-gray-500 font-mono bg-gray-50 rounded p-3">{integratedJudgment.tierTable}</p>
             )}
           </div>
         )}
@@ -421,7 +584,7 @@ function DevelopmentSuggestionsSection({ suggestions }: {
         {/* 整体发展方向 */}
         {developmentDirection && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <SubSectionHeading number={`4.${++subIdx}`} title="整体发展方向" />
+            <SubSectionHeading number={`5.${++subIdx}`} title="整体发展方向" />
             <RichText text={developmentDirection} className="text-base text-gray-700 leading-loose" />
           </div>
         )}
@@ -429,25 +592,45 @@ function DevelopmentSuggestionsSection({ suggestions }: {
         {/* 能力提升建议 */}
         {capabilityImprovements && capabilityImprovements.length > 0 && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <SubSectionHeading number={`4.${++subIdx}`} title="能力提升建议" />
+            <SubSectionHeading number={`5.${++subIdx}`} title="能力提升建议" />
             <div className="space-y-4">
               {capabilityImprovements.map(item => (
                 <div key={item.dimensionKey} className="border border-gray-200 rounded-lg p-4">
-                  <h4 className="font-bold text-sm text-gray-800 mb-1">{item.dimensionName}</h4>
-                  <p className="text-sm text-gray-700 leading-relaxed">{item.direction}</p>
-                  {item.reason && (
-                    <RichText text={item.reason} className="text-sm text-gray-600 leading-relaxed mt-2" />
-                  )}
+                  <h4 className="font-bold text-base text-gray-800 mb-1">▌{item.dimensionName} · {item.direction.split('，')[0] || item.direction}</h4>
+                  <RichText text={item.reason} className="text-base text-gray-600 leading-relaxed mt-2" />
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {/* 补充建议：培训 + 孵化器 */}
+        {supplementarySuggestions && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <SubSectionHeading number={`5.${++subIdx}`} title="补充建议：职业培训与人才孵化" />
+
+            {/* 针对性职业培训 */}
+            {supplementarySuggestions.targetedTraining && (
+              <div className="mb-4 p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
+                <p className="text-base text-blue-600 font-bold mb-1.5">① 针对性职业培训（精准补短板）</p>
+                <RichText text={supplementarySuggestions.targetedTraining} className="text-base text-gray-700 leading-relaxed" />
+              </div>
+            )}
+
+            {/* 人才定制孵化器 */}
+            {supplementarySuggestions.talentIncubator && (
+              <div className="p-4 bg-violet-50/50 border border-violet-100 rounded-lg">
+                <p className="text-base text-violet-600 font-bold mb-1.5">② 人才定制孵化器（加速成长通道）</p>
+                <RichText text={supplementarySuggestions.talentIncubator} className="text-base text-gray-700 leading-relaxed" />
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 利益相关者沟通建议 */}
         {stakeholderAdvice && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <SubSectionHeading number={`4.${++subIdx}`} title="利益相关者沟通建议" />
+            <SubSectionHeading number={`5.${++subIdx}`} title="利益相关者沟通建议" />
             <RichText text={stakeholderAdvice} className="text-base text-gray-700 leading-loose" />
           </div>
         )}
@@ -456,7 +639,7 @@ function DevelopmentSuggestionsSection({ suggestions }: {
   )
 }
 
-/** 五、总结与展望 */
+/** 六、总结与展望 */
 function SummarySection({ summary, overallAssessment }: {
   summary: string
   overallAssessment?: string
@@ -464,7 +647,7 @@ function SummarySection({ summary, overallAssessment }: {
   if (!summary && !overallAssessment) return null
   return (
     <div>
-      <ChapterHeading number="五、" title="总结与展望" />
+      <ChapterHeading number="六、" title="总结与展望" />
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         {overallAssessment && (
           <RichText text={overallAssessment} className="text-base text-gray-700 leading-loose mb-4" />
@@ -477,11 +660,11 @@ function SummarySection({ summary, overallAssessment }: {
   )
 }
 
-// ==================== 六、职业发展核心潜能与路径建议 ====================
+// ==================== 职业发展核心潜能与路径建议 ====================
 
 /** 星级渲染 */
 function StarRating({ rating }: { rating: string }) {
-  return <span className="text-sm tracking-wider font-bold text-amber-500">{rating}</span>
+  return <span className="text-base tracking-wider font-bold text-amber-500">{rating}</span>
 }
 
 function CareerPathSection({ data }: { data: MidsF2CareerPathAnalysis }) {
@@ -493,17 +676,15 @@ function CareerPathSection({ data }: { data: MidsF2CareerPathAnalysis }) {
     '选择性就业 / 外部机构历练': { bg: 'bg-green-50', border: 'border-green-200', label: '当前最优解' },
   }
 
-  let subIdx = 0
-
   return (
     <div>
-      <ChapterHeading number="六、" title="职业发展核心潜能与路径建议" />
+      <ChapterHeading number="" title="职业发展核心潜能与路径建议" />
 
       <div className="space-y-4">
         {/* 核心潜能诊断 */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <SubSectionHeading number={`6.${++subIdx}`} title="核心潜能诊断" />
-          <div className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 font-bold text-sm rounded mb-3">
+          <SubSectionHeading number="" title="核心潜能诊断" />
+          <div className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 font-bold text-base rounded mb-3">
             {data.corePotentialDiagnosis}
           </div>
           <RichText text={data.corePotentialDescription} className="text-base text-gray-700 leading-loose" />
@@ -511,28 +692,28 @@ function CareerPathSection({ data }: { data: MidsF2CareerPathAnalysis }) {
 
         {/* 三大路径适配度评估 */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <SubSectionHeading number={`6.${++subIdx}`} title="三大路径适配度深度评估" />
+          <SubSectionHeading number="" title="三大路径适配度深度评估" />
           <div className="space-y-4">
             {data.pathEvaluations.map((pe, i) => {
               const colors = pathColorMap[pe.path] || { bg: 'bg-gray-50', border: 'border-gray-200', label: '' }
               return (
                 <div key={i} className={`${colors.bg} ${colors.border} border rounded-lg p-4`}>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-bold text-sm text-gray-800">{pe.path}</h4>
+                    <h4 className="font-bold text-base text-gray-800">{pe.path}</h4>
                     <div className="flex items-center gap-2">
                       {colors.label && (
-                        <span className="text-xs text-gray-500 font-medium">{colors.label}</span>
+                        <span className="text-base text-gray-500 font-medium">{colors.label}</span>
                       )}
                       <StarRating rating={pe.rating} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-base">
                     <div>
-                      <p className="text-xs text-gray-500 font-medium mb-1">适配依据</p>
+                      <p className="text-base text-gray-500 font-medium mb-1">适配依据</p>
                       <p className="text-gray-700 leading-relaxed">{pe.basis}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-medium mb-1">风险提示</p>
+                      <p className="text-base text-gray-500 font-medium mb-1">风险提示</p>
                       <p className="text-gray-600 leading-relaxed">{pe.risk}</p>
                     </div>
                   </div>
@@ -544,31 +725,31 @@ function CareerPathSection({ data }: { data: MidsF2CareerPathAnalysis }) {
 
         {/* 终极发展路线图 */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <SubSectionHeading number={`6.${++subIdx}`} title="终极发展路线图（分阶段策略）" />
+          <SubSectionHeading number="" title="终极发展路线图（分阶段策略）" />
           <div className="space-y-4">
             {data.roadmap.map((phase, i) => (
               <div key={i} className="relative pl-6 border-l-2 border-indigo-300 pb-4 last:pb-0">
                 {/* 时间线圆点 */}
                 <div className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-indigo-500 border-2 border-white" />
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                  <span className="text-base font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                     {phase.timeline}
                   </span>
-                  <span className="text-xs text-gray-400">{phase.phase}</span>
+                  <span className="text-base text-gray-400">{phase.phase}</span>
                 </div>
-                <h4 className="font-bold text-sm text-gray-800 mb-1">{phase.title}</h4>
-                <p className="text-sm text-gray-700 leading-relaxed mb-2">{phase.goal}</p>
+                <h4 className="font-bold text-base text-gray-800 mb-1">{phase.title}</h4>
+                <p className="text-base text-gray-700 leading-relaxed mb-2">{phase.goal}</p>
                 {phase.recommendation && (
-                  <p className="text-sm text-gray-600 mb-2">
-                    <span className="text-xs text-gray-500">推荐去向：</span>
+                  <p className="text-base text-gray-600 mb-2">
+                    <span className="text-base text-gray-500">推荐去向：</span>
                     {phase.recommendation}
                   </p>
                 )}
                 {phase.coreTasks && phase.coreTasks.length > 0 && (
                   <ul className="space-y-1">
                     {phase.coreTasks.map((task, j) => (
-                      <li key={j} className="text-sm text-gray-600 flex items-start gap-2">
-                        <span className="text-indigo-400 text-xs mt-1">◆</span>
+                      <li key={j} className="text-base text-gray-600 flex items-start gap-2">
+                        <span className="text-indigo-400 text-base mt-1">◆</span>
                         <span>{task}</span>
                       </li>
                     ))}
@@ -581,7 +762,7 @@ function CareerPathSection({ data }: { data: MidsF2CareerPathAnalysis }) {
 
         {/* 终极结论 */}
         <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-6 text-center">
-          <p className="text-xs text-indigo-400 font-medium mb-2">一句话终极结论</p>
+          <p className="text-base text-indigo-400 font-medium mb-2">一句话终极结论</p>
           <p className="text-lg font-bold text-indigo-800 leading-relaxed">{data.ultimateConclusion}</p>
         </div>
       </div>
@@ -614,8 +795,8 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
       {/* Header */}
       <header className="bg-white border-b border-black/[0.04] sticky top-0 z-40">
         <div className="flex items-center justify-between px-6 h-14 max-w-3xl mx-auto">
-          <Link to="/history?from=mids-f2" className="text-gray-400 hover:text-gray-600 text-sm">← 返回</Link>
-          <h1 className="text-sm font-bold text-[#1a1a2e]">MIDS-F2 创新力报告</h1>
+          <Link to="/history?from=mids-f2" className="text-gray-400 hover:text-gray-600 text-base">← 返回</Link>
+          <h1 className="text-base font-bold text-[#1a1a2e]">MIDS-F2 创新力报告</h1>
           <div className="w-12" />
         </div>
       </header>
@@ -624,18 +805,19 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
         {/* 报告封面 */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[#1E3A5F] mb-2">家族二代多维创新力量表</h1>
-          <p className="text-sm text-gray-400 mb-4">MIDS-F2 测评报告</p>
+          <p className="text-base text-gray-400 mb-4">MIDS-F2 测评报告</p>
           {aiReport && (
             <>
               <p className="text-lg font-bold text-[#1a1a2e]">{aiReport.userName || userName || '测评用户'}</p>
-              {(aiReport.education || userEducation || aiReport.graduationIntention || userGraduationIntention) && (
-                <p className="text-xs text-gray-400 mt-1">
-                  {aiReport.education || userEducation || ''}
-                  {(aiReport.education || userEducation) && (aiReport.graduationIntention || userGraduationIntention) && ' · '}
-                  {aiReport.graduationIntention || userGraduationIntention || ''}
+              {(aiReport.education || userEducation) && (
+                <p className="text-base text-gray-500 mt-1">
+                  学历：{aiReport.education || userEducation}
+                  {(aiReport.graduationIntention || userGraduationIntention) && (
+                    <span> &nbsp;|&nbsp; 毕业意愿：{aiReport.graduationIntention || userGraduationIntention}</span>
+                  )}
                 </p>
               )}
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-base text-gray-400 mt-1">
                 {aiReport.reportDate || ''}
                 {aiReport.reportId && <span className="ml-2">报告编号：{aiReport.reportId}</span>}
               </p>
@@ -644,15 +826,19 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
         </div>
 
         {/* 一、认识你自己 */}
-        {aiReport?.frameworkExplanation && (
-          <FrameworkSection text={aiReport.frameworkExplanation} />
+        {(aiReport?.frameworkExplanation || aiReport?.uniqueGene) && (
+          <FrameworkSection
+            uniqueGene={aiReport.uniqueGene}
+            text={aiReport.frameworkExplanation || ''}
+          />
         )}
 
-        {/* 二、五维能力画像 */}
+        {/* 二、五维雷达图解读 */}
         <OverviewSection
           score={result.totalScore}
           result={result}
           overallAssessment={aiReport?.comprehensiveOverview?.overallAssessment}
+          dimensionOverview={aiReport?.dimensionOverview}
         />
 
         {/* 特别警示 */}
@@ -666,7 +852,12 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
           />
         )}
 
-        {/* 四、发展建议 */}
+        {/* 四、木桶原理诊断 */}
+        {aiReport?.barrelPrinciple && (
+          <BarrelPrincipleSection data={aiReport.barrelPrinciple} />
+        )}
+
+        {/* 五、发展建议（个性化版） */}
         {aiReport?.developmentSuggestions && (
           <DevelopmentSuggestionsSection suggestions={aiReport.developmentSuggestions} />
         )}
@@ -674,7 +865,7 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
         {/* 向后兼容：旧版 improvementPlan */}
         {!aiReport?.developmentSuggestions && aiReport?.improvementPlan && (
           <div>
-            <ChapterHeading number="四、" title="发展建议" />
+            <ChapterHeading number="五、" title="发展建议" />
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <div className="space-y-3">
                 {[
@@ -683,11 +874,11 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
                   { title: '长期发展（2-5年）', items: aiReport.improvementPlan.longTerm, color: 'border-l-purple-500 bg-purple-50/50' },
                 ].filter(s => s.items && s.items.length > 0).map((s, i) => (
                   <div key={i} className={`border-l-4 rounded-r-xl p-4 ${s.color}`}>
-                    <h3 className="font-bold text-sm text-[#1a1a2e] mb-2">{s.title}</h3>
+                    <h3 className="font-bold text-base text-[#1a1a2e] mb-2">{s.title}</h3>
                     <ul className="space-y-1">
                       {s.items.map((item: string, j: number) => (
-                        <li key={j} className="text-sm text-gray-600 flex items-start gap-2">
-                          <span className="text-xs mt-1">•</span>
+                        <li key={j} className="text-base text-gray-600 flex items-start gap-2">
+                          <span className="text-base mt-1">•</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -699,13 +890,13 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
           </div>
         )}
 
-        {/* 五、总结与展望 */}
+        {/* 六、总结与展望 */}
         <SummarySection
           summary={aiReport?.summary || ''}
           overallAssessment={undefined}
         />
 
-        {/* 六、职业发展核心潜能与路径建议（新版） */}
+        {/* 职业发展核心潜能与路径建议（新版） */}
         {aiReport?.careerPathAnalysis && (
           <CareerPathSection data={aiReport.careerPathAnalysis} />
         )}
@@ -727,14 +918,14 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
                   URL.revokeObjectURL(url)
                 }).catch(() => alert('下载失败'))
               }}
-              className="px-6 py-3 rounded border border-gray-300 bg-white text-gray-700 font-medium text-sm hover:bg-gray-50 text-center"
+              className="px-6 py-3 rounded border border-gray-300 bg-white text-gray-700 font-medium text-base hover:bg-gray-50 text-center"
             >
               📥 下载报告
             </button>
           )}
           <Link
             to="/history?from=mids-f2"
-            className="px-6 py-3 rounded border border-gray-300 bg-white text-gray-700 font-medium text-sm text-center hover:bg-gray-50"
+            className="px-6 py-3 rounded border border-gray-300 bg-white text-gray-700 font-medium text-base text-center hover:bg-gray-50"
           >
             我的报告列表
           </Link>

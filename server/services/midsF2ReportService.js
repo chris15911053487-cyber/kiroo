@@ -350,6 +350,19 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
   const dec = DECISION_PATH_INFO[midsF2Result.decisionPath] || DECISION_PATH_INFO['further_study'];
   const totalScore = midsF2Result.totalScore ?? 0;
 
+  // 构建降级 uniqueGene
+  const topDim = [...dims].sort((a, b) => (dimensionScores[b] ?? 0) - (dimensionScores[a] ?? 0))[0];
+  const topDimName = MIDS_DIMENSION_NAMES[topDim];
+  const uniqueGene = `${topDimName}驱动的${dec.label}者`;
+
+  // 构建降级 dimensionOverview（人话定位标签）
+  const dimensionOverview = dims.map(key => ({
+    dimensionKey: key,
+    dimensionName: MIDS_DIMENSION_NAMES[key],
+    score: Math.round((dimensionScores[key] ?? 0) * 100) / 100,
+    position: buildPositionLabel(key, dimensionScores[key] ?? 0),
+  }));
+
   const dimensionInsights = dims.map(key => {
     const score = dimensionScores[key] ?? 0;
     const level = getScoreLevel(score);
@@ -365,20 +378,35 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
       score: Math.round(score * 100) / 100,
       level,
       entryAnalysis: entries,
+      coreStrength: buildCoreStrength(key, score, level, name),
+      growthSpace: buildGrowthSpace(key, score, dimensionScores, name),
+      entryHighlights: entries.filter(e => e.score >= 4).slice(0, 3).map(e => ({
+        sequence: e.sequence,
+        text: e.text,
+        score: e.score,
+        highlight: `在${MIDS_DIMENSION_NAMES[key]}方面展现了扎实的基础`,
+      })),
+      careerInsight: buildCareerInsight(key, score, level, name),
+      // 向后兼容
       analysis: buildDimensionAnalysis(key, score, level, name),
       impactOnSuccession: buildImpactOnSuccession(key, score, name),
     };
   });
 
   const improvements = buildCapabilityImprovements(dimensionScores);
+  const { longBoards, shortBoards } = buildBarrelBoards(dimensionScores, dims);
 
   return {
     reportType: 'mids-f2',
-    _aiGenerated: false,  // 标记：非 AI 生成，后台 AI 成功后覆盖
+    _aiGenerated: false,
     userName: name,
     education: userInfo?.education || '',
     graduationIntention: userInfo?.graduationIntention || '',
-    frameworkExplanation: `我们从五个角度来看你——你怎么看方向、怎么做事情、怎么撬动资源、怎么面对压力、以及你内心深处的价值观。它们拼在一起，就是你的职业肖像。`,
+    uniqueGene,
+    frameworkExplanation: `**你的独特基因：${uniqueGene}。**我们从五个角度看到了你的光芒——${
+      dims.map(k => MIDS_DIMENSION_NAMES[k]).join('、')
+    }。它们拼在一起，构成了一个等待被点燃的职业肖像。`,
+    dimensionOverview,
     comprehensiveScore: totalScore,
     comprehensiveOverview: {
       totalScore,
@@ -395,18 +423,189 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
       },
     },
     dimensionInsights,
+    barrelPrinciple: {
+      longBoards,
+      shortBoards,
+      coreCompetitiveness: buildCoreCompetitiveness(longBoards, shortBoards, name),
+    },
     developmentSuggestions: {
       integratedJudgment: {
         tierSummary: buildTierSummary(dimensionScores, name),
       },
       developmentDirection: `**对你来说，"${dec.label}"是你当前画像最自然指向的方向。**不用急着把每个短板都补齐——先管那个最拖后腿的，让你的优势有更大的舞台。`,
       capabilityImprovements: improvements,
-      stakeholderAdvice: `**把这份报告拿给父辈和老臣看看——不是让他们"审阅"，而是让他们了解你。**当他们问你"你觉得自己适合什么"的时候，这里面的描述可以帮你开口。用这份画像来谈角色定位，比两人空对空地争论有用得多。`,
+      supplementarySuggestions: {
+        targetedTraining: `您不需要泛泛的MBA，而需要定向能力强化培训。建议关注：（1）战略思维工作坊——以"亲手拆解一个陌生行业"为结业输出；（2）资本运作实战营——以"完成一个微型并购模拟或融资路演"为考核；（3）数据决策训练——帮助建立"直觉+数据"双轨决策习惯。以输出倒逼输入，学完立即能用。`,
+        talentIncubator: `相比传统就业，您更适合进入专为家族企业接班人设计的定制孵化器。这类孵化器通常提供：轮岗式项目制历练（不同行业、不同职能的实战轮转）、导师团制（战略/资本/运营等多领域导师陪跑）、同侪网络（与背景相似的二代群体共同学习）、真实项目操盘（在导师护航下独立负责从0到1的商业项目）。它同时解决了"独立看行业"和"不孤单成长"两个问题。`,
+      },
+      stakeholderAdvice: `跟父辈沟通时，不要说"我想出去闯"，而是说"我需要一张自己亲手画的地图，才能把家业带得更远"；跟老臣沟通时，不要说"我要改革"，而是说"我想先到一线去，听懂你们的难处"；跟团队沟通时，不要藏起你的韧性——让团队看到你愿意躬身入局，他们才会愿意跟你走。`,
     },
     summary: `**你不需要变成另一个人——你只需要知道现在自己的长板和短板在哪，然后选一条最划算的路。**方向感、落地力、根基感这三层，不均衡是常态。关键是让你最强的那个成为你的标签，让你最弱的那个不至于拖累你。先突破最该突破的那个点，其他的慢慢来。`,
     midsF2Result,
     midsF2Scores: dimensionScores,
   };
+}
+
+// ==================== 降级报告新增辅助函数 ====================
+
+function buildPositionLabel(key, score) {
+  const labels = {
+    strategic_breakthrough: score >= 4.5 ? '方向感敏锐——跨界嗅觉是你的天然雷达'
+      : score >= 3.5 ? '敏锐但待独立——有好眼睛，还没学会自己看地图'
+      : score >= 2.5 ? '方向感在觉醒——还需要亲手画第一张地图'
+      : '空白地图——当前最需要激活的维度',
+    execution_disruption: score >= 4.5 ? '绝对长板——你的核心利器'
+      : score >= 3.5 ? '落地能力强——差一个完整的实战闭环来引爆'
+      : score >= 2.5 ? '执行力在积累——需要第一次完整的项目历练'
+      : '想法和行动之间还有距离——优先补的短板',
+    resource_integration: score >= 4.5 ? '资源高手——内外通吃的联结者'
+      : score >= 3.5 ? '潜力巨大——内部通但外部资本是空白地图'
+      : score >= 2.5 ? '资源网络在起步——需要走出家族圈子'
+      : '资源获取被局限——第一步是先走出去接触',
+    adversity_quotient: score >= 4.5 ? '绝对长板——你的护城河，二代群体中最稀缺'
+      : score >= 3.5 ? '韧性强——能在压力下保持投入，需要更多实战淬炼'
+      : score >= 2.5 ? '韧性在建立中——需要安全边界内的试错历练'
+      : '扛压力待加强——这是最不能速成但最关键的一环',
+    ethics_vision: score >= 4.5 ? '格局超越财富——你的价值观是团队的信任基石'
+      : score >= 3.5 ? '长期主义者——社会责任视角在萌芽中'
+      : score >= 2.5 ? '商业导向为主——价值观落地需要更具体的实践'
+      : '地基待夯实——走得更快之前，先想清楚为什么而走',
+  };
+  return labels[key] || '待评估';
+}
+
+function buildCoreStrength(key, score, level, name) {
+  const dimName = MIDS_DIMENSION_NAMES[key];
+  const templates = {
+    strategic_breakthrough: {
+      '卓越': `**跨界嗅觉敏锐，变革意识强烈——您是天生善于捕捉技术与产业交汇点的人。**您对新技术的感知力不是泛泛的敏感，而是一种"技术-场景"配对本能。更难得的是，您敢于在逆周期时出手，敢于质疑旧模式——这些不是学来的，是您感知世界的方式。`,
+      '良好': `**行业嗅觉不错，跨界思维能让您识别到大多数人忽略的机会。**您对新技术和宏观趋势保持敏感，在冒进和保守之间找到了平衡。接下来要做的，是把"看到"变成能说清楚、能执行的具体判断。`,
+      '基础': `**您的方向感正在觉醒——这是最重要的第一步。**您对行业趋势有感知，但要把趋势拆解成业务动作时，手里还缺一套独立的判断框架。这不单是认知问题，更多是还没获得独立做判断的实战机会。`,
+      '待开发': `**"往哪走"这件事，目前主要靠外部输入——这是您最需要补的一课。**不是说您不聪明，而是还没有独立判断一个行业方向的经验。这张空白地图，只能在外面画。`,
+    },
+    execution_disruption: {
+      '卓越': `**您是"看到了就会去做"的人——这在二代里很难得。**数字化工具用得上手，"小步快跑"的试错方式也习惯。您能把一个想法变成团队的行动，这是画像里最扎实的一块。`,
+      '良好': `**您能把想法落地，对新技术也持开放态度。**标准化、数字化、快速迭代——这些都是您的武器。从"我觉得可以试试"到"数据告诉我应该这样做"，是您下一步要跨的坎。`,
+      '基础': `**在"想到"和"做到"之间，您还有一段距离。**想得很清楚，但执行时还是习惯用传统方式。在数字化已经是标配的今天，这个习惯会让您的方案缺说服力。`,
+      '待开发': `**从想法到落地，中间缺了一大段。**您可能有很多好点子，但推动执行时会发现使不上劲。这不怪您——缺的是 0→1 的实战经历。`,
+    },
+    resource_integration: {
+      '卓越': `**您能在家族内外之间搭桥——这是从"做事的人"走向"带资源的人"的关键标志。**既能理解老臣的想法，又知道外面有哪些资源可以引入。这种"内通外通"的能力极其珍贵。`,
+      '良好': `**您在内部资源上做得不错——老臣信任您，您也善于在现有体系里撬动资源。**但资源网络主要还是"家里的"。外面的资本怎么对接、外部顶尖人才怎么吸引，是您的新课题。`,
+      '基础': `**您善于在家族体系内挖潜，但一到"外面的世界"，就保守了。**资本运作、外部人才引入——您不一定不会，而是没真正试过。内部资源总有天花板，想法越大，天花板越明显。`,
+      '待开发': `**资源获取方式基本困在家族体系里。**外部资本、顶尖人才对您来说还很陌生。这不是能力问题，而是资源网络还没铺开。第一步是先走出去接触，不要怕生。`,
+    },
+    adversity_quotient: {
+      '卓越': `**被否定后迂回再试——这是您身上最耀眼的光芒，是二代群体里最稀有的品质，是您的"护城河"。**您有延迟满足的基因，能在亲情与制度之间保持理性，还愿意放下身段从基层做起。这些品质加在一起，构成了一个极其坚韧的内核。`,
+      '良好': `**您在压力面前能保持投入，不会轻易放弃。**灰度决策的能力还需要在真实的"被否决—迂回—再推进"循环中积累——灰度的智慧不是学来的，是练出来的。`,
+      '基础': `**您的心理韧性还在建立中——这不是靠上课能改变的。**需要在"允许犯错、允许被拒绝"的真实环境里积累经验。从小项目开始，在安全边界里试着承受几次失败，这是唯一的路。`,
+      '待开发': `**这是需要认真对待的一个信号——扛压力的能力还不足以支撑高风险路径。**有方向有能力但扛不住压力，最容易让人黯然离场。这个短板不能速成，但可以从小规模项目开始一步一步练。`,
+    },
+    ethics_vision: {
+      '卓越': `**您的格局已超越财富积累本身——对企业应该有怎样的社会价值有自己的信念。**把责任和品牌内化到决策里，不是做给别人看，而是自己就信这个。这为带团队提供了最牢靠的信任基础。`,
+      '良好': `**您在商业价值和社会价值之间保持了一个不错的平衡。**品牌声誉对您来说是重要的，长期的考量也在视野里。下一步是把价值观更自然地融入每一个经营决策。`,
+      '基础': `**您对企业社会责任有认知，但还没真正落地到经营里。**知道重要，但做决策时商业回报往往排在社会价值前面。让价值观不只是说说，而是变成决策时真的会考虑的因素。`,
+      '待开发': `**在价值观这件事上，可能过于关注短期商业结果了。**不是对错的问题——但地基不牢的后果是，当您走得更快时，信任崩塌的风险越大。试着认真想一次：企业除了赚钱，对世界还有什么意义？`,
+    },
+  };
+
+  const dimTemplates = templates[key] || templates['strategic_breakthrough'];
+  return dimTemplates[level] || `**在${dimName}这个角度，您展现了独特的潜力。**通过实战来释放和进一步锤炼这个方面是值得的。`;
+}
+
+function buildGrowthSpace(key, score, dimensionScores, name) {
+  const dimName = MIDS_DIMENSION_NAMES[key];
+  const level = getScoreLevel(score);
+  // 找另一个高分维度做交叉引用
+  const otherDims = MIDS_DIMENSION_ORDER.filter(k => k !== key);
+  const highDim = otherDims.sort((a, b) => (dimensionScores[b] ?? 0) - (dimensionScores[a] ?? 0))[0];
+  const highDimName = MIDS_DIMENSION_NAMES[highDim];
+
+  const growthTemplates = {
+    strategic_breakthrough: `**您目前对行业方向的判断，更多还是在参考外部经验——您自己也感觉到了，但还没找到独立判断的方法。**好消息是，您在${highDimName}上的优势意味着：一旦您开始亲手分析行业、拆解技术应用场景，您将比别人更快形成自己的判断框架。您缺的不是能力，是一次让您独立完成行业研判的实战机会。`,
+    execution_disruption: `**您目前更依赖直觉做判断——这是您的风格，但面对新赛道时直觉会失效。**有意思的是，您在${highDimName}上的禀赋正好能帮您：给直觉配一副"数据望远镜"，让您看到更远、更精确的落点。数据不是要取代直觉，而是放大直觉的价值。`,
+    resource_integration: `**您对资本运作的陌生，不是短板，而是一张等待亲手绘制的空白地图。**您目前更依赖业务手段而非资本手段解决问题，但这只是因为您还未真正进入那个领域。值得关注的是，您在${highDimName}上的高分意味着您完全有能力承受学习资本运作过程中的试错成本——一旦入门，成长会很快。`,
+    adversity_quotient: `**您偶尔会被孤独感困扰，但这恰恰证明您是一个有温度的人。**面对不确定性时的孤独感，不是弱点，而是对自己有期待的证明。有意思的是，您在${highDimName}上的天赋正好能帮您——当您学会在团队中找到"同路人"，孤独感自然会转化为归属感。`,
+    ethics_vision: `**您目前对社会责任和环保的关注还不够深入，但这只是因为注意力还集中在商业逻辑上——一旦开始实践，这个视角会自然生长出来。**有趣的是，您在${highDimName}上的敏锐正好能帮您——从"用新技术解决一个小社会问题"开始，这会同时激活两个维度。`,
+  };
+
+  return growthTemplates[key] || `**在${dimName}方面，您还有尚未释放的成长空间。**结合您在${highDimName}上的优势，这条成长路径会比想象中更快。`;
+}
+
+function buildCareerInsight(key, score, level, name) {
+  const dimName = MIDS_DIMENSION_NAMES[key];
+  const insights = {
+    strategic_breakthrough: score >= 3.5
+      ? `**您不需要成为"天天想大事"的战略家，那会浪费您的执行力天赋。**您需要的是建立一套属于自己的判断框架——能让您在面对新机会时快速回答"值不值得做、从哪切入、怎么测试"的决策逻辑。这是从"优秀执行者"跃升为"能独当一面的将领"的关键一跃。`
+      : `**在拥有自己的"方向地图"之前，先到外部环境中锤炼判断力。**先练就"看见"的本领，再施展"做到"的威力。这段探索不是绕路，而是最宝贵的成长投资。`,
+    execution_disruption: score >= 3.5
+      ? `**您的执行力已经很强，最需要的是一套完整的"从0到1"实战闭环。**一个让您从想法到落地、从试错到规模化的完整项目。这个经历会让您从"优秀的执行者"变成"能打硬仗的将领"。`
+      : `**先找一个完整的项目从头跟到尾——不需要大，但要从想法到落地全程参与。**建立"我能把事做成"的信心比学任何方法论都重要。`,
+    resource_integration: score >= 3.5
+      ? `**您不需要先学会资本运作再行动——先在实战项目里"做中学"。**您的共情力和跨界嫁接能力会帮您打开第一扇门，资本运作能力会在过程中自然生长。`
+      : `**资源网络的第一步不是"学会整合"，而是"走出去接触"。**先让外面的世界认识您，再谈撬动资源。这个过程比任何课程都有效。`,
+    adversity_quotient: score >= 3.5
+      ? `**您的韧性是最大的资产，但不要把它当作独自扛着所有事的理由。**学会在团队中找到同路人，把坚韧转化为团队的凝聚力——那时，您将不只是一个人走得快，而是一群人走得远。`
+      : `**在安全边界内从小项目开始淬炼韧性。**不需要一次扛大压力——先从小规模的创新项目开始，在"允许失败"的环境里积累被拒绝后迂回的经验。`,
+    ethics_vision: score >= 3.5
+      ? `**您的格局不需要被"教育"，只需要被"点燃"。**找一个您真正关心的社会问题，用您的技术嗅觉和执行力去解决它——哪怕一个小项目。那次经历会让您发现：做好事和做好生意，从来不是两件事。`
+      : `**试着认真想一次：您的企业除了赚钱，对这个世界还有什么意义？**找一个小的切入点，把价值观从理念变成行动——哪怕是一个公益项目或一项员工福利改革。`,
+  };
+  return insights[key] || `**在${dimName}方面，找到属于您的独特路径。**`;
+}
+
+function buildBarrelBoards(dimensionScores, dims) {
+  const sorted = dims.map(key => ({
+    key,
+    name: MIDS_DIMENSION_NAMES[key],
+    score: Math.round((dimensionScores[key] ?? 0) * 100) / 100,
+  })).sort((a, b) => b.score - a.score);
+
+  const longBoards = sorted.slice(0, 2).map(d => ({
+    name: `${MIDS_DIMENSION_NAMES[d.key]}优势`,
+    score: d.score,
+    description: getLongBoardDescription(d.key, d.score),
+  }));
+
+  const shortBoards = sorted.slice(-2).reverse().filter(d => d.score < 3.5).map(d => ({
+    name: MIDS_DIMENSION_NAMES[d.key],
+    score: d.score,
+    fixPath: getShortBoardFixPath(d.key, d.score),
+  }));
+
+  return { longBoards, shortBoards: shortBoards.length > 0 ? shortBoards : [sorted[sorted.length - 1]].map(d => ({
+    name: MIDS_DIMENSION_NAMES[d.key],
+    score: d.score,
+    fixPath: '在实战中逐步提升该维度能力',
+  })) };
+}
+
+function getLongBoardDescription(key, score) {
+  const descs = {
+    strategic_breakthrough: '对行业方向和新技术的嗅觉敏锐，能识别逆周期布局的机会——这是"领军"路上最稀缺的资本',
+    execution_disruption: '能把想法落地、把复杂变简单、把流程标准化——是团队从"想到"到"做到"的桥梁',
+    resource_integration: '能在家族内外之间搭桥，撬动资源——从"做事的人"走向"带资源的人"',
+    adversity_quotient: '被否定后能迂回再试——二代群体中最稀有的心理品质，是选择高挑战路径的底气',
+    ethics_vision: '格局超越财富积累本身——为企业使命和团队信任提供了最牢靠的根基',
+  };
+  return descs[key] || '具有独特的优势，是您核心竞争力的一部分';
+}
+
+function getShortBoardFixPath(key, score) {
+  const paths = {
+    strategic_breakthrough: '在外部环境中亲手分析行业、拆解技术应用场景，建立独立判断框架',
+    execution_disruption: '从一个小项目开始，用数据验证决策，建立"数据+直觉"双轨习惯',
+    resource_integration: '在实战项目中"做中学"，先接触外部资本网络，再尝试小型交易',
+    adversity_quotient: '在安全边界内从小项目开始历练，积累"被拒绝—迂回—再推进"的经验',
+    ethics_vision: '找一个关心的社会问题，用技术和执行力去解决它——从一个小项目开始落地',
+  };
+  return paths[key] || '在实战中针对性提升';
+}
+
+function buildCoreCompetitiveness(longBoards, shortBoards, name) {
+  const lbNames = longBoards.map(l => l.name).join('+');
+  const sbNames = shortBoards.map(s => s.name).join('、');
+  return `您最独特的竞争力组合是"${lbNames}"——这是您在二代群体中最稀缺的品质。目前${sbNames}是您成长空间最大的领域，但好消息是：您的长板恰好能帮您补上这些短板。`;
 }
 
 // ==================== AI 调用 ====================
@@ -491,11 +690,55 @@ function parseAIResponse(raw, dimensionScores, midsF2Result, userInfo) {
         return buildFallbackReport(dimensionScores, midsF2Result, userInfo);
       }
 
-      // 补充系统计算的数据以确保一致性
+      // 合并 AI 生成内容 + 系统计算兜底数据 + 新字段兜底
+      const fallback = buildFallbackReport(dimensionScores, midsF2Result, userInfo);
+
       return {
-        ...parsed,
         reportType: 'mids-f2',
+        _aiGenerated: true,
+        userName: userInfo?.name || parsed.userName || '被测者',
+        education: userInfo?.education || parsed.education || '',
+        graduationIntention: userInfo?.graduationIntention || parsed.graduationIntention || '',
+
+        // 新字段：AI 优先，降级兜底
+        uniqueGene: parsed.uniqueGene || fallback.uniqueGene,
+        frameworkExplanation: parsed.frameworkExplanation || fallback.frameworkExplanation,
+        dimensionOverview: parsed.dimensionOverview || fallback.dimensionOverview,
+
         comprehensiveScore: parsed.comprehensiveOverview?.totalScore ?? midsF2Result.totalScore ?? 0,
+        comprehensiveOverview: {
+          ...parsed.comprehensiveOverview,
+          spfConclusion: {
+            ...(parsed.comprehensiveOverview?.spfConclusion || {}),
+            sScore: midsF2Result.sScore ?? 0,
+            pScore: midsF2Result.pScore ?? 0,
+            fScore: midsF2Result.fScore ?? 0,
+            decisionPath: midsF2Result.decisionPath || 'further_study',
+            decisionLabel: midsF2Result.decisionLabel || '',
+            decisionEmoji: midsF2Result.decisionEmoji || '',
+          },
+        },
+
+        dimensionInsights: parsed.dimensionInsights.map((insight, i) => ({
+          ...insight,
+          dimensionKey: insight.dimensionKey || MIDS_DIMENSION_ORDER[i] || 'strategic_breakthrough',
+          dimensionName: insight.dimensionName || MIDS_DIMENSION_NAMES[insight.dimensionKey || MIDS_DIMENSION_ORDER[i]] || '',
+          tier: insight.tier || MIDS_DIMENSION_TIERS[insight.dimensionKey || MIDS_DIMENSION_ORDER[i]] || '',
+          score: typeof insight.score === 'number' ? insight.score : (dimensionScores[insight.dimensionKey || MIDS_DIMENSION_ORDER[i]] ?? 0),
+          level: insight.level || getScoreLevel(dimensionScores[insight.dimensionKey || MIDS_DIMENSION_ORDER[i]] ?? 0),
+        })),
+
+        // 木桶原理：AI 优先，降级兜底
+        barrelPrinciple: parsed.barrelPrinciple || fallback.barrelPrinciple,
+
+        developmentSuggestions: {
+          ...parsed.developmentSuggestions,
+          supplementarySuggestions: parsed.developmentSuggestions?.supplementarySuggestions
+            || fallback.developmentSuggestions.supplementarySuggestions,
+        },
+
+        careerPathAnalysis: parsed.careerPathAnalysis || undefined,
+        summary: parsed.summary || fallback.summary,
         midsF2Result,
         midsF2Scores: dimensionScores,
       };
@@ -536,14 +779,22 @@ function adaptLegacyFormat(parsed, dimensionScores, midsF2Result, userInfo) {
     };
   });
 
+  const fallback = buildFallbackReport(dimensionScores, midsF2Result, userInfo);
+
   return {
     reportType: 'mids-f2',
-    frameworkExplanation: parsed.frameworkExplanation || '我们从五个角度来看你——你怎么看方向、怎么做事情、怎么撬动资源、怎么面对压力、以及你内心深处的价值观。它们拼在一起，就是你的职业肖像。',
+    _aiGenerated: true,
+    userName: name,
+    education: userInfo?.education || '',
+    graduationIntention: userInfo?.graduationIntention || '',
+    uniqueGene: parsed.uniqueGene || fallback.uniqueGene,
+    frameworkExplanation: parsed.frameworkExplanation || fallback.frameworkExplanation,
+    dimensionOverview: parsed.dimensionOverview || fallback.dimensionOverview,
     comprehensiveScore: parsed.comprehensiveScore ?? midsF2Result.totalScore ?? 0,
     comprehensiveOverview: {
       totalScore: parsed.comprehensiveScore ?? midsF2Result.totalScore ?? 0,
       scoreLabel: getScoreLevel((parsed.comprehensiveScore ?? midsF2Result.totalScore ?? 0) / 20),
-      overallAssessment: parsed.coreEvaluation || '',
+      overallAssessment: parsed.coreEvaluation || fallback.comprehensiveOverview.overallAssessment,
       spfConclusion: {
         sScore: midsF2Result.sScore ?? 0,
         pScore: midsF2Result.pScore ?? 0,
@@ -555,18 +806,22 @@ function adaptLegacyFormat(parsed, dimensionScores, midsF2Result, userInfo) {
       },
     },
     dimensionInsights,
+    barrelPrinciple: parsed.barrelPrinciple || fallback.barrelPrinciple,
     developmentSuggestions: {
-      integratedJudgment: { tierSummary: '' },
-      developmentDirection: '',
+      integratedJudgment: parsed.developmentSuggestions?.integratedJudgment || { tierSummary: '' },
+      developmentDirection: parsed.developmentSuggestions?.developmentDirection || '',
       capabilityImprovements: (parsed.careerSuggestions || []).map(s => ({
         dimensionKey: '',
         dimensionName: '',
         direction: s,
         reason: '',
       })),
-      stakeholderAdvice: '',
+      supplementarySuggestions: parsed.developmentSuggestions?.supplementarySuggestions
+        || fallback.developmentSuggestions.supplementarySuggestions,
+      stakeholderAdvice: parsed.developmentSuggestions?.stakeholderAdvice || '',
     },
-    summary: parsed.summary || '',
+    careerPathAnalysis: parsed.careerPathAnalysis || undefined,
+    summary: parsed.summary || fallback.summary,
     midsF2Result,
     midsF2Scores: dimensionScores,
   };
