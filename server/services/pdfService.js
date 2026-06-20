@@ -23,7 +23,11 @@ const BRAND_COLORS = {
 
 function renderRichText(text) {
   if (!text) return ''
-  return String(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  // 先处理 **粗体**，再处理换行
+  let html = String(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  // 双换行 → 段落分隔
+  html = html.split(/\n\n+/).map(p => `<p style="margin-bottom:6px;font-size:16px;color:#4B5563">${p.replace(/\n/g, '<br/>')}</p>`).join('')
+  return html
 }
 
 function buildMidsF2ReportHTML(data) {
@@ -110,19 +114,19 @@ function buildMidsF2ReportHTML(data) {
     let bodyHTML = ''
     if (hasNewFields) {
       if (d.coreStrength) {
-        bodyHTML += `<div style="background:#EEF2FF;border:1px solid #E0E7FF;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#4F46E5;font-weight:700;margin-bottom:2px">◈ 您独到的地方（别人没有的）</p><p>${renderRichText(d.coreStrength)}</p></div>`
+        bodyHTML += `<div style="background:#EEF2FF;border:1px solid #E0E7FF;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#4F46E5;font-weight:700;margin-bottom:2px">◈ 您独到的地方（别人没有的）</p>${renderRichText(d.coreStrength)}</div>`
       }
       if (d.growthSpace) {
-        bodyHTML += `<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#D97706;font-weight:700;margin-bottom:2px">◈ 您的成长空间（木桶的短板在这里）</p><p>${renderRichText(d.growthSpace)}</p></div>`
+        bodyHTML += `<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#D97706;font-weight:700;margin-bottom:2px">◈ 您的成长空间（木桶的短板在这里）</p>${renderRichText(d.growthSpace)}</div>`
       }
       if (d.careerInsight) {
-        bodyHTML += `<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:10px 14px;margin-top:8px"><p style="font-size: 16px;color:#6B7280;font-weight:700;margin-bottom:2px">◈ 这个维度对您的真实含义</p><p style="font-size: 16px;color:#4B5563">${renderRichText(d.careerInsight)}</p></div>`
+        bodyHTML += `<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:10px 14px;margin-top:8px"><p style="font-size: 16px;color:#6B7280;font-weight:700;margin-bottom:2px">◈ 这个维度对您的真实含义</p>${renderRichText(d.careerInsight)}</div>`
       }
     } else {
       // 旧版兼容
-      bodyHTML += `<p>${renderRichText(d.analysis || d.interpretation || '')}</p>`
+      bodyHTML += `${renderRichText(d.analysis || d.interpretation || '')}`
       if (d.impactOnSuccession || d.suggestion) {
-        bodyHTML += `<p style="margin-top:8px;font-size: 16px;color:#4B5563"><strong>职业方向启示：</strong>${renderRichText(d.impactOnSuccession || d.suggestion)}</p>`
+        bodyHTML += `<div style="margin-top:8px;font-size:16px;color:#4B5563"><strong>职业方向启示：</strong>${renderRichText(d.impactOnSuccession || d.suggestion)}</div>`
       }
     }
 
@@ -165,31 +169,31 @@ function buildMidsF2ReportHTML(data) {
   // 五、发展建议
   let devHTML = ''
   if (dev.integratedJudgment?.tierSummary) {
-    devHTML += `<div class="section"><h2>5.1 层级综合分析</h2><p>${renderRichText(dev.integratedJudgment.tierSummary)}</p></div>`
+    devHTML += `<div class="section"><h2>5.1 层级综合分析</h2>${renderRichText(dev.integratedJudgment.tierSummary)}</div>`
   }
   if (dev.developmentDirection) {
-    devHTML += `<div class="section"><h2>5.2 整体发展方向</h2><p>${renderRichText(dev.developmentDirection)}</p></div>`
+    devHTML += `<div class="section"><h2>5.2 整体发展方向</h2>${renderRichText(dev.developmentDirection)}</div>`
   }
   if (dev.capabilityImprovements?.length) {
     devHTML += `<div class="section"><h2>5.3 能力提升建议</h2>` +
       dev.capabilityImprovements.map(ci =>
-        `<div class="career-card"><h4>▌${ci.dimensionName} · ${ci.direction}</h4><p style="font-size: 16px;color:#6B7280">${renderRichText(ci.reason || '')}</p></div>`
+        `<div class="career-card"><h4>▌${ci.dimensionName} · ${ci.direction}</h4>${renderRichText(ci.reason || '')}</div>`
       ).join('') + `</div>`
   }
   // 补充建议：培训 + 孵化器
   const supp = dev.supplementarySuggestions || {}
   if (supp.targetedTraining || supp.talentIncubator) {
-    devHTML += `<div class="section"><h2>5.4 补充建议：你的成长加速通道</h2>`
+    devHTML += `<div class="section"><h2>5.4 成长建议：职业培训与人才孵化</h2>`
     if (supp.targetedTraining) {
-      devHTML += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#2563EB;font-weight:700;margin-bottom:2px">① 定向能力强化 —— 输出倒逼成长</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.targetedTraining)}</p></div>`
+      devHTML += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#2563EB;font-weight:700;margin-bottom:2px">① 定向能力强化</p>${renderRichText(supp.targetedTraining)}</div>`
     }
     if (supp.talentIncubator) {
-      devHTML += `<div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:6px;padding:10px 14px"><p style="font-size: 16px;color:#7C3AED;font-weight:700;margin-bottom:2px">② 定制孵化器 —— 用2-3年换一次跃升</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.talentIncubator)}</p></div>`
+      devHTML += `<div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:6px;padding:10px 14px"><p style="font-size: 16px;color:#7C3AED;font-weight:700;margin-bottom:2px">② 人才定制孵化器</p>${renderRichText(supp.talentIncubator)}</div>`
     }
     devHTML += `</div>`
   }
   if (dev.stakeholderAdvice) {
-    devHTML += `<div class="section"><h2>5.5 利益相关者沟通建议</h2><p>${renderRichText(dev.stakeholderAdvice)}</p></div>`
+    devHTML += `<div class="section"><h2>5.5 利益相关者沟通建议</h2>${renderRichText(dev.stakeholderAdvice)}</div>`
   }
 
   // 职业发展核心潜能与路径建议
@@ -208,7 +212,7 @@ function buildMidsF2ReportHTML(data) {
       <div style="margin-bottom:16px">
         <h3>核心潜能诊断</h3>
         <div style="display:inline-block;background:#EEF2FF;color:#4338CA;font-weight:700;font-size: 16px;padding:6px 16px;border-radius:6px;margin:8px 0">${cpa.corePotentialDiagnosis || ''}</div>
-        ${cpa.corePotentialDescription ? `<p>${renderRichText(cpa.corePotentialDescription)}</p>` : ''}
+        ${cpa.corePotentialDescription ? renderRichText(cpa.corePotentialDescription) : ''}
       </div>
 
       ${cpa.pathEvaluations?.length ? `
@@ -328,7 +332,7 @@ function buildMidsF2ReportHTML(data) {
       ${data.dimensionOverview.map(dim => `<tr><td style="font-weight:600">${dim.dimensionName}</td><td style="text-align:center;font-weight:700">${dim.score.toFixed(1)}</td><td style="font-size: 16px;color:#6B7280">${dim.position}</td></tr>`).join('')}
       </tbody></table>` : ''}
 
-      ${co.overallAssessment ? `<hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;" /><p>${renderRichText(co.overallAssessment)}</p>` : ''}
+      ${co.overallAssessment ? `<hr style="border: none; border-top: 1px solid #E5E7EB; margin: 16px 0;" />${renderRichText(co.overallAssessment)}` : ''}
     </div>
 
     <div class="section" style="page-break-before:always">
@@ -340,7 +344,7 @@ function buildMidsF2ReportHTML(data) {
 
     ${devHTML ? `<div class="section" style="page-break-before:always"><h2>五、发展建议（个性化版）</h2>${devHTML}</div>` : ''}
 
-    ${data.summary ? `<div class="section"><h2>六、总结与展望</h2><p>${renderRichText(data.summary)}</p></div>` : ''}
+    ${data.summary ? `<div class="section"><h2>六、总结与展望</h2>${renderRichText(data.summary)}</div>` : ''}
 
     ${careerPathHTML}
 

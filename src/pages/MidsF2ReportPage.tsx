@@ -149,19 +149,33 @@ interface MidsF2AIReport {
 
 // ==================== 通用组件 ====================
 
-/** 解析 AI 生成的 **粗体** markdown，渲染为 <strong> */
+/** 解析 AI 生成的 **粗体** markdown，支持分段（双换行=新段落，单换行=换行） */
 function RichText({ text, className = '' }: { text: string; className?: string }) {
   if (!text) return null
-  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  // 按双换行拆分为段落
+  const paragraphs = text.split(/\n\n+/)
   return (
-    <p className={className}>
-      {parts.map((part, i) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>
-        }
-        return <span key={i}>{part}</span>
+    <div className={className}>
+      {paragraphs.map((para, pi) => {
+        // 每个段落内按单换行插入 <br/>
+        const lines = para.split(/\n/)
+        return (
+          <p key={pi} className={pi > 0 ? 'mt-2' : ''}>
+            {lines.map((line, li) => (
+              <span key={li}>
+                {li > 0 && <br />}
+                {line.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>
+                  }
+                  return <span key={i}>{part}</span>
+                })}
+              </span>
+            ))}
+          </p>
+        )
       })}
-    </p>
+    </div>
   )
 }
 
@@ -608,12 +622,12 @@ function DevelopmentSuggestionsSection({ suggestions }: {
         {/* 补充建议：培训 + 孵化器 */}
         {supplementarySuggestions && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <SubSectionHeading number={`5.${++subIdx}`} title="补充建议：你的成长加速通道" />
+            <SubSectionHeading number={`5.${++subIdx}`} title="成长建议：职业培训与人才孵化" />
 
             {/* 针对性职业培训 */}
             {supplementarySuggestions.targetedTraining && (
               <div className="mb-4 p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
-                <p className="text-base text-blue-600 font-bold mb-1.5">① 定向能力强化 —— 输出倒逼成长</p>
+                <p className="text-base text-blue-600 font-bold mb-2">① 定向能力强化</p>
                 <RichText text={supplementarySuggestions.targetedTraining} className="text-base text-gray-700 leading-relaxed" />
               </div>
             )}
@@ -621,7 +635,7 @@ function DevelopmentSuggestionsSection({ suggestions }: {
             {/* 人才定制孵化器 */}
             {supplementarySuggestions.talentIncubator && (
               <div className="p-4 bg-violet-50/50 border border-violet-100 rounded-lg">
-                <p className="text-base text-violet-600 font-bold mb-1.5">② 定制孵化器 —— 用2-3年换一次跃升</p>
+                <p className="text-base text-violet-600 font-bold mb-2">② 人才定制孵化器</p>
                 <RichText text={supplementarySuggestions.talentIncubator} className="text-base text-gray-700 leading-relaxed" />
               </div>
             )}
