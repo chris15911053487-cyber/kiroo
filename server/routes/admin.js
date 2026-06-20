@@ -565,7 +565,7 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
 
     // 获取用户信息
     const [userRows] = await pool.query(
-      'SELECT nickname FROM users WHERE id = ?', [report.userId]
+      'SELECT nickname, education, graduation_intent, major FROM users WHERE id = ?', [report.userId]
     );
     const userName = userRows.length > 0 ? userRows[0].nickname : '测评用户';
 
@@ -624,10 +624,17 @@ router.post('/reports/:id/generate', adminAuthMiddleware, async (req, res) => {
         const { computeMidsF2 } = require('../services/midsF2ScoringService');
         const { generateMidsF2Report } = require('../services/midsF2ReportService');
         const midsResult = computeMidsF2(midsScore.dimensionScores);
+        const userInfo = {
+          name: userName,
+          education: userRows[0]?.education || '未提供',
+          graduationIntention: userRows[0]?.graduation_intent || '未提供',
+          major: userRows[0]?.major || '未提供',
+        };
         const midsReport = await queueService.enqueue(() => generateMidsF2Report({
           dimensionScores: midsScore.dimensionScores,
           midsF2Result: midsResult,
           userName,
+          userInfo,
           entryScores: entryScores.length > 0 ? entryScores : undefined,
         }));
         // MIDS-F2 报告：存储 JSON 到 report_content，由前端 React 组件渲染

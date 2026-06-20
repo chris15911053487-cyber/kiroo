@@ -250,7 +250,7 @@ router.post('/login/phone', async (req, res) => {
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, nickname, phone, education, graduation_intent, created_at FROM users WHERE id = ?',
+      'SELECT id, nickname, phone, education, graduation_intent, major, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
     if (rows.length === 0) {
@@ -324,7 +324,7 @@ router.post('/update-nickname', authMiddleware, async (req, res) => {
 
 // POST /api/auth/update-profile
 router.post('/update-profile', authMiddleware, async (req, res) => {
-  const { education, graduationIntention } = req.body;
+  const { education, graduationIntention, major } = req.body;
 
   const validEducation = ['高中/中专', '大专', '本科', '硕士', '博士'];
   const validIntent = ['自主创业', '家业继承', '企业就职'];
@@ -333,7 +333,13 @@ router.post('/update-profile', authMiddleware, async (req, res) => {
     return res.status(400).json({ error: '无效的学历选项' });
   }
   if (graduationIntention !== undefined && !validIntent.includes(graduationIntention)) {
-    return res.status(400).json({ error: '无效的毕业意愿选项' });
+    return res.status(400).json({ error: '无效的就职意向选项' });
+  }
+  if (major !== undefined && typeof major !== 'string') {
+    return res.status(400).json({ error: '专业信息格式无效' });
+  }
+  if (major !== undefined && major.length > 100) {
+    return res.status(400).json({ error: '专业信息不能超过100字' });
   }
 
   try {
@@ -347,6 +353,10 @@ router.post('/update-profile', authMiddleware, async (req, res) => {
       fields.push('graduation_intent = ?');
       values.push(graduationIntention);
     }
+    if (major !== undefined) {
+      fields.push('major = ?');
+      values.push(major);
+    }
     if (fields.length === 0) {
       return res.status(400).json({ error: '请至少提供一项要更新的信息' });
     }
@@ -357,7 +367,7 @@ router.post('/update-profile', authMiddleware, async (req, res) => {
       values
     );
 
-    res.json({ message: '个人信息更新成功', education, graduationIntention });
+    res.json({ message: '个人信息更新成功', education, graduationIntention, major });
   } catch (err) {
     console.error('Update profile error:', err);
     res.status(500).json({ error: '更新个人信息失败' });

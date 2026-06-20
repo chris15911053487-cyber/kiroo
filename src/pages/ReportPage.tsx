@@ -863,6 +863,7 @@ export default function ReportPage() {
         userName={user?.nickname}
         userEducation={midsData.education || ''}
         userGraduationIntention={midsData.graduationIntention || ''}
+        userMajor={midsData.major || ''}
       />
     )
   }

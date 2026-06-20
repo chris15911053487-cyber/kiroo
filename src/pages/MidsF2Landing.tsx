@@ -3,6 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 
+const MAJOR_OPTIONS = [
+  '工商管理', '经济学/金融', '计算机/信息技术', '法学', '工程技术',
+  '医学/健康科学', '艺术设计/传媒', '理学', '文学/教育', '其他',
+]
+
 const MIDS_F2_INTRO = {
   title: '家族二代多维创新力量表',
   subtitle: 'MIDS-F2',
@@ -27,6 +32,9 @@ export default function MidsF2Landing() {
   const [error, setError] = useState('')
   const [education, setEducation] = useState('')
   const [graduationIntention, setGraduationIntention] = useState('')
+  const [major, setMajor] = useState('')
+  const [majorCustom, setMajorCustom] = useState('')
+  const [showMajorInput, setShowMajorInput] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
 
   useEffect(() => {
@@ -36,12 +44,23 @@ export default function MidsF2Landing() {
     if (!loading && user && token) {
       if (user.education) setEducation(user.education)
       if (user.graduationIntention) setGraduationIntention(user.graduationIntention)
+      if (user.major) {
+        if (MAJOR_OPTIONS.includes(user.major)) {
+          setMajor(user.major)
+          if (user.major === '其他') setShowMajorInput(true)
+        } else {
+          setMajor('其他')
+          setShowMajorInput(true)
+          setMajorCustom(user.major)
+        }
+      }
     }
   }, [loading, user, token])
 
   async function handleStartAssessment() {
-    if (!education || !graduationIntention) {
-      setError('请选择学历和毕业意愿')
+    const effectiveMajor = major === '其他' ? majorCustom : major
+    if (!education || !graduationIntention || !effectiveMajor) {
+      setError('请选择学历、就职意向和专业')
       return
     }
     if (!token) return
@@ -49,9 +68,9 @@ export default function MidsF2Landing() {
     setError('')
     try {
       // Save to backend
-      await authService.updateProfile(education, graduationIntention)
+      await authService.updateProfile(education, graduationIntention, effectiveMajor)
       // Update local state
-      updateUser({ education, graduationIntention })
+      updateUser({ education, graduationIntention, major: effectiveMajor })
       // Create session and navigate
       const sessionId = await createMidsF2Session(token)
       navigate(`/quiz/${sessionId}`, { replace: true })
@@ -139,9 +158,9 @@ export default function MidsF2Landing() {
                 ))}
               </div>
             </div>
-            {/* 毕业意愿 */}
+            {/* 就职意向 */}
             <div>
-              <label className="block text-sm font-bold text-[#1E3A5F] mb-2">毕业意愿</label>
+              <label className="block text-sm font-bold text-[#1E3A5F] mb-2">就职意向</label>
               <div className="grid grid-cols-3 gap-2">
                 {['自主创业', '家业继承', '企业就职'].map(opt => (
                   <button
@@ -159,10 +178,43 @@ export default function MidsF2Landing() {
                 ))}
               </div>
             </div>
+            {/* 专业 */}
+            <div>
+              <label className="block text-sm font-bold text-[#1E3A5F] mb-2">专业</label>
+              <div className="grid grid-cols-2 gap-2">
+                {MAJOR_OPTIONS.map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      setMajor(opt)
+                      setShowMajorInput(opt === '其他')
+                      if (opt !== '其他') setMajorCustom('')
+                    }}
+                    className={`py-2.5 px-3 rounded-lg text-sm font-medium border transition-colors ${
+                      major === opt
+                        ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#1E3A5F]'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              {showMajorInput && (
+                <input
+                  type="text"
+                  value={majorCustom}
+                  onChange={(e) => setMajorCustom(e.target.value)}
+                  placeholder="请输入您的专业名称"
+                  className="mt-2 w-full py-2.5 px-3 rounded-lg text-sm border border-gray-200 focus:border-[#1E3A5F] focus:outline-none"
+                />
+              )}
+            </div>
             {/* 开始测评按钮 */}
             <button
               onClick={handleStartAssessment}
-              disabled={savingProfile || !education || !graduationIntention}
+              disabled={savingProfile || !education || !graduationIntention || !(major === '其他' ? majorCustom : major)}
               className="w-full py-3 bg-[#1E3A5F] text-white rounded-lg font-bold text-base hover:bg-[#152E4D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {savingProfile ? '正在准备...' : '开始测评'}

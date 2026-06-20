@@ -303,7 +303,7 @@ function buildMidsF2ReportHTML(data) {
     <div class="cover">
       <h1>家族二代多维创新力量表（MIDS-F2）</h1>
       <p>${data.userName || '测评用户'}</p>
-      ${(data.education || data.graduationIntention) ? `<p>学历：${data.education || ''}${(data.education && data.graduationIntention) ? ' &nbsp;|&nbsp; 毕业意愿：' : ''}${data.graduationIntention || ''}</p>` : ''}
+      ${(data.education || data.graduationIntention || data.major) ? `<p>${data.education ? '学历：' + data.education : ''}${data.education && data.graduationIntention ? ' &nbsp;|&nbsp; ' : ''}${data.graduationIntention ? '就职意向：' + data.graduationIntention : ''}${(data.education || data.graduationIntention) && data.major ? ' &nbsp;|&nbsp; ' : ''}${data.major ? '专业：' + data.major : ''}</p>` : ''}
       <p>报告编号：MIDS-F2-${data.reportId || ''} | 等级：${co.scoreLabel || ''} | 总分：${co.totalScore || data.comprehensiveScore || 0}/100</p>
     </div>
 

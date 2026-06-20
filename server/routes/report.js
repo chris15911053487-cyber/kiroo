@@ -160,14 +160,16 @@ router.post('/mids-f2/generate', authMiddleware, async (req, res) => {
     const pool = getPool();
     let userEducation = null;
     let userGraduationIntent = null;
+    let userMajor = null;
     try {
       const [userRows] = await pool.query(
-        'SELECT education, graduation_intent FROM users WHERE id = ?',
+        'SELECT education, graduation_intent, major FROM users WHERE id = ?',
         [req.user.id]
       );
       if (userRows.length > 0) {
         userEducation = userRows[0].education;
         userGraduationIntent = userRows[0].graduation_intent;
+        userMajor = userRows[0].major;
       }
     } catch (e) {
       console.warn('Failed to fetch user education/intent:', e.message);
@@ -186,6 +188,7 @@ router.post('/mids-f2/generate', authMiddleware, async (req, res) => {
         name: userName || '测评用户',
         education: userEducation || '未提供',
         graduationIntention: userGraduationIntent || '未提供',
+        major: userMajor || '未提供',
       },
     });
 

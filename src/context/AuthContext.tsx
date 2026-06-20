@@ -13,6 +13,7 @@ interface User {
   phone: string
   education?: string
   graduationIntention?: string
+  major?: string
 }
 
 interface AuthState {

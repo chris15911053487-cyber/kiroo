@@ -54,7 +54,7 @@ export const authService = {
   },
 
   getProfile() {
-    return request<{ user: { id: number; nickname: string; phone: string; education?: string; graduation_intent?: string; created_at: string } }>('/profile')
+    return request<{ user: { id: number; nickname: string; phone: string; education?: string; graduation_intent?: string; major?: string; created_at: string } }>('/profile')
   },
 
   updatePassword(oldPassword: string, newPassword: string) {
@@ -71,10 +71,10 @@ export const authService = {
     })
   },
 
-  updateProfile(education?: string, graduationIntention?: string) {
-    return request<{ message: string; education?: string; graduationIntention?: string }>('/update-profile', {
+  updateProfile(education?: string, graduationIntention?: string, major?: string) {
+    return request<{ message: string; education?: string; graduationIntention?: string; major?: string }>('/update-profile', {
       method: 'POST',
-      body: JSON.stringify({ education, graduationIntention }),
+      body: JSON.stringify({ education, graduationIntention, major }),
     })
   },
 }

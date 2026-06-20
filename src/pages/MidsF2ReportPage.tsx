@@ -138,6 +138,7 @@ interface MidsF2AIReport {
   reportId?: string
   education?: string
   graduationIntention?: string
+  major?: string
   // backward compat
   comprehensiveScore?: number
   coreEvaluation?: string
@@ -779,9 +780,10 @@ export interface MidsF2ReportPageProps {
   userName?: string  // 兜底：旧报告 JSON 可能不含 userName
   userEducation?: string
   userGraduationIntention?: string
+  userMajor?: string
 }
 
-export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, userName, userEducation, userGraduationIntention }: MidsF2ReportPageProps) {
+export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, userName, userEducation, userGraduationIntention, userMajor }: MidsF2ReportPageProps) {
   const result = computeMidsF2(scoreResult)
 
   // 标记 MIDS-F2 上下文，Navbar 据此为"我的测评"链接携带 ?from=mids-f2
@@ -811,7 +813,8 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
               <p className="text-lg font-bold text-[#1a1a2e]">{aiReport.userName || userName || '测评用户'}</p>
               <p className="text-base text-gray-500 mt-1">
                 学历：{aiReport.education || userEducation || '未填写'}
-                &nbsp;|&nbsp; 毕业意愿：{aiReport.graduationIntention || userGraduationIntention || '未填写'}
+                &nbsp;|&nbsp; 就职意向：{aiReport.graduationIntention || userGraduationIntention || '未填写'}
+                &nbsp;|&nbsp; 专业：{aiReport.major || userMajor || '未填写'}
               </p>
               <p className="text-base text-gray-400 mt-1">
                 {aiReport.reportDate || ''}

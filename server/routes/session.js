@@ -315,7 +315,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
     let userGraduationIntent = null;
     try {
       const [userRows] = await pool.query(
-        'SELECT education, graduation_intent FROM users WHERE id = ?',
+        'SELECT education, graduation_intent, major FROM users WHERE id = ?',
         [req.user.id]
       );
       if (userRows.length > 0) {
@@ -381,6 +381,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
             name: userName,
             education: userEducation || '未提供',
             graduationIntention: userGraduationIntent || '未提供',
+            major: userRows[0]?.major || '未提供',
           };
 
           // 同步调用 AI 生成报告（用户等待 15-60 秒，但确保不降级）

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   phone TEXT DEFAULT NULL,
   education TEXT DEFAULT NULL,
   graduation_intent TEXT DEFAULT NULL,
+  major TEXT DEFAULT NULL,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
