@@ -809,14 +809,10 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
           {aiReport && (
             <>
               <p className="text-lg font-bold text-[#1a1a2e]">{aiReport.userName || userName || '测评用户'}</p>
-              {(aiReport.education || userEducation) && (
-                <p className="text-base text-gray-500 mt-1">
-                  学历：{aiReport.education || userEducation}
-                  {(aiReport.graduationIntention || userGraduationIntention) && (
-                    <span> &nbsp;|&nbsp; 毕业意愿：{aiReport.graduationIntention || userGraduationIntention}</span>
-                  )}
-                </p>
-              )}
+              <p className="text-base text-gray-500 mt-1">
+                学历：{aiReport.education || userEducation || '未填写'}
+                &nbsp;|&nbsp; 毕业意愿：{aiReport.graduationIntention || userGraduationIntention || '未填写'}
+              </p>
               <p className="text-base text-gray-400 mt-1">
                 {aiReport.reportDate || ''}
                 {aiReport.reportId && <span className="ml-2">报告编号：{aiReport.reportId}</span>}
