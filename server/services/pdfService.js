@@ -707,8 +707,14 @@ async function generateReportPDF(reportData) {
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
-      margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
+      margin: { top: '15mm', bottom: '18mm', left: '12mm', right: '12mm' },
       preferCSSPageSize: true,
+      displayHeaderFooter: true,
+      footerTemplate: `
+        <div style="width:100%;text-align:center;font-size:10px;color:#9CA3AF;font-family:'Microsoft YaHei','PingFang SC',sans-serif;padding:0 12mm;">
+          第 <span class="pageNumber"></span> 页 / 共 <span class="totalPages"></span> 页
+        </div>
+      `,
     })
 
     return Buffer.from(pdfBuffer)
