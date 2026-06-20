@@ -608,12 +608,12 @@ function DevelopmentSuggestionsSection({ suggestions }: {
         {/* 补充建议：培训 + 孵化器 */}
         {supplementarySuggestions && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <SubSectionHeading number={`5.${++subIdx}`} title="补充建议：职业培训与人才孵化" />
+            <SubSectionHeading number={`5.${++subIdx}`} title="补充建议：你的成长加速通道" />
 
             {/* 针对性职业培训 */}
             {supplementarySuggestions.targetedTraining && (
               <div className="mb-4 p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
-                <p className="text-base text-blue-600 font-bold mb-1.5">① 针对性职业培训（精准补短板）</p>
+                <p className="text-base text-blue-600 font-bold mb-1.5">① 定向能力强化 —— 输出倒逼成长</p>
                 <RichText text={supplementarySuggestions.targetedTraining} className="text-base text-gray-700 leading-relaxed" />
               </div>
             )}
@@ -621,7 +621,7 @@ function DevelopmentSuggestionsSection({ suggestions }: {
             {/* 人才定制孵化器 */}
             {supplementarySuggestions.talentIncubator && (
               <div className="p-4 bg-violet-50/50 border border-violet-100 rounded-lg">
-                <p className="text-base text-violet-600 font-bold mb-1.5">② 人才定制孵化器（加速成长通道）</p>
+                <p className="text-base text-violet-600 font-bold mb-1.5">② 定制孵化器 —— 用2-3年换一次跃升</p>
                 <RichText text={supplementarySuggestions.talentIncubator} className="text-base text-gray-700 leading-relaxed" />
               </div>
             )}

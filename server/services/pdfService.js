@@ -179,12 +179,12 @@ function buildMidsF2ReportHTML(data) {
   // 补充建议：培训 + 孵化器
   const supp = dev.supplementarySuggestions || {}
   if (supp.targetedTraining || supp.talentIncubator) {
-    devHTML += `<div class="section"><h2>5.4 补充建议：职业培训与人才孵化</h2>`
+    devHTML += `<div class="section"><h2>5.4 补充建议：你的成长加速通道</h2>`
     if (supp.targetedTraining) {
-      devHTML += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#2563EB;font-weight:700;margin-bottom:2px">① 针对性职业培训（精准补短板）</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.targetedTraining)}</p></div>`
+      devHTML += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px 14px;margin-bottom:8px"><p style="font-size: 16px;color:#2563EB;font-weight:700;margin-bottom:2px">① 定向能力强化 —— 输出倒逼成长</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.targetedTraining)}</p></div>`
     }
     if (supp.talentIncubator) {
-      devHTML += `<div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:6px;padding:10px 14px"><p style="font-size: 16px;color:#7C3AED;font-weight:700;margin-bottom:2px">② 人才定制孵化器（加速成长通道）</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.talentIncubator)}</p></div>`
+      devHTML += `<div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:6px;padding:10px 14px"><p style="font-size: 16px;color:#7C3AED;font-weight:700;margin-bottom:2px">② 定制孵化器 —— 用2-3年换一次跃升</p><p style="font-size: 16px;color:#4B5563">${renderRichText(supp.talentIncubator)}</p></div>`
     }
     devHTML += `</div>`
   }
