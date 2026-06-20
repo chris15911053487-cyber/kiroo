@@ -255,7 +255,7 @@ function buildMidsF2ReportHTML(data) {
       ${cpa.ultimateConclusion ? `
       <div style="text-align:center;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #A5B4FC;border-radius:10px;padding:16px 20px">
         <p style="font-size: 16px;color:#6366F1;font-weight:600;margin-bottom:4px">一句话终极结论</p>
-        <p style="font-size:16px;font-weight:700;color:#3730A3;margin:0">${cpa.ultimateConclusion}</p>
+        <p style="font-size:18px;font-weight:700;color:#3730A3;margin:0">${cpa.ultimateConclusion}</p>
       </div>` : ''}
     </div>`
   }
@@ -274,11 +274,11 @@ function buildMidsF2ReportHTML(data) {
     body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; color: #1A1A2E; font-size: 16px; line-height: 1.7; }
     .page { padding: 30px 40px; max-width: 750px; margin: 0 auto; }
     .cover { text-align: center; background: #1E3A5F; color: white; border-radius: 12px; padding: 45px 30px; margin-bottom: 30px; }
-    .cover h1 { font-size: 22px; margin-bottom: 10px; font-weight: 700; }
-    .cover p { font-size: 16px; opacity: 0.85; margin-bottom: 3px; }
+    .cover h1 { font-size: 24px; margin-bottom: 10px; font-weight: 700; }
+    .cover p { font-size: 18px; opacity: 0.85; margin-bottom: 3px; }
     .section { margin-bottom: 24px; page-break-inside: avoid; }
-    .section h2 { font-size: 16px; color: #1E3A5F; border-bottom: 2px solid #CBD5E1; padding-bottom: 6px; margin-bottom: 12px; }
-    .section h3 { font-size: 16px; color: #374151; margin: 10px 0 6px; }
+    .section h2 { font-size: 20px; color: #1E3A5F; border-bottom: 2px solid #CBD5E1; padding-bottom: 6px; margin-bottom: 12px; }
+    .section h3 { font-size: 18px; color: #374151; margin: 10px 0 6px; }
     .highlight { background: #F1F5F9; border-radius: 6px; padding: 10px 14px; font-weight: 600; color: #1E3A5F; margin: 8px 0; }
     .level-tag { font-size: 16px; font-weight: 400; color: #64748B; margin-left: 8px; }
     .chart-center { display: flex; justify-content: center; margin: 12px 0; }
