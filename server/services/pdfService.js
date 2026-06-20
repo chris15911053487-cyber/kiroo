@@ -272,7 +272,7 @@ function buildMidsF2ReportHTML(data) {
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>MIDS-F2 创新力测评报告</title>
+  <title>${data.userName || '测评用户'} · MIDS-F2 接班人发展画像</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; color: #1A1A2E; font-size: 16px; line-height: 1.7; }
@@ -306,6 +306,7 @@ function buildMidsF2ReportHTML(data) {
   <div class="page">
     <div class="cover">
       <h1>家族二代多维创新力量表（MIDS-F2）</h1>
+      <p style="font-size: 16px; opacity: 0.7; margin-bottom: 12px;">接班人发展画像</p>
       <p>${data.userName || '测评用户'}</p>
       ${(data.education || data.graduationIntention || data.major) ? `<p>${data.education ? '学历：' + data.education : ''}${data.education && data.graduationIntention ? ' &nbsp;|&nbsp; ' : ''}${data.graduationIntention ? '就职意向：' + data.graduationIntention : ''}${(data.education || data.graduationIntention) && data.major ? ' &nbsp;|&nbsp; ' : ''}${data.major ? '专业：' + data.major : ''}</p>` : ''}
       <p>报告编号：MIDS-F2-${data.reportId || ''} | 等级：${co.scoreLabel || ''} | 总分：${co.totalScore || data.comprehensiveScore || 0}/100</p>

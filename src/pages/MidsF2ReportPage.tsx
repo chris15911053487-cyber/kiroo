@@ -812,7 +812,7 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
       <header className="bg-white border-b border-black/[0.04] sticky top-0 z-40">
         <div className="flex items-center justify-between px-6 h-14 max-w-3xl mx-auto">
           <Link to="/history?from=mids-f2" className="text-gray-400 hover:text-gray-600 text-base">← 返回</Link>
-          <h1 className="text-base font-bold text-[#1a1a2e]">MIDS-F2 创新力报告</h1>
+          <h1 className="text-base font-bold text-[#1a1a2e]">{aiReport?.userName || userName || '测评用户'} · 发展画像</h1>
           <div className="w-12" />
         </div>
       </header>
@@ -821,7 +821,7 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
         {/* 报告封面 */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[#1E3A5F] mb-2">家族二代多维创新力量表</h1>
-          <p className="text-base text-gray-400 mb-4">MIDS-F2 测评报告</p>
+          <p className="text-base text-gray-400 mb-4">MIDS-F2 · 接班人发展画像</p>
           {aiReport && (
             <>
               <p className="text-lg font-bold text-[#1a1a2e]">{aiReport.userName || userName || '测评用户'}</p>
@@ -926,7 +926,7 @@ export default function MidsF2ReportPage({ scoreResult, aiReport, reportId, user
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')
                   a.href = url
-                  a.download = `MIDS-F2创新力报告_${reportId}.pdf`
+                  a.download = `${aiReport?.userName || userName || '测评用户'}_MIDS-F2发展画像_${reportId}.pdf`
                   a.click()
                   URL.revokeObjectURL(url)
                 }).catch(() => alert('下载失败'))
