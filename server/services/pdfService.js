@@ -26,7 +26,7 @@ function renderRichText(text) {
   // 先处理 **粗体**，再处理换行
   let html = String(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   // 双换行 → 段落分隔
-  html = html.split(/\n\n+/).map(p => `<p style="margin-bottom:6px;font-size:16px;color:#4B5563">${p.replace(/\n/g, '<br/>')}</p>`).join('')
+  html = html.split(/\n\n+/).map(p => `<p style="margin-bottom:6px;font-size:16px;color:#374151">${p.replace(/\n/g, '<br/>')}</p>`).join('')
   return html
 }
 
@@ -275,27 +275,25 @@ function buildMidsF2ReportHTML(data) {
   <title>MIDS-F2 创新力测评报告</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; color: #1A1A2E; font-size: 16px; line-height: 1.7; }
+    body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; color: #1A1A2E; font-size: 16px; line-height: 1.8; }
     .page { padding: 30px 40px; max-width: 750px; margin: 0 auto; }
     .cover { text-align: center; background: #1E3A5F; color: white; border-radius: 12px; padding: 45px 30px; margin-bottom: 30px; }
-    .cover h1 { font-size: 24px; margin-bottom: 10px; font-weight: 700; }
-    .cover p { font-size: 18px; opacity: 0.85; margin-bottom: 3px; }
+    .cover h1 { font-size: 22px; margin-bottom: 10px; font-weight: 700; }
+    .cover p { font-size: 16px; opacity: 0.85; margin-bottom: 3px; }
     .section { margin-bottom: 24px; page-break-inside: avoid; }
     .section h2 { font-size: 20px; color: #1E3A5F; border-bottom: 2px solid #CBD5E1; padding-bottom: 6px; margin-bottom: 12px; }
-    .section h3 { font-size: 18px; color: #374151; margin: 10px 0 6px; }
+    .section h3 { font-size: 17px; color: #374151; margin: 10px 0 6px; }
     .highlight { background: #F1F5F9; border-radius: 6px; padding: 10px 14px; font-weight: 600; color: #1E3A5F; margin: 8px 0; }
-    .level-tag { font-size: 16px; font-weight: 400; color: #64748B; margin-left: 8px; }
+    .level-tag { font-size: 14px; font-weight: 400; color: #64748B; margin-left: 8px; }
     .chart-center { display: flex; justify-content: center; margin: 12px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 16px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
     th, td { padding: 6px 10px; border: 1px solid #E5E7EB; text-align: left; }
     th { background: #F9FAFB; font-weight: 600; color: #374151; }
     .career-card { background: #F9FAFB; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; border-left: 3px solid #94A3B8; }
-    .career-card h4 { font-size: 16px; color: #1E3A5F; margin-bottom: 4px; }
-    .footer { text-align: center; font-size: 16px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
+    .career-card h4 { font-size: 15px; color: #1E3A5F; margin-bottom: 4px; }
+    .footer { text-align: center; font-size: 13px; color: #9CA3AF; margin-top: 30px; padding-top: 16px; border-top: 1px solid #E5E7EB; }
     @page { size: A4; margin: 12mm; }
     @media print {
-      html { font-size: 18px; }
-      body { font-size: 16px; }
       .section { page-break-inside: avoid; }
       h2, h3 { break-after: avoid; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
@@ -311,7 +309,7 @@ function buildMidsF2ReportHTML(data) {
       <p>报告编号：MIDS-F2-${data.reportId || ''} | 等级：${co.scoreLabel || ''} | 总分：${co.totalScore || data.comprehensiveScore || 0}/100</p>
     </div>
 
-    ${data.frameworkExplanation ? `<div class="section"><h2>一、认识你自己</h2>${data.uniqueGene ? `<div style="display:inline-block;background:#EEF2FF;color:#4338CA;font-weight:700;font-size: 16px;padding:6px 16px;border-radius:8px;margin-bottom:12px">您的独特基因：${data.uniqueGene}</div>` : ''}<p>${data.frameworkExplanation}</p></div>` : ''}
+    ${data.frameworkExplanation ? `<div class="section"><h2>一、认识你自己</h2>${data.uniqueGene ? `<div style="display:inline-block;background:#EEF2FF;color:#4338CA;font-weight:700;font-size:14px;padding:6px 16px;border-radius:8px;margin-bottom:12px">您的独特基因：${data.uniqueGene}</div>` : ''}${renderRichText(data.frameworkExplanation)}</div>` : ''}
 
     <div class="section">
       <h2>二、五维雷达图解读</h2>
