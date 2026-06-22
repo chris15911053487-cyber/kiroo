@@ -85,29 +85,31 @@ function buildMidsF2ReportHTML(data) {
 
   // 维度解读 — 新版优势视角结构，兼容旧版
   const dimIdxMap = { strategic_breakthrough: 1, execution_disruption: 2, resource_integration: 3, adversity_quotient: 4, ethics_vision: 5 }
+  const appendixEntries = []  // 收集各维度条目表，放入附录
+
   let dimsHTML = dimInsights.map(d => {
     const dimIdx = dimIdxMap[d.dimensionKey] || 0
     const dimName = d.dimensionName || DIM_NAMES[d.dimensionKey] || d.dimensionKey
     const hasNewFields = !!d.coreStrength
 
-    // 条目得分表（全量 entryAnalysis）
+    // 条目得分表（全量 entryAnalysis — 收集到附录）
     const entries = (d.entryAnalysis || []).map(e =>
       `<tr><td style="text-align:center;font-size:12px">${e.sequence}</td><td style="font-size:12px">${e.text}</td><td style="text-align:center;font-weight:700;font-size:12px">${e.score}</td><td style="font-size:12px;color:#6B7280">${e.comment || ''}</td></tr>`
     ).join('')
 
-    // 条目亮点（新版 entryHighlights）
-    let highlightsHTML = ''
+    // 条目亮点（新版 entryHighlights — 收集到附录，仅在无 entryAnalysis 时使用）
+    let highlightsTable = ''
     if (hasNewFields && d.entryHighlights?.length) {
-      highlightsHTML = `
-        <div style="margin:10px 0">
-          <p style="font-size: 16px;color:#6366F1;font-weight:600;margin-bottom:4px">✦ 条目亮点</p>
-          ${d.entryHighlights.map(eh => `
-            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;font-size: 16px">
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:4px;background:#D1FAE5;color:#047857;font-size: 16px;font-weight:700;flex-shrink:0">${eh.score}</span>
-              <span style="color:#4B5563">${eh.text}</span>
-            </div>
-          `).join('')}
-        </div>`
+      highlightsTable = d.entryHighlights.map(eh => `
+        <tr><td style="text-align:center;font-size:12px">${eh.sequence}</td><td style="font-size:12px">${eh.text}</td><td style="text-align:center;font-weight:700;font-size:12px">${eh.score}</td></tr>
+      `).join('')
+    }
+
+    // 附录：优先用 entryAnalysis（带解读），无则用 entryHighlights（纯得分）
+    if (entries) {
+      appendixEntries.push({ dimIdx, dimName, entries, isHighlights: false })
+    } else if (highlightsTable) {
+      appendixEntries.push({ dimIdx, dimName, entries: highlightsTable, isHighlights: true })
     }
 
     // 核心优势 + 成长空间（新版），或 analysis（旧版兼容）
@@ -134,8 +136,6 @@ function buildMidsF2ReportHTML(data) {
       <h2>3.${dimIdx} ${dimName} <span class="level-tag">${d.level || ''} · ${d.score}/5</span></h2>
       <div style="margin-bottom:6px"><span style="font-size: 16px;color:#6366F1;background:#EEF2FF;padding:2px 8px;border-radius:10px">${d.tier || ''}</span></div>
       ${bodyHTML}
-      ${hasNewFields ? highlightsHTML : ''}
-      ${entries ? `<table><thead><tr><th style="width:40px;font-size:12px">#</th><th style="font-size:12px">条目</th><th style="width:40px;font-size:12px">得分</th><th style="width:200px;font-size:12px">解读</th></tr></thead><tbody>${entries}</tbody></table>` : ''}
     </div>`
   }).join('')
 
@@ -344,6 +344,15 @@ function buildMidsF2ReportHTML(data) {
     ${data.summary ? `<div class="section"><h2>六、总结与展望</h2>${renderRichText(data.summary)}</div>` : ''}
 
     ${careerPathHTML}
+
+    ${appendixEntries.length ? `
+    <div class="section" style="page-break-before:always">
+      <h2>附录：条目得分明细</h2>
+      ${appendixEntries.map(a => `
+        <h3 style="margin-top:16px;font-size: 18px;color:#4338CA">${a.dimIdx}. ${a.dimName}${a.isHighlights ? ' · 条目得分' : ' · 条目解读'}</h3>
+        <table><thead><tr><th style="width:40px;font-size:12px">#</th><th style="font-size:12px">条目</th><th style="width:40px;font-size:12px">得分</th>${a.isHighlights ? '' : '<th style="width:200px;font-size:12px">解读</th>'}</tr></thead><tbody>${a.entries}</tbody></table>
+      `).join('')}
+    </div>` : ''}
 
     <div class="footer">
       <p>本报告由「潜能星图」测评系统生成 | CONFIDENTIAL</p>
