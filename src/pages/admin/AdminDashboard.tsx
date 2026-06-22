@@ -388,14 +388,14 @@ export default function AdminDashboard() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-gray-50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">ID</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">用户</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">手机号</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">综合得分</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">完成问卷</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">状态</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">时间</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">操作</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">ID</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-600">用户</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">手机号</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-600">得分</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-600 hidden md:table-cell">问卷</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-600">状态</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">时间</th>
+                  <th className="text-center px-2 sm:px-4 py-3 font-medium text-gray-600 min-w-[60px]">操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -410,15 +410,15 @@ export default function AdminDashboard() {
                 ) : (
                   reports.map(r => (
                     <tr key={r.id} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3 text-gray-500">#{r.id}</td>
-                      <td className="px-4 py-3 font-medium text-gray-800">{r.nickname}</td>
-                      <td className="px-4 py-3 text-gray-500">{r.phone || '-'}</td>
-                      <td className="px-4 py-3">
-                        <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                      <td className="px-2 sm:px-4 py-3 text-gray-500 hidden lg:table-cell">#{r.id}</td>
+                      <td className="px-2 sm:px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{r.nickname}</td>
+                      <td className="px-2 sm:px-4 py-3 text-gray-500 hidden lg:table-cell">{r.phone || '-'}</td>
+                      <td className="px-2 sm:px-4 py-3">
+                        <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-bold whitespace-nowrap">
                           {r.comprehensiveScore}分
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
                         <div className="flex flex-wrap gap-1">
                           {r.orderedQuestionnaires?.map(qid => (
                             <span key={qid} className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px]">
@@ -427,26 +427,26 @@ export default function AdminDashboard() {
                           ))}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 sm:px-4 py-3">
                         {r.reviewStatus === 'approved' && (
-                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">已通过</span>
+                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap">已通过</span>
                         )}
                         {r.reviewStatus === 'pending' && (
-                          <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium">待审核</span>
+                          <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap">待审核</span>
                         )}
                         {r.reviewStatus === 'rejected' && (
-                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-medium">已退回</span>
+                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap">已退回</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs">
+                      <td className="px-2 sm:px-4 py-3 text-gray-400 text-xs hidden lg:table-cell whitespace-nowrap">
                         {r.createdAtDisplay || (r.createdAt ? new Date(r.createdAt).toLocaleString('zh-CN') : '')}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 sm:px-4 py-2 text-center min-w-[60px]">
                         <button
                           onClick={() => navigate(`/admin/reports/${r.id}`)}
-                          className="text-xs text-indigo-600 hover:text-indigo-800 font-medium hover:underline"
+                          className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg bg-indigo-50 text-indigo-600 text-xs sm:text-sm font-medium hover:bg-indigo-100 active:bg-indigo-200 transition-colors"
                         >
-                          查看详情
+                          详情
                         </button>
                       </td>
                     </tr>
