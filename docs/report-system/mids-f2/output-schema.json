@@ -2,13 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "MIDS-F2 Report Output Schema",
   "type": "object",
-  "required": ["uniqueGene", "frameworkExplanation", "dimensionOverview", "comprehensiveOverview", "dimensionInsights", "barrelPrinciple", "developmentSuggestions", "careerPathAnalysis", "summary"],
+  "required": ["uniqueGene", "frameworkExplanation", "dimensionOverview", "comprehensiveOverview", "dimensionInsights", "barrelPrinciple", "developmentSuggestions", "summary"],
   "properties": {
     "uniqueGene": {
       "type": "string",
       "minLength": 8,
       "maxLength": 50,
-      "description": "独特基因标签——一句话定义这个人最核心的天赋组合。如：'工程师气质的系统型革新者'。整份报告的文眼，放第一章最前面。"
+      "description": "独特基因标签——一句话定义这个人最核心的天赋组合。如：'逆商与灰度驱动的领军接班者'。整份报告的文眼，放第一章最前面。"
     },
     "frameworkExplanation": {
       "type": "string",
@@ -91,27 +91,26 @@
             "type": "string",
             "minLength": 100,
             "maxLength": 350,
-            "description": "◈ 您独到的地方（别人没有的）——第一句粗体写出核心天赋判断。展开：这个天赋为什么独特？在什么场景下发光？给天赋起名字。"
+            "description": "◈ 您独到的地方——第一句粗体写出核心判断。展开：这个特点意味着什么？在什么场景下有价值？"
           },
           "growthSpace": {
             "type": "string",
             "minLength": 100,
             "maxLength": 350,
-            "description": "◈ 您的成长空间（木桶的短板在这里）——如果该维度有得分1-2分的条目，直接点名。必须至少一处交叉引用其他维度的优势。"
+            "description": "◈ 您的成长空间——如果该维度有得分1-2分的条目，直接点名。建议交叉引用其他维度的优势来说明为什么这个短板可以被补上。"
           },
           "entryHighlights": {
             "type": "array",
-            "minItems": 2,
-            "maxItems": 3,
-            "description": "条目亮点——选2-3条最高分或最有亮点的条目",
+            "minItems": 1,
+            "maxItems": 5,
+            "description": "该维度全部条目的得分列表——仅含序号+原文+得分，不加评语",
             "items": {
               "type": "object",
-              "required": ["sequence", "text", "score", "highlight"],
+              "required": ["sequence", "text", "score"],
               "properties": {
                 "sequence": { "type": "integer" },
                 "text": { "type": "string" },
-                "score": { "type": "integer", "minimum": 1, "maximum": 5 },
-                "highlight": { "type": "string", "minLength": 15, "maxLength": 100, "description": "用正向语言解释这个得分意味着什么天赋或潜力" }
+                "score": { "type": "integer", "minimum": 1, "maximum": 5 }
               }
             }
           },
@@ -119,7 +118,7 @@
             "type": "string",
             "minLength": 60,
             "maxLength": 250,
-            "description": "◈ 这个维度对您的真实含义——不写外部建议，写'这个维度在你的人生中到底意味着什么'。直接告诉他该往哪个方向走。"
+            "description": "◈ 这个维度对您的真实含义——不写外部建议，写'这个维度在你的人生中到底意味着什么'。直接告诉他基于这个维度的画像，他该往哪个方向走。"
           },
           "analysis": { "type": "string", "minLength": 0, "maxLength": 500, "description": "（向后兼容旧版，新报告不使用）" },
           "impactOnSuccession": { "type": "string", "minLength": 0, "maxLength": 300, "description": "（向后兼容旧版，新报告不使用）" }
@@ -140,7 +139,7 @@
             "type": "object",
             "required": ["name", "score", "description"],
             "properties": {
-              "name": { "type": "string", "minLength": 4, "maxLength": 30, "description": "长板名称——有画面感的名字。如'系统翻译型执行力''技术性韧性'" },
+              "name": { "type": "string", "minLength": 4, "maxLength": 30, "description": "长板名称——准确描述即可。如'逆商与灰度优势''执行颠覆力优势'" },
               "score": { "type": "number", "minimum": 0, "maximum": 5 },
               "description": { "type": "string", "minLength": 30, "maxLength": 150, "description": "这个长板具体指什么——为什么它是核心竞争力" }
             }
@@ -148,16 +147,16 @@
         },
         "shortBoards": {
           "type": "array",
-          "minItems": 2,
+          "minItems": 1,
           "maxItems": 4,
           "description": "短板（需定向补齐）",
           "items": {
             "type": "object",
             "required": ["name", "score", "fixPath"],
             "properties": {
-              "name": { "type": "string", "minLength": 4, "maxLength": 30, "description": "短板名称——具体、可识别。如'资本运作能力''独立战略判断'" },
+              "name": { "type": "string", "minLength": 4, "maxLength": 30, "description": "短板名称——具体、可识别。如'资源整合力''独立战略判断'" },
               "score": { "type": "number", "minimum": 0, "maximum": 5 },
-              "fixPath": { "type": "string", "minLength": 15, "maxLength": 100, "description": "最短的补板路径——一句话说清最有效的补短方式" }
+              "fixPath": { "type": "string", "minLength": 10, "maxLength": 100, "description": "补板路径——有效的补短方式" }
             }
           }
         },
@@ -165,7 +164,7 @@
           "type": "string",
           "minLength": 30,
           "maxLength": 200,
-          "description": "核心竞争力一句话总结——最不可替代的组合是什么，在二代群体中极少见。"
+          "description": "核心竞争力一句话总结——最不可替代的组合是什么。"
         }
       }
     },
@@ -210,93 +209,30 @@
         "supplementarySuggestions": {
           "type": "object",
           "required": ["targetedTraining", "talentIncubator"],
-          "description": "补充建议——针对性职业培训 + 人才定制孵化器",
+          "description": "补充建议——成长建议（实战培训方向）+ 人才定制孵化器",
           "properties": {
             "targetedTraining": {
               "type": "string",
               "minLength": 60,
-              "maxLength": 350,
-              "description": "针对性职业培训建议——2-3个具体的培训方向，每个说明'以什么为结业输出'。强调以输出倒逼输入，学完立即能用。"
+              "maxLength": 400,
+              "description": "成长建议：实战培训方向——用'▎小标题'分段结构，含价值主张+2-3个具体培训方向，每项说明结业标准和对他的意义。"
             },
             "talentIncubator": {
               "type": "string",
               "minLength": 60,
-              "maxLength": 350,
-              "description": "人才定制孵化器建议——介绍轮岗式项目制历练、导师团制、同侪网络、真实项目操盘。说明为什么同时解决'独立看行业'和'不孤单成长'两个问题。"
+              "maxLength": 400,
+              "description": "人才定制孵化器建议——用'▎小标题'分段结构，含为什么传统就业太慢+会经历什么+为什么适合他。"
             }
           }
         },
-        "stakeholderAdvice": { "type": "string", "minLength": 50, "maxLength": 400, "description": "干系人沟通建议——用'不要说...而是说...'话术模板格式，至少覆盖父辈、老臣、团队三个对象" }
-      }
-    },
-    "careerPathAnalysis": {
-      "type": "object",
-      "required": ["corePotentialDiagnosis", "corePotentialDescription", "pathEvaluations", "roadmap", "ultimateConclusion"],
-      "properties": {
-        "corePotentialDiagnosis": {
-          "type": "string",
-          "minLength": 10,
-          "maxLength": 60,
-          "description": "一句话标签，带引号。如：'待磨砺的创变型接班人'"
-        },
-        "corePotentialDescription": {
-          "type": "string",
-          "minLength": 60,
-          "maxLength": 250,
-          "description": "核心潜能解读——底层人格组合+顶层状态+终局可能性"
-        },
-        "pathEvaluations": {
-          "type": "array",
-          "minItems": 3,
-          "maxItems": 3,
-          "description": "三条路径适配度评估，顺序：继承→创业→就业/历练",
-          "items": {
-            "type": "object",
-            "required": ["path", "rating", "score", "basis", "risk"],
-            "properties": {
-              "path": { "type": "string", "enum": ["立即继承家业", "自主创业（外部独立）", "选择性就业 / 外部机构历练"] },
-              "rating": { "type": "string", "pattern": "^★+☆*$" },
-              "score": { "type": "integer", "minimum": 1, "maximum": 5 },
-              "basis": { "type": "string", "minLength": 40, "maxLength": 300, "description": "基于报告数据和具体条目得分的适配依据" },
-              "risk": { "type": "string", "minLength": 20, "maxLength": 150, "description": "核心风险提示" }
-            }
-          }
-        },
-        "roadmap": {
-          "type": "array",
-          "minItems": 3,
-          "maxItems": 3,
-          "description": "三阶段发展路线图",
-          "items": {
-            "type": "object",
-            "required": ["phase", "timeline", "title", "goal"],
-            "properties": {
-              "phase": { "type": "string", "enum": ["第一阶段", "第二阶段", "第三阶段"] },
-              "timeline": { "type": "string" },
-              "title": { "type": "string" },
-              "goal": { "type": "string", "minLength": 20, "maxLength": 150 },
-              "recommendation": { "type": "string", "minLength": 0, "maxLength": 200 },
-              "coreTasks": {
-                "type": "array",
-                "maxItems": 3,
-                "items": { "type": "string", "minLength": 5, "maxLength": 100 }
-              }
-            }
-          }
-        },
-        "ultimateConclusion": {
-          "type": "string",
-          "minLength": 30,
-          "maxLength": 200,
-          "description": "格言式终极结论——他能记住的一句话"
-        }
+        "stakeholderAdvice": { "type": "string", "minLength": 50, "maxLength": 400, "description": "与父辈及团队沟通建议——用直接建议的句式，至少覆盖父辈和团队两个对象。如：'对父辈：我需要亲手绘制一张行业地图，才能把家业带得更稳。' 不用'不要说/而是说'模板。" }
       }
     },
     "summary": {
       "type": "string",
-      "minLength": 80,
+      "minLength": 60,
       "maxLength": 400,
-      "description": "最后一面镜子——回顾最亮眼的光芒+最需要补的短板+下一步。温暖有力的祝福，用画面或比喻收尾。"
+      "description": "最后一面镜子——回顾他最亮眼的光芒+当前需补的短板+下一步。温暖有力的收尾。"
     }
   }
 }

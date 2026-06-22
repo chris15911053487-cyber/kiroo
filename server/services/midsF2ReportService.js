@@ -81,31 +81,33 @@ const HARDCODED_MIDS_F2_TEMPLATE = `# MIDS-F2 测评报告生成提示词
 
 ## 一、这份报告要让他回答三个问题
 
-1. **我是个什么样的人？**——读完第一段就能点头
-2. **我身上独特的特点是什么？**——不只是好的，也包括那些他自己知道但不愿面对的
-3. **我可能会在哪卡住？**——第一个让他摔跤的地方，以及为什么
+1. **我身上独特的光芒是什么？**——读完第一段就能挺直腰
+2. **我尚未被释放的潜能在哪？**——那些"还没机会"但"一旦激活就不得了"的地方
+3. **我接下来往哪个方向走？**——不是定终局，是选下一步
 
 ---
 
 ## 二、怎么写——核心原则
 
+**先看优势，再看空间**：每个维度把优势和成长空间都说清楚。成长空间不是缺点，是还没画完的地图。
+
 **让他认出自己**：选一个他自己知道但从未说出口的特点来写。真正打动人的反馈不是"分析得很准"，而是"对，就是这样"。
 
-**有根有据，但不念数据**：你心里装着每道题的得分——那是你下判断的依据。但写出来的时候，证据是融化在叙述里的。不要说"条目X得Y分"，而要说"你对跨界本身充满热情，但一被问到具体怎么做，你的回答就模糊了"。
+**条目得分如实展示，不逐条解读**：每个维度解读完核心优势和成长空间后，用entryHighlights列出该维度全部条目及得分（仅含序号+原文+分数，不加评语）。成长空间中可以适度点名1-2个极低分条目。
 
-**结论先行，一句见血**：每个角度的第一句话就是你对这个人的核心判断。五个角度开头不能雷同。禁止"你在XX维度处于XX水平"。
+**结论先行，一句见血**：每个维度的第一句话就是你对这个人的核心判断。五个维度开头不能雷同。
 
-**交叉不孤立**：至少找1-2对角度之间的联动（协同放大/补偿掩盖/制约瓶颈）。
+**交叉不孤立**：维度之间要联动（协同放大/补偿掩盖/潜力激活）。
 
-**总分结构**：每段第一句 **粗体** 核心判断，后续展开。每段只有一处加粗。
+**总分结构**：每段第一句**粗体**核心判断，后续展开。
 
-**像朋友聊天，不用术语**：禁用——赋能、闭环、抓手、底层逻辑、认知升级、心智模型、能力图谱、方法论框架、经验缺口、认知框架。整篇用"你"来写。
+**像朋友聊天，不用术语**：禁用——赋能、闭环、抓手、底层逻辑、认知升级、心智模型。整篇用"你"来写。
 
-**让他感到被理解，不是被分析**：读者最深的反应不应该指向分数，而应该指向自己。"终于有人懂了"比"分析得很专业"有价值一百倍。
+**要让他感到被理解，不是被分析。**
 
 ---
 
-## 三、五个角度
+## 三、五个维度三层结构
 
 - **顶层·方向感**：战略破局力 → 他怎么回答"往哪走"
 - **中层·落地感**：执行颠覆力 + 资源整合力 → 他怎么回答"怎么走"
@@ -125,10 +127,10 @@ const HARDCODED_MIDS_F2_TEMPLATE = `# MIDS-F2 测评报告生成提示词
 **就职意向**：{{GRADUATION_INTENT}}
 **专业**：{{MAJOR}}
 
-### 各角度得分
+### 各维度得分
 {{DIMENSION_TABLE}}
 
-### 各条目得分明细（你的判断依据，不要念给读者听）
+### 各条目得分明细（你的判断依据）
 {{ENTRY_TABLES}}
 
 ### S-P-F 路径参考
@@ -139,48 +141,61 @@ const HARDCODED_MIDS_F2_TEMPLATE = `# MIDS-F2 测评报告生成提示词
 ## 五、输出 JSON 结构
 
 {
-  "frameworkExplanation": "~50字。用最简单的语言告诉读者这五个角度是什么，合在一起是什么。像展览前言，不是教科书。",
+  "uniqueGene": "15-20字标签，带引号。如：'逆商与灰度驱动的领军接班者'。整份报告的文眼。",
+  "frameworkExplanation": "~80字。直接说出他独特的组合是什么——双长板、底层根基、待激活的是什么。",
+  "dimensionOverview": [
+    { "dimensionKey": "...", "dimensionName": "...", "score": 0, "position": "15-25字人话定位标签" }
+  ],
   "comprehensiveOverview": {
-    "totalScore": {{TOTAL_SCORE}},
-    "scoreLabel": "卓越/良好/基础/待开发",
-    "overallAssessment": "给他一面全身镜（~100字）。用一段话说清一个人的特质组合。像在向别人介绍他。",
+    "totalScore": {{TOTAL_SCORE}}, "scoreLabel": "{{SCORE_LABEL}}",
+    "overallAssessment": "~100字整体解读。指出结构特征，用一句话概括个性画像。",
     "spfConclusion": {
       "sScore": {{S_SCORE}}, "pScore": {{P_SCORE}}, "fScore": {{F_SCORE}},
       "decisionPath": "{{DECISION_PATH}}", "decisionLabel": "{{DECISION_LABEL}}", "decisionEmoji": "{{DECISION_EMOJI}}",
-      "reasoning": "为什么是这条路（~80字）。告诉他这条路和他的特质画像之间的关系。"
+      "reasoning": "为什么是这条路（~80字）。"
     }
   },
   "dimensionInsights": [
     {
-      "dimensionKey": "strategic_breakthrough",
-      "dimensionName": "战略破局力",
-      "tier": "顶层·方向感",
-      "score": 0, "level": "...",
+      "dimensionKey": "strategic_breakthrough", "dimensionName": "战略破局力",
+      "tier": "顶层·方向感", "score": 0, "level": "...",
       "entryAnalysis": [{ "sequence": 1, "text": "条目原文", "score": 0, "comment": "15-25字信号" }],
-      "analysis": "画像速写（100-140字）。用'你'来写。粗体主题句→自然展开。不念数据。至少一处关联其他角度。",
-      "impactOnSuccession": "这一面对你意味着什么（50-60字）。语气像忠告，不像结论。"
+      "coreStrength": "◈ 您独到的地方——80-120字。第一句粗体核心判断。展开：这个特点意味着什么？在什么场景下有价值？",
+      "growthSpace": "◈ 您的成长空间——80-120字。点名1-2分条目。建议交叉引用其他维度优势。",
+      "entryHighlights": [{ "sequence": 1, "text": "条目原文", "score": 0 }],
+      "careerInsight": "◈ 这个维度对您的真实含义——60-100字。直接告诉他该往哪个方向走。"
     }
   ],
-  "developmentSuggestions": {
-    "integratedJudgment": { "tierSummary": "三层拼在一起看（~70字）。哪层是底盘、哪层是天花板。" },
-    "developmentDirection": "接下来怎么走（~60字）。先补短板还是先拉长板？",
-    "capabilityImprovements": [
-      { "dimensionKey": "xxx", "dimensionName": "xxx", "direction": "15-20字方向", "reason": "30-40字。告诉他这个短板在什么场景下会让他吃亏。" }
-    ],
-    "stakeholderAdvice": "怎么跟关键人沟通（~80字）。"
+  "barrelPrinciple": {
+    "longBoards": [{ "name": "准确描述长板", "score": 0, "description": "为什么是核心竞争力" }],
+    "shortBoards": [{ "name": "具体短板名称", "score": 0, "fixPath": "有效补短方式" }],
+    "coreCompetitiveness": "40-60字核心竞争力一句话。"
   },
-  "summary": "最后一面镜子（~80字）。像离开茶馆前朋友认真说的几句话。"
+  "developmentSuggestions": {
+    "integratedJudgment": { "tierSummary": "~100字。底盘→中层→顶层各处于什么状态，这个结构意味着什么。" },
+    "developmentDirection": "~80字。先激活什么、再强化什么。",
+    "capabilityImprovements": [
+      { "dimensionKey": "xxx", "dimensionName": "xxx", "direction": "15-25字方向", "reason": "40-80字。这个方向如何撬动已有优势。" }
+    ],
+    "supplementarySuggestions": {
+      "targetedTraining": "▎小标题分段。▎为什么是你的加速器 + ▎方向一/二/三，每项含结业标准和对你的意义。",
+      "talentIncubator": "▎小标题分段。▎为什么传统就业太慢 + ▎你会经历什么 + ▎为什么适合你。"
+    },
+    "stakeholderAdvice": "▎与父辈及团队沟通建议（~120字）。直接建议句式，至少覆盖父辈和团队。"
+  },
+  "summary": "~120字。回顾最亮眼的光芒+当前需补的短板+下一步。温暖收尾。"
 }
 
 **字段数量：**
-- dimensionInsights：恰好 5 个
-- entryAnalysis：每角度全部条目（5/5/4/5/4 条）
-- capabilityImprovements：2-3 条
-- 不输出 coreDefinition / tierTable
+- dimensionOverview：恰好5个
+- dimensionInsights：恰好5个
+- entryAnalysis + entryHighlights：每维度全部条目
+- barrelPrinciple.longBoards：2-3条，shortBoards：1-3条
+- capabilityImprovements：2-3条
 
 ---
 
-请严格按照以上风格，生成完整的 JSON 测评报告。让读者感到被理解，不要让读者感到被分析。`;
+请严格按照以上风格，生成完整的 JSON 测评报告。让读者感到被理解，而不是被分析。`;
 
 /**
  * 从 docs 目录加载提示词模板文件
@@ -382,11 +397,10 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
       entryAnalysis: entries,
       coreStrength: buildCoreStrength(key, score, level, name),
       growthSpace: buildGrowthSpace(key, score, dimensionScores, name),
-      entryHighlights: entries.filter(e => e.score >= 4).slice(0, 3).map(e => ({
+      entryHighlights: entries.map(e => ({
         sequence: e.sequence,
         text: e.text,
         score: e.score,
-        highlight: `在${MIDS_DIMENSION_NAMES[key]}方面展现了扎实的基础`,
       })),
       careerInsight: buildCareerInsight(key, score, level, name),
       // 向后兼容
@@ -406,9 +420,7 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
     graduationIntention: userInfo?.graduationIntention || '',
     major: userInfo?.major || '',
     uniqueGene,
-    frameworkExplanation: `**你的独特基因：${uniqueGene}。**我们从五个角度看到了你的光芒——${
-      dims.map(k => MIDS_DIMENSION_NAMES[k]).join('、')
-    }。它们拼在一起，构成了一个等待被点燃的职业肖像。`,
+    frameworkExplanation: `我们从五个角度看到了你的光芒——战略破局力、执行颠覆力、资源整合力、逆商与灰度、伦理与格局。它们拼在一起，构成了一个等待被点燃的职业肖像。`,
     dimensionOverview,
     comprehensiveScore: totalScore,
     comprehensiveOverview: {
@@ -462,7 +474,7 @@ function buildFallbackReport(dimensionScores, midsF2Result, userInfo) {
 **▎为什么这适合你**
 你当前最需要的不是一份工作，而是一个能让你安全试错、快速验证、系统性补齐方向感和资源网络的环境。最终在导师护航下独立操盘一个从0到1的商业项目——这个项目的成功或失败，都比你做三年边缘岗位学到的多得多。用2-3年，换一次真正的跃升。`,
       },
-      stakeholderAdvice: `跟父辈沟通时，不要说"我想出去闯"，而是说"我需要一张自己亲手画的地图，才能把家业带得更远"；跟老臣沟通时，不要说"我要改革"，而是说"我想先到一线去，听懂你们的难处"；跟团队沟通时，不要藏起你的韧性——让团队看到你愿意躬身入局，他们才会愿意跟你走。`,
+      stakeholderAdvice: `对父辈："我需要亲手绘制一张行业地图，才能把家业带得更稳。"对团队：让他们看到你躬身入局，用行动而非头衔赢得信任——团队看到你愿意沉下去，他们才会愿意跟你走。`,
     },
     summary: `**你不需要变成另一个人——你只需要知道现在自己的长板和短板在哪，然后选一条适合自己的路。**方向感、落地力、根基感这三层，不均衡是常态。关键是让你突出的那个成为你的标签，让暂时滞后的那个不至于拖累你。先突破当前该优先投入精力的那个点，其他的慢慢来。`,
     midsF2Result,
@@ -667,9 +679,9 @@ function getShortBoardFixPath(key, score) {
 }
 
 function buildCoreCompetitiveness(longBoards, shortBoards, name) {
-  const lbNames = longBoards.map(l => l.name).join('+');
+  const lbNames = longBoards.map(l => l.name).join(' + ');
   const sbNames = shortBoards.map(s => s.name).join('、');
-  return `您独特的竞争力组合是"${lbNames}"——这是您在二代群体中很少见的品质。目前${sbNames}是您成长空间较大的领域，但好消息是：您的长板恰好能帮您补上这些短板。`;
+  return `您独特的竞争力组合是"${lbNames}"——这是您区别于其他二代群体的独特底色。目前${sbNames}是您成长空间较大的领域，但您的长板恰好能帮您补上这些短板。`;
 }
 
 // ==================== AI 调用 ====================
@@ -802,7 +814,6 @@ function parseAIResponse(raw, dimensionScores, midsF2Result, userInfo) {
             || fallback.developmentSuggestions.supplementarySuggestions,
         },
 
-        careerPathAnalysis: parsed.careerPathAnalysis || undefined,
         summary: parsed.summary || fallback.summary,
         midsF2Result,
         midsF2Scores: dimensionScores,
@@ -886,7 +897,6 @@ function adaptLegacyFormat(parsed, dimensionScores, midsF2Result, userInfo) {
         || fallback.developmentSuggestions.supplementarySuggestions,
       stakeholderAdvice: parsed.developmentSuggestions?.stakeholderAdvice || '',
     },
-    careerPathAnalysis: parsed.careerPathAnalysis || undefined,
     summary: parsed.summary || fallback.summary,
     midsF2Result,
     midsF2Scores: dimensionScores,
