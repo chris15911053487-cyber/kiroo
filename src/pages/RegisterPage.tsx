@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 
 export default function RegisterPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/select'
 
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -48,7 +50,7 @@ export default function RegisterPage() {
     try {
       const data = await authService.register(phone, password, nickname.trim())
       login(data.token, data.user)
-      navigate('/select', { replace: true })
+      navigate(redirect, { replace: true })
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '注册失败')
     } finally {

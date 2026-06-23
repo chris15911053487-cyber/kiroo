@@ -46,9 +46,10 @@ export default function SelectQuestionnairePage() {
 
   const priorityList = IS_LZU_MODE ? LZU_QUESTIONNAIRE_PRIORITY : QUESTIONNAIRE_PRIORITY
 
-  const availableQuestionnaires = priorityList.filter(q =>
-    enabledIds.has(q.id)
-  )
+  // 只显示 MIDS-F2（二代）问卷
+  const availableQuestionnaires = priorityList
+    .filter(q => enabledIds.has(q.id))
+    .filter(q => q.id === 'mids-f2')
 
   // 兰大模式：自动创建session并跳转到第一个问卷
   useEffect(() => {

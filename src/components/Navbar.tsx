@@ -18,7 +18,7 @@ export default function Navbar() {
   function handleLogout() {
     logout()
     setMenuOpen(false)
-    navigate('/', { replace: true })
+    navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`, { replace: true })
   }
 
   // 登录后的下拉菜单（仅保留个人中心 + 退出登录）
@@ -84,10 +84,10 @@ export default function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/login" className="px-4 py-1.5 rounded-full text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
+              <Link to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} className="px-4 py-1.5 rounded-full text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
                 登录
               </Link>
-              <Link to="/register" className="px-5 py-1.5 rounded-full text-sm font-bold bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white shadow-[0_3px_10px_rgba(99,102,241,0.2)] transition-all">
+              <Link to={`/register?redirect=${encodeURIComponent(location.pathname + location.search)}`} className="px-5 py-1.5 rounded-full text-sm font-bold bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white shadow-[0_3px_10px_rgba(99,102,241,0.2)] transition-all">
                 注册
               </Link>
             </div>
@@ -116,7 +116,7 @@ export default function Navbar() {
             </>
           ) : (
             <Link
-              to="/login"
+              to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
               className="px-4 py-1.5 rounded-full text-sm font-bold bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm"
             >
               登录
